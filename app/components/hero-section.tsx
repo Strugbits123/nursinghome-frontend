@@ -101,9 +101,11 @@ export function HeroSection() {
       const data = await res.json();
 
       setFacilities(data || data.facilities || []);
-          toast.success("Facilities loaded successfully!");
+            toast.success("Facilities loaded successfully!");
 
     } catch (err: any) {
+      toast.error(err.message || "Failed to load facilities");
+
       console.error("Fetch facilities failed", err);
       setError(err.message || "Unknown error");
     } finally {
@@ -310,29 +312,14 @@ export function HeroSection() {
           >
             Popular searches:
           </span>
-
           {/* Buttons */}
           <button
-            className="
-      w-[138.5px] h-[34px]
-      bg-[#C71F37] text-white
-      rounded-[12141.64px]
-      font-inter font-normal text-[16px] leading-[24.29px]
-      flex items-center justify-center
-    "
+            className="w-[138.5px] h-[34px] bg-[#C71F37] text-white rounded-[12141.64px] font-inter font-normal text-[16px] leading-[24.29px] flex items-center justify-center"
           >
             New York
           </button>
 
-          <button
-            className="
-      w-[138.5px] h-[34px]
-      bg-[#C71F37] text-white
-      rounded-[12141.64px]
-      font-inter font-normal text-[16px] leading-[24.29px]
-      flex items-center justify-center
-    "
-          >
+          <button className="w-[138.5px] h-[34px] bg-[#C71F37] text-white rounded-[12141.64px] font-inter font-normal text-[16px] leading-[24.29px] flex items-center justify-center">
             Los Angeles
           </button>
 

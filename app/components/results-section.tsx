@@ -34,15 +34,16 @@ const nursingHomes = [
   },
 ]
 
-
 export function ResultsSection() {
-  const { facilities, setFacilities, coords, setCoords, locationName, setLocationName } =
-    useFacilities();
+
+  const { facilities, setFacilities, coords, setCoords, locationName, setLocationName } = useFacilities();
   const [viewMode, setViewMode] = useState<"map" | "list">("map")
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
-  console.log("facilities:", facilities);
   const centerLat = facilities[0]?.lat ?? 34.8028;
   const centerLng = facilities[0]?.lng ?? -86.9775;
+  const [selectedFacility, setSelectedFacility] = useState(null);
+
+
   return (
     <section className=" w-full min-h-[907px] bg-[#F9F9F9] flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="relative w-full max-w-[1450px] flex flex-col items-center justify-start text-center space-y-8">
@@ -109,18 +110,6 @@ export function ResultsSection() {
           <div className={`flex flex-col lg:flex-row gap-4 lg:gap-6 mt-2`}>
             {/* Map: only show in Map View */}
             {viewMode === "map" && (
-              // <div className="flex-1 bg-[#F3F4F6] rounded p-4 flex justify-center items-center">
-              //   <div className="w-full h-[300px] sm:h-[344px] rounded-lg overflow-hidden">
-              //     <iframe
-              //       src={`https://www.google.com/maps/embed/v1/search?key=${googleMapsApiKey}&q=${encodeURIComponent(
-              //         facilities[0]?.googleName ||
-              //           facilities[0]?.name + " " + facilities[0]?.address
-              //       )}`}
-              //       className="w-full h-full"
-              //       loading="lazy"
-              //     ></iframe>
-              //   </div>
-              // </div>
               <div
                 className={`flex-1 bg-[#F3F4F6] rounded p-4 flex justify-center items-center
                 transition-all duration-500 ease-in-out
@@ -128,13 +117,17 @@ export function ResultsSection() {
               `}
               >
                 <div className="w-full h-[300px] sm:h-[344px] rounded-lg overflow-hidden">
-                  {/* <iframe
-                  src={`https://www.google.com/maps/embed/v1/search?key=${googleMapsApiKey}&q=${encodeURIComponent(
-                    facilities[0]?.googleName || facilities[0]?.name + " " + facilities[0]?.address
-                  )}`}
-                  className="w-full h-full"
-                  loading="lazy"
-                ></iframe> */}
+                  
+                 <iframe
+  src={`https://www.google.com/maps/embed/v1/search?key=${googleMapsApiKey}&q=${encodeURIComponent(
+    selectedFacility
+      ? `${selectedFacility.name} ${selectedFacility.address}`
+      : `${facilities[0]?.name} ${facilities[0]?.address}`
+  )}`}
+  className="w-full h-full"
+  loading="lazy"
+></iframe>
+
                 </div>
               </div>
             )}
@@ -144,7 +137,7 @@ export function ResultsSection() {
               onWheel={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
             >
-              {facilities.slice(0, 15).map((facility) => (
+              {/* {facilities.slice(0, 15).map((facility) => (
                 <div
                   key={facility._id}
                   className="flex-1 bg-white border border-gray-300 rounded-lg shadow-sm p-4 relative flex flex-col justify-between"
@@ -173,13 +166,13 @@ export function ResultsSection() {
                     <span className="text-[15px] text-gray-700">{facility.rating}</span>
                   </div>
 
-                  <div className="flex gap-2 items-center mt-2">
+                  <div className="flex gap-2 items-center mt-2"> */}
                     {/* <img
                   src={facility.photo}
                   alt={facility.name}
                   className="w-[80px] h-[60px] rounded object-cover"
                 /> */}
-                    <div className="flex flex-col text-sm">
+                    {/* <div className="flex flex-col text-sm">
                       <span className="font-semibold">
                         {facility.ownership}
                       </span>
@@ -187,7 +180,47 @@ export function ResultsSection() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))} */}
+              {facilities.slice(0, 15).map((facility) => (
+  <div
+    key={facility._id}
+    onClick={() => setSelectedFacility(facility)}
+    className={`cursor-pointer flex-1 bg-white border border-gray-300 rounded-lg shadow-sm p-4 
+                relative flex flex-col justify-between hover:shadow-md transition`}
+  >
+    {/* Thumbnail */}
+    {facility.photo && (
+      <img
+        src={facility.photo}
+        alt={facility.name}
+        className="w-full h-32 object-cover rounded mb-2"
+      />
+    )}
+
+    <h4 className="text-[17px] font-semibold text-black">{facility.name}</h4>
+    <p className="text-[15px] text-gray-700 mt-1">
+      {facility.address}, {facility.city}, {facility.state} {facility.zip}
+    </p>
+
+    {/* Stars */}
+    <div className="flex items-center gap-1 mt-2">
+      {Array.from({ length: 5 }).map((_, idx) => (
+        <svg
+          key={idx}
+          width="16.93"
+          height="15.05"
+          viewBox="0 0 24 24"
+          fill={idx < Math.round(facility.rating) ? "#C71F37" : "#ccc"}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M12 .587l3.668 7.431L24 9.748l-6 5.845L19.335 24 12 19.897 4.665 24 6 15.593 0 9.748l8.332-1.73L12 .587z" />
+        </svg>
+      ))}
+      <span className="text-[15px] text-gray-700">{facility.rating}</span>
+    </div>
+  </div>
+))}
+
             </div>
 
             {/* <div className="flex-1 bg-[#F3F4F6] rounded p-4 flex justify-center items-center">

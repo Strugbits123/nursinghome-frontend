@@ -20,35 +20,57 @@ export default function Home() {
 
 
 
-   // Init Locomotive
-    // useEffect(() => {
-    // if (!containerRef.current) return;
+  // basic
 
-    // const scroll = new LocomotiveScroll({
-    //     el: containerRef.current,
-    //     smooth: true,
-    //     lerp: 0.08,
-    // });
+  // useEffect(() => {
+  //   if (!containerRef.current) return;
 
-    // return () => {
-    //     scroll.destroy();
-    // };
-    // }, []);
+  //   const scroll = new LocomotiveScroll({
+  //       el: containerRef.current,
+  //       smooth: true,
+  //       lerp: 0.08,
+  //   });
 
-    // const handleSearch = (e) => {
-    //     e.preventDefault();
-    //     console.log('Searching for:', location);
-    //     alert(`Searching for nursing homes near: ${location}`);
-    // };
+  //   return () => {
+  //       scroll.destroy();
+  //   };
+  // }, []);
+
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const scroll = new LocomotiveScroll({
+      el: containerRef.current,
+      smooth: true,
+      lerp: 0.06,
+      multiplier: 1, 
+      smartphone: {
+        smooth: true
+      },
+      tablet: {
+        smooth: true
+      }
+    });
+
+    return () => {
+      scroll.destroy();
+    };
+  }, []);
+
+  const handleSearch = (e) => {
+      e.preventDefault();
+      console.log('Searching for:', location);
+      alert(`Searching for nursing homes near: ${location}`);
+  };
+
   return (
-    <div ref={containerRef} data-scroll-container  className="min-h-screen bg-background">
+    <div ref={containerRef} data-scroll-container className="min-h-screen bg-background" >
       {/* Full background wrapper */}
-      <div
-          className="relative w-full h-[947px] bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('/b20ba9d675afe9a11e0416efde3e22d2fb92f8a4.png')`,
-          }}
-        >
+      <div className="relative w-full h-[947px] bg-cover bg-center bg-no-repeat" style={{
+          backgroundImage: `url('/b20ba9d675afe9a11e0416efde3e22d2fb92f8a4.png')`,
+        }}
+      >
         {/* overlay */}
         <div className="absolute inset-0 bg-[#020D16] opacity-60 z-0"></div>
 
@@ -58,15 +80,15 @@ export default function Home() {
           <HeroSection />
         </div>
       </div>
-       
-        <ResultsSection />
-        <TrustedSection />
-        <AISummary />
-        <TopRatedFeatured />
-        <CitiesSection />
-        <NewRescource/>
-        <SearchNursing />
-        <Footer/>
+
+      <ResultsSection />
+      <TrustedSection />
+      <AISummary />
+      <TopRatedFeatured />
+      <CitiesSection />
+      <NewRescource />
+      <SearchNursing />
+      <Footer />
       {/* </section> */}
 
       {/* <section
@@ -77,7 +99,7 @@ export default function Home() {
           Smooth scroll & parallax
         </h2>
       </section> */}
-  
-</div>
+
+    </div>
   );
 }
