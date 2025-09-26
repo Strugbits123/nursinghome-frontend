@@ -4,7 +4,6 @@ import Head from 'next/head';
 import { useState, useRef, useEffect } from 'react';
 import { Header } from "./components/header"
 import { HeroSection } from "./components/hero-section"
-import LocomotiveScroll from 'locomotive-scroll';
 import { TrustedSection } from "./components/trusted-section"
 import { ResultsSection } from "./components/results-section"
 import { AISummary } from './components/ai-summary';
@@ -14,81 +13,184 @@ import { SearchNursing } from './components/SearchNursing';
 import { Footer } from './components/Footer';
 import { NewRescource } from './components/NewsRescource';
 
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
+
+
 export default function Home() {
-  const [location, setLocation] = useState('');
-  const containerRef = useRef(null);
+ const containerRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const trustedRef = useRef<HTMLDivElement>(null);
+  const aiRef = useRef<HTMLDivElement>(null);
+  const topRatedRef = useRef<HTMLDivElement>(null);
 
+  const [ready, setReady] = useState(false);
 
-
-  // basic
-
-  // useEffect(() => {
-  //   if (!containerRef.current) return;
-
-  //   const scroll = new LocomotiveScroll({
-  //       el: containerRef.current,
-  //       smooth: true,
-  //       lerp: 0.08,
-  //   });
-
-  //   return () => {
-  //       scroll.destroy();
-  //   };
-  // }, []);
-
+  // fade-in page when fully loaded
+  useEffect(() => {
+    const onLoad = () => setReady(true);
+    if (typeof window !== "undefined") {
+      if (document.readyState === "complete") {
+        setReady(true);
+      } else {
+        window.addEventListener("load", onLoad);
+        return () => window.removeEventListener("load", onLoad);
+      }
+    }
+  }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!ready || !containerRef.current) return;
 
-    const scroll = new LocomotiveScroll({
-      el: containerRef.current,
-      smooth: true,
-      lerp: 0.06,
-      multiplier: 1, 
-      smartphone: {
-        smooth: true
-      },
-      tablet: {
-        smooth: true
+    let locoScroll: any;
+     
+    // Dynamic import of locomotive-scroll
+    import("locomotive-scroll").then((mod) => {
+      const LocomotiveScroll = mod.default;
+
+      locoScroll = new LocomotiveScroll({
+        el: containerRef.current!,
+        smooth: true,
+        multiplier: 1,
+      });
+
+      locoScroll.on("scroll", ScrollTrigger.update);
+
+      ScrollTrigger.scrollerProxy(containerRef.current!, {
+        scrollTop(value) {
+          return arguments.length
+            ? locoScroll.scrollTo(value, 0, 0)
+            : locoScroll.scroll.instance.scroll.y;
+        },
+        getBoundingClientRect() {
+          return {
+            top: 0,
+            left: 0,
+            width: window.innerWidth,
+            height: window.innerHeight,
+          };
+        },
+        pinType: containerRef.current!.style.transform ? "transform" : "fixed",
+      });
+
+      // GSAP animations
+      if (resultsRef.current) {
+        gsap.from(resultsRef.current, {
+          scrollTrigger: {
+            trigger: resultsRef.current,
+            scroller: containerRef.current,
+            start: "top 80%",
+          },
+          y: 50,
+          opacity: 0,
+          duration: 1,
+          ease: "power3.out",
+        });
       }
+
+      if (trustedRef.current) {
+        gsap.from(trustedRef.current, {
+          scrollTrigger: {
+            trigger: trustedRef.current,
+            scroller: containerRef.current,
+            start: "top 80%",
+          },
+          x: -100,
+          opacity: 0,
+          duration: 1,
+          ease: "power3.out",
+        });
+      }
+
+      if (aiRef.current) {
+        gsap.from(aiRef.current, {
+          scrollTrigger: {
+            trigger: aiRef.current,
+            scroller: containerRef.current,
+            start: "top 80%",
+          },
+          x: 100,
+          opacity: 0,
+          duration: 1,
+          ease: "power3.out",
+        });
+      }
+
+      if (topRatedRef.current) {
+        gsap.from(topRatedRef.current, {
+          scrollTrigger: {
+            trigger: topRatedRef.current,
+            scroller: containerRef.current,
+            start: "top 80%",
+          },
+          scale: 0.8,
+          opacity: 0,
+          duration: 1,
+          ease: "back.out(1.7)",
+        });
+      }
+
+      // refresh after setup
+      const refresh = () => locoScroll.update();
+      ScrollTrigger.addEventListener("refresh", refresh);
+      ScrollTrigger.refresh();
     });
 
     return () => {
-      scroll.destroy();
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+      if (locoScroll) locoScroll.destroy();
     };
-  }, []);
-
-  const handleSearch = (e) => {
-      e.preventDefault();
-      console.log('Searching for:', location);
-      alert(`Searching for nursing homes near: ${location}`);
-  };
-
+  }, [ready]);
   return (
-    <div ref={containerRef} data-scroll-container className="min-h-screen bg-background" >
-      {/* Full background wrapper */}
-      <div className="relative w-full h-[947px] bg-cover bg-center bg-no-repeat" style={{
-          backgroundImage: `url('/b20ba9d675afe9a11e0416efde3e22d2fb92f8a4.png')`,
-        }}
+    <div
+      className={`${
+        ready ? "opacity-100" : "opacity-0"
+      } transition-opacity duration-500`}
+    >
+      <div
+        ref={containerRef}
+        data-scroll-container
+        className="min-h-screen bg-background"
       >
-        {/* overlay */}
-        <div className="absolute inset-0 bg-[#020D16] opacity-60 z-0"></div>
+        {/* Hero */}
+        <div
+          className="relative w-full h-[947px] bg-cover bg-center bg-no-repeat hero-bg"
+          style={{
+            backgroundImage: `url('/b20ba9d675afe9a11e0416efde3e22d2fb92f8a4.png')`,
+          }}
+        >
+          {/* overlay */}
+          <div className="absolute inset-0 bg-[#020D16] opacity-60 z-0"></div>
+          {/* header + hero */}
+          <div className="relative z-10">
 
-        {/* wrap header + hero in a relative container with higher z-index */}
-        <div className="relative z-10">
-          <Header />
-          <HeroSection />
+            <Header />
+            <HeroSection />
+          </div>
         </div>
-      </div>
 
-      <ResultsSection />
-      <TrustedSection />
-      <AISummary />
-      <TopRatedFeatured />
-      <CitiesSection />
-      <NewRescource />
-      <SearchNursing />
-      <Footer />
+        <div ref={trustedRef}>
+          <TrustedSection />
+        </div>
+
+        <div ref={resultsRef}>
+          <ResultsSection />
+        </div>
+
+
+        <div ref={aiRef}>
+          <AISummary />
+        </div>
+
+        <div ref={topRatedRef}>
+          <TopRatedFeatured />
+        </div>
+
+        <CitiesSection />
+        <NewRescource />
+        <SearchNursing />
+        <Footer />
       {/* </section> */}
 
       {/* <section
@@ -100,6 +202,7 @@ export default function Home() {
         </h2>
       </section> */}
 
+    </div>
     </div>
   );
 }

@@ -1,5 +1,22 @@
 import { NextResponse } from "next/server";
-
+interface Facility {
+  _id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  phone: string;
+  rating: number;
+  lat?: number | null;
+  lng?: number | null;
+  photo?: string | null;
+  aiSummary?: {
+    summary: string;
+    pros: string[];
+    cons: string[];
+  };
+}
 async function fetchGooglePlace(input: string) {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -40,7 +57,7 @@ export async function GET(req: Request) {
     const facilities = await backendRes.json();
 
     const enriched = await Promise.all(
-      facilities.map(async (f: any) => {
+      facilities.map(async (f: Facility) => {
         const place = await fetchGooglePlace(`${f.name} ${f.city}`);
         return {
           ...f,

@@ -7,9 +7,30 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useFacilities } from "../context/FacilitiesContext";
 import toast, { Toaster } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+
+interface Facility {
+  _id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  phone: string;
+  rating: number;
+  lat?: number | null;
+  lng?: number | null;
+  photo?: string | null;
+  aiSummary?: {
+    summary: string;
+    pros: string[];
+    cons: string[];
+  };
+}
 
 export function HeroSection() {
-  const popularSearches = ["New York", "Mexico City", "Toronto", "Los Angeles"]
+   const popularSearches = ["New York", "Mexico City", "Toronto", "Los Angeles"];
+  const router = useRouter();
 
   const [active, setActive] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -28,20 +49,13 @@ export function HeroSection() {
 
   const API_URL = process.env.NEXT_PUBLIC_FACILITIES_API as string;
 
-  // const handleSuccess = (msg: string) => {
-  //     toast.success(msg, {
-  //       position: "top-right",
-  //       duration: 4000,
-  //     });
-  //   };
-
-  // const handleError = (msg: string) => {
-  //   toast.error(msg, {
-  //     position: "top-right",
-  //     duration: 5000,
-  //   });
-  // };
+  // use current location
   const handleUseLocation = () => {
+    if (!localStorage.getItem("token")) {
+      toast.error("Please log in to use this feature");
+      return;
+    }
+
     setActive(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -64,16 +78,29 @@ export function HeroSection() {
             const postcode = data.address.postcode || "";
             const fullName = `${city} ${state} ${postcode}`.trim();
             setLocationName(fullName || `${lat}, ${lon}`);
-            toast.success("Facilities loaded successfully!");
-          } catch (err:any) {
-            toast.error(err.message || "Failed to load facilities");
-            console.error("Reverse geocode error:", err);
-          }
+            toast.success("Location detected successfully!");
+            // after setting coords, useEffect below triggers fetch
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+                toast.error(err.message || "Failed to load facilities");
+                console.error("Reverse geocode error:", err);
+            } else {
+              toast.error("Failed to load facilities");
+              console.error("Reverse geocode error:", err);
+            }
+        }
         },
-        (error:any) => {
-          console.error("Error getting location:", error);
-          toast.error(error.message || "Failed to load facilities");
-          setActive(false);
+        (err: unknown) => {
+          if (err instanceof Error) {
+                toast.error(err.message || "Failed to load facilities");
+                console.error("Reverse geocode error:", err);
+            } else {
+              toast.error("Failed to load facilities");
+              console.error("Reverse geocode error:", err);
+            }     
+          // console.error("Error getting location:", error);
+          // toast.error(error.message || "Failed to get location");
+          // setActive(false);
         }
       );
     } else {
@@ -81,42 +108,63 @@ export function HeroSection() {
       setActive(false);
     }
   };
+
   const fetchFacilities = async () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) {
+      toast.error("Please log in to search facilities");
+      return;
+    }
+
+    if (!localStorage.getItem("token")) {
+      toast.error("Please log in to search facilities");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams();
-
-      // Build the params your backend expects
-      // e.g. extract city/state/zip from your state or locationName
       if (searchQuery) params.append("city", searchQuery);
-
+      if (coords?.lat && coords?.lon) {
+        params.append("lat", coords.lat.toString());
+        params.append("lon", coords.lon.toString());
+      }
 
       const url = `${API_URL}?${params.toString()}`;
       console.log("Fetching from URL:", url);
 
-      const res = await fetch(url);
+      const res = await fetch(url, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });      
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
       setFacilities(data || data.facilities || []);
-            toast.success("Facilities loaded successfully!");
+      toast.success("Facilities loaded successfully!");
 
+      router.push("/facility-search");
     } catch (err: any) {
       toast.error(err.message || "Failed to load facilities");
-
-      console.error("Fetch facilities failed", err);
+      // console.error("Fetch facilities failed", err);
       setError(err.message || "Unknown error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // auto-fetch when coords or searchQuery changes
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchFacilities();
+  };
+
+  // auto-fetch if coords changes
   useEffect(() => {
-    if (coords || searchQuery) {
-      fetchFacilities();
+    if ((coords && coords.lat) || searchQuery) {
     }
   }, [coords, searchQuery]);
 

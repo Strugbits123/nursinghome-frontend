@@ -63,7 +63,7 @@ export function TrustedSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
-            const numberRef = useCountUp(feature.value, sectionRef);
+            const numberRef = useCountUp(feature.value, sectionRef as React.RefObject<HTMLElement>);
 
             return (
               <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">

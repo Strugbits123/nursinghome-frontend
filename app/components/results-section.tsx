@@ -7,6 +7,24 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Star, Search } from "lucide-react"
 import { useFacilities } from "../context/FacilitiesContext";
 
+interface Facility {
+  _id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  phone: string;
+  rating: number;
+  lat?: number | null;
+  lng?: number | null;
+  photo?: string | null;
+  aiSummary?: {
+    summary: string;
+    pros: string[];
+    cons: string[];
+  };
+}
 const nursingHomes = [
   {
     id: 1,
@@ -41,7 +59,7 @@ export function ResultsSection() {
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
   const centerLat = facilities[0]?.lat ?? 34.8028;
   const centerLng = facilities[0]?.lng ?? -86.9775;
-  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
 
 
   return (
@@ -121,7 +139,7 @@ export function ResultsSection() {
                  <iframe
   src={`https://www.google.com/maps/embed/v1/search?key=${googleMapsApiKey}&q=${encodeURIComponent(
     selectedFacility
-      ? `${selectedFacility.name} ${selectedFacility.address}`
+      ? `${selectedFacility?.name} ${selectedFacility?.address}`
       : `${facilities[0]?.name} ${facilities[0]?.address}`
   )}`}
   className="w-full h-full"

@@ -43,8 +43,12 @@ export default function HomePage() {
       const result = await res.json();
       console.log("Fetched facilities:", result);
       setFacilities(result);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -91,8 +95,8 @@ export default function HomePage() {
 
       {/* Results */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {facilities.map((f) => (
-          <div key={f._id} className="border rounded-lg shadow-md bg-white p-5">
+        {facilities.map((f: Facility, index: number) => (
+          <div key={index} className="border rounded-lg shadow-md bg-white p-5">
             <h2 className="text-xl font-semibold">{f.name}</h2>
             <p className="text-gray-600">
               {f.address}, {f.city}, {f.state} {f.zip}
