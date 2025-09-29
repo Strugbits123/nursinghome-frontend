@@ -1,51 +1,355 @@
-'use client'
+
+
+'use client' 
 
 import * as React from "react";
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+// 💡 IMPORTANT: Update these paths if your files are not 3 levels up
 import { useFacilities } from "../context/FacilitiesContext";
 import AuthModal from "../components/AuthModal";
 import toast from "react-hot-toast";
+import * as Dialog from '@radix-ui/react-dialog'; 
+import { X } from 'lucide-react';
 import FacilityServices from "../components/facilityDetail/FacilityServices";
-import { Button } from "@/components/ui/button"
-import { SearchNursing } from '../components/SearchNursing';
+import { Button } from "@/components/ui/button";
 import { Footer } from '../components/Footer';
+import { SearchNursing } from '../components/SearchNursing';
+import FacilityReviewSkeleton from './ReviewSkeleton'; 
 
-
-interface FacilityDetailPageProps {
-    params: {
-        id: string; // This is the facility ID
-        slug: string; // This is the facility name slug (optional for lookup, but in the URL)
-    };
+interface ReviewData {
+    author_name: string;
+    author_url: string;
+    language: string;
+    profile_photo_url: string;
+    rating: number;
+    relative_time_description: string;
+    text: string;
+    time: number;
+    translated: boolean;
 }
-export default function FacilityDetailPage({ params }: FacilityDetailPageProps) {
-    const { id, slug } = params; 
 
+interface FacilityData {
+    _id: string;
+    cms_certification_number_ccn: string;
+    provider_name: string;
+    legal_business_name: string;
+    overall_rating: string; 
+    health_inspection_rating: string; 
+    staffing_rating: string; 
+    qm_rating: string; 
+    provider_address: string;
+    city_town: string;
+    state: string; 
+    zip_code: string; 
+    latitude: number; 
+    longitude: number; 
+    ownership_type: string; 
+    provider_type: string;
+    chain_name: string | null;
+    administrator_name: string; 
+    accepts_private_pay: boolean;
+    number_of_certified_beds: number;
+    telephone_number: string;
+    googleName: string;
+    rating: number;
+    photos: string[]; 
+    reviews: ReviewData[]; 
+    lat: number;
+    lng: number;
+    aiSummary: {
+        summary: string;
+        pros: string[];
+        cons: string[];
+    }
+    inspections?: { // Made optional as it's an array and might not always be there
+        type: string;
+        date: string;
+        deficiencies: number;
+        status: string; // 'Passed', 'Under Review', 'Failed'
+        statusDescription: string;
+    }[];
+}
+interface FacilityDetailClientProps {
+    slug: string;
+}
+interface Review {
+    author_name: string;
+    profile_photo_url: string;
+    rating: number;
+    relative_time_description: string;
+    text: string;
+}
+
+
+
+const ReviewItem = ({ review }: { review: Review }) => (
+    <div className="w-full border-b border-gray-200 last:border-b-0 py-4 flex items-start">
+        <img
+            src={review.profile_photo_url || '/icons/default_avatar.png'}
+            alt={review.author_name}
+            className="w-[48px] h-[48px] rounded-full object-cover mr-4 flex-shrink-0"
+        />
+        <div className="flex flex-col flex-grow">
+            <h4 className="font-inter font-medium text-[17px] leading-[26px] text-[#111827]">
+                {review.author_name}
+            </h4>
+            
+            <div className="flex items-center mt-0.5 mb-2 text-sm text-[#4B5563]">
+                <StarRating rating={review.rating} /> 
+                <span className="ml-2 font-inter font-normal text-[14px]">
+                    {review.relative_time_description}
+                </span>
+            </div>
+            
+            <p className="font-inter font-normal text-[16px] leading-[24px] text-[#374151]">
+                {review.text || "(No text provided with this review)"}
+            </p>
+        </div>
+    </div>
+);
+
+
+const AllReviewsModal = ({ reviews, open, onOpenChange }: { reviews: Review[], open: boolean, onOpenChange: (open: boolean) => void }) => {
+    return (
+        <Dialog.Root open={open} onOpenChange={onOpenChange}>
+            <Dialog.Portal>
+                {/* Overlay */}
+                <Dialog.Overlay 
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in z-50" 
+                />
+                
+                <Dialog.Content 
+                    className="fixed top-1/2 left-1/2 w-[90vw] max-w-[800px] h-[90vh] -translate-x-1/2 -translate-y-1/2 
+                               rounded-2xl border border-[#f3f4f6] bg-white p-8 shadow-xl 
+                               animate-in fade-in-90 zoom-in-95 flex flex-col z-50"
+                >
+                    <div className="flex items-center justify-between mb-6 flex-shrink-0">
+                        <Dialog.Title className="text-3xl font-jost font-bold text-[#111827]">
+                            All Google Reviews ({reviews.length})
+                        </Dialog.Title>
+                        <Dialog.Close asChild>
+                            <button className="p-2 rounded-full hover:bg-gray-100 transition">
+                                <X className="h-6 w-6 text-gray-500" />
+                            </button>
+                        </Dialog.Close>
+                    </div>
+
+                    <div className="flex-grow overflow-y-auto pr-4">
+                        {reviews.length > 0 ? (
+                            reviews.map((review, index) => (
+                                <ReviewItem key={index} review={review} />
+                            ))
+                        ) : (
+                            <p className="text-center text-gray-500 py-10">
+                                No reviews found.
+                            </p>
+                        )}
+                    </div>
+                </Dialog.Content>
+            </Dialog.Portal>
+        </Dialog.Root>
+    );
+};
+
+
+const StarRating = ({ rating }: { rating: number }) => {
+    const fullStars = Math.floor(rating);
+    const emptyStars = 5 - fullStars;
+
+    const stars = [];
+
+    for (let i = 0; i < fullStars; i++) {
+        stars.push(
+            <img 
+                key={`full-${i}`} 
+                src="/icons/star_icon.png" 
+                alt="full star" 
+                className="w-[19.09px] h-[19.09px] mr-1" 
+            />
+        );
+    }
+    
+    for (let i = 0; i < emptyStars; i++) {
+        stars.push(
+            <img 
+                key={`empty-${i}`} 
+                src="/icons/empty_star.png"
+                alt="empty star" 
+                className="w-[19.09px] h-[19.09px] mr-1" 
+            />
+        );
+    }
+    return <div className="flex mr-3">{stars}</div>;
+};
+
+
+
+const parseRatingDisplay = (rating: string) => {
+    const num = parseInt(rating);
+    return isNaN(num) ? 'N/A' : `${num}/5`;
+};
+    
+export default function FacilityDetailClient({ slug }: FacilityDetailClientProps) {
     const router = useRouter();
-    const { facilities } = useFacilities();
-    const [openAuth, setOpenAuth] = React.useState(false);
-    const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+    const { facilities } = useFacilities(); 
+                console.log("Current Slug:", slug); // <--- ADD THIS LOG
 
-    useEffect(() => {
-        if (!localStorage.getItem('token')) {
-            router.push('/')
+    // State to hold the fetched facility details
+    const [facility, setFacility] = useState<FacilityData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [openAuth, setOpenAuth] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    const [isModalOpen, setIsModalOpen] = useState(false); 
+
+
+    const reviewsData = facility?.reviews ?? [];
+    const reviewsToShow = reviewsData.slice(0, 3);
+    const hasMoreReviews = reviewsData.length > 3;
+
+    
+const getInspectionProps = (status: 'Passed' | 'Under Review' | 'Failed' | string) => {
+    switch (status) {
+        case 'Passed':
+            return {
+                borderColor: 'border-l-[#16A34A]',
+                statusColor: 'text-[#16A34A]',
+                iconSrc: '/icons/right_icon (2).png',
+                statusText: 'Passed',
+            };
+        case 'Under Review':
+            return {
+                borderColor: 'border-l-[#FACC15]',
+                statusColor: 'text-[#CA8A04]',
+                iconSrc: '/icons/timer_icon.png',
+                statusText: 'In Progress',
+            };
+        case 'Failed':
+            return {
+                borderColor: 'border-l-[#D02B38]', 
+                statusColor: 'text-[#D02B38]',
+                iconSrc: '/icons/cross_icon.png',
+                statusText: 'Failed',
+            };
+        default:
+            return {
+                borderColor: 'border-l-[#9CA3AF]',
+                statusColor: 'text-[#4B5563]',
+                iconSrc: '/icons/info_icon.png',
+                statusText: 'N/A',
+            };
+    }
+};
+
+
+const facilityInspections = [
+    {
+        type: "Standard Health Inspection",
+        date: "March 15, 2024",
+        deficiencies: 3,
+        status: "Passed",
+        statusDescription: "All corrected",
+    },
+    {
+        type: "Complaint Investigation",
+        date: "January 8, 2024",
+        deficiencies: 1,
+        status: "Under Review",
+        statusDescription: "Under review",
+    },
+    
+];
+
+const getFullAddress = (facility: FacilityData): string => { 
+    const address = facility.provider_address.trim() || '';
+    const city = facility.city_town.trim() || '';
+    const state = facility.state.trim() || ''; 
+    const zip = facility.zip_code.trim() || ''; 
+
+    if (!address) return `${city}, ${state}`;
+    return `${address}, ${city}, ${state} ${zip}`;
+};
+
+const formatCertification = (type: string, facility: any): JSX.Element => {
+    const isCertified = facility.provider_type?.toLowerCase().includes(type.toLowerCase()) || false;
+    const colorClass = isCertified ? 'text-[#16A34A]' : 'text-[#DC2626]';
+    const text = isCertified ? 'Yes' : 'No';
+    
+    return (
+        <span className={`font-inter font-medium text-[19.1px] leading-[20px] ${colorClass}`}>
+            {text}
+        </span>
+    );
+};
+
+
+const getGoogleMapsIframeSrc = (lat: number, lng: number, facilityName: string): string => {
+    if (typeof lat !== 'number' || typeof lng !== 'number') {
+        return ''; 
+    }
+
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; 
+    const query = encodeURIComponent(`${facilityName}, ${lat},${lng}`);
+    return `https://www.google.com/maps/embed/v1/search?` + 
+           `key=${apiKey}` +
+           `&q=${query}` +
+           `&center=${lat},${lng}` +
+           `&zoom=15`; 
+};
+
+useEffect(() => {
+    const fetchFacilityDetails = async () => {
+        setIsLoading(true);
+        const facilityName = slug.replace(/-/g, ' ');
+        const API_URL = "http://localhost:5000/api/facilities/details";
+        const params = new URLSearchParams({ name: facilityName }); 
+        const url = `${API_URL}?${params.toString()}`;
+        
+        console.log("Fetching from URL:", url);
+
+        try {
+            const response = await fetch(url);            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch facility details. Status: ${response.status}`);
+            }
+            const data = await response.json();
+            if (!data || Object.keys(data).length === 0) {
+                 setFacility(null); 
+                 toast.error("Facility data is empty or invalid.");
+            } else {
+                 setFacility(data);
+            }
+
+        } catch (error) {
+            console.error("Error fetching facility details:", error);
+            toast.error("Could not load facility details.");
+            setFacility(null); 
+        } finally {
+            setIsLoading(false);
         }
-    }, [router])
-
-
-    React.useEffect(() => {
-        setIsAuthenticated(!!localStorage.getItem("token"));
-    }, []);
-
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        setIsAuthenticated(false);
-        toast.success("Logged out successfully!");
     };
+
+    if (slug) {
+        fetchFacilityDetails();
+    }
+}, [slug]);
+
+    if (isLoading) {
+        return <FacilityReviewSkeleton />;
+    }
+
+    if (!facility) {
+        return <div className="text-center p-10">Facility not found.</div>;
+    }
+    
+    const fullAddress = `${facility.provider_address}, ${facility.city_town}, ${facility.state} ${facility.zip_code}`;
+    const parseCmsRating = (rating: string) => parseInt(rating) || 0;
+    const cleanOwnership = facility.ownership_type.replace('For profit - ', '').replace('-', ' ');
+
 
     return (
         <>
-
             <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
                 <div className="max-w-[1856px] h-[46px] mx-auto px-[32px] flex items-center justify-between">
                     {/* Logo */}
@@ -182,11 +486,11 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                 <div className="w-[1536px] h-[525px] mx-[192px] mt-[23px] bg-white p-6 flex space-x-6">
                     <div className="w-2/3 flex flex-col space-y-4 px-7 pt-1">
                         <h1 className="font-jost font-bold text-[45.47px] leading-[50.53px] text-[#111827]">
-                            Sunset Manor Care Center
+                           {facility.provider_name}
                         </h1>
 
                         <p className="font-inter font-normal text-[22.74px] leading-[35.37px] text-[#4B5563]">
-                            1234 Sunset Boulevard, Los Angeles, CA 90028
+                            {fullAddress}
                         </p>
                         <div className="flex items-center space-x-3 mt-4">
                             <button className="flex items-center px-4 h-[40.42px] w-[90px] rounded-[20px] bg-[#D02B38]">
@@ -196,7 +500,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                     className="w-[22.74px] h-[20.21px] mr-2"
                                 />
                                 <span className="font-inter font-bold text-[20.21px] leading-[30.32px] text-white">
-                                    4.2
+                                    {facility.rating.toFixed(1)}
                                 </span>
                             </button>
                             <div className="flex items-center space-x-6">
@@ -210,7 +514,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                         className="w-[22.1px] h-[17.68px]"
                                     />
                                     <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#4B5563]">
-                                        120 Beds
+                                        {facility.number_of_certified_beds} Beds
                                     </span>
                                 </div>
                             </div>
@@ -222,7 +526,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                     Ownership:
                                 </span>
                                 <span className="font-inter font-medium text-[17.68px] leading-[25.26px] text-[#000000]">
-                                    For-Profit
+                                    {cleanOwnership}
                                 </span>
                             </div>
                             <div className="flex space-x-2 items-center w-[200px] h-[21px]">
@@ -230,7 +534,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                     License:
                                 </span>
                                 <span className="font-inter font-medium text-[17.68px] leading-[25.26px] text-[#000000]">
-                                    #123456789
+                                    #{facility.cms_certification_number_ccn || 'N/A'} 
                                 </span>
                             </div>
                             <div className="flex space-x-2 items-center w-[220px] h-[21px]">
@@ -245,7 +549,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                         <div className="flex flex-row space-x-6 mt-10">
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
-                                    4.2
+                                    {parseCmsRating(facility.overall_rating)}
                                 </span>
                                 <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
                                     Overall Rating
@@ -253,7 +557,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
-                                    3.8
+                                    {parseCmsRating(facility.health_inspection_rating)}
                                 </span>
                                 <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
                                     Health Inspections
@@ -261,7 +565,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
-                                    4.5
+                                    {parseCmsRating(facility.staffing_rating)}
                                 </span>
                                 <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
                                     Staffing
@@ -269,7 +573,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
-                                    4.1
+                                    {parseCmsRating(facility.qm_rating)}
                                 </span>
                                 <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
                                     Quality Measures
@@ -294,36 +598,29 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                         <div className="w-[458px] h-[323px] rounded-[10.11px] bg-[#F5F5F5] flex items-center justify-center">
                             <span className="font-inter font-medium text-[16px] text-[#111827]">
                                 <img
-                                    src="/modern nursing home exterior with beautiful landscaping and welcoming entrance.png"
-                                    alt="Image 1"
+                                    // src="/modern nursing home exterior with beautiful landscaping and welcoming entrance.png"
+                                    // alt="Image 1"
+                                     src={facility.photos[0]}
+                                     alt={`${facility.provider_name} exterior`}
                                     className="w-full h-full rounded-[10.11px] object-cover"
                                 />
                             </span>
                         </div>
                         <div className="w-[458px] h-[23px] flex items-center  space-x-2 mt-12">
-                            <div className="w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center">
-                                <span className="text-xs text-[#111827]">
+                             {facility.photos.slice(1, 4).map((photoUrl, index) => (
+                                <div 
+                                    key={index} 
+                                    // Adjusted w/h to fit 3 in a row with spacing (146*3 + 2*2 = 442)
+                                    className="w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center overflow-hidden"
+                                >
                                     <img
-                                        src="/nursing home dining room with residents eating.png"
-                                        alt="Image 1"
-                                        className="w-full h-full rounded-[10.11px] object-cover"
+                                        // DYNAMIC: Use the photo URL
+                                        src={photoUrl}
+                                        alt={`${facility.provider_name} interior ${index + 2}`}
+                                        className="w-full h-full rounded-[5.05px] object-cover"
                                     />
-                                </span>
-                            </div>
-                            <div className="w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center">
-                                <span className="text-xs text-[#111827]"> <img
-                                    src="/nursing home activity room with elderly residents.png"
-                                    alt="Image 1"
-                                    className="w-full h-full rounded-[10.11px] object-cover"
-                                /></span>
-                            </div>
-                            <div className="w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center">
-                                <span className="text-xs text-[#111827]"> <img
-                                    src="/nursing home garden courtyard with benches.png"
-                                    alt="Image 1"
-                                    className="w-full h-full rounded-[10.11px] object-cover"
-                                /></span>
-                            </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -598,309 +895,222 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                 </div>
             </div>
 
-            <section className="max-w-[1714px] min-h-[1314px] mx-auto bg-white p-8">
-                <div className="w-[1527.8px] h-[1187.62px] mx-auto p-6">
-                    <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827] mb-4 ml-[50px]">
-                        Google Reviews & AI Analysis
-                    </h2>
+            <section className="max-w-[1714px] h-[1314px] mx-auto bg-white p-8">
+    <div className="w-[1527.8px] h-full mx-auto p-6 flex flex-col"> {/* h-full and flex-col added */}
+        <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827] mb-4 ml-[50px]">
+            Google Reviews & AI Analysis
+        </h2>
+        <p className="font-inter font-normal text-[18px] leading-[28px] text-[#707070] ml-[50px] mb-8">
+            Real reviews from families and our AI-powered insights
+        </p>
+        <div className="flex gap-6 flex-grow"> {/* flex-grow added to make content fill remaining space */}
+            <div className="flex-1 w-[954.87px] h-[1097.81px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] ml-10 p-6 flex flex-col"> {/* Added flex-col */}
+                <div className="flex justify-between items-center mb-4 flex-shrink-0">
+                    <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
+                        Recent Reviews
+                    </h3>
 
-                    <p className="font-inter font-normal text-[18px] leading-[28px] text-[#707070] ml-[50px] mb-8">
-                        Real reviews from families and our AI-powered insights
-                    </p>
-                    <div className="flex gap-6">
-
-                        <div className="flex-1 w-[954.87px] h-[1097.81px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] ml-10  p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
-                                    Recent Reviews
-                                </h3>
-
-                                <div className="flex items-center gap-2">
-                                    <img
-                                        src="/icons/star_icon.png"
-                                        alt="star"
-                                        className="w-[19.1px] h-[19.1px]"
-                                    />
-                                    <span className="font-inter font-bold text-[19.1px] leading-[28.65px] text-[#111827]">
-                                        4.1
-                                    </span>
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                        (47 reviews)
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="w-[897.58px] h-[211.26px] border-b-[1.19px] mt-8 border-gray-300 flex items-start ">
-                                <img
-                                    src="/Reviewer1.png"
-                                    alt="Sarah Johnson"
-                                    className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4"
-                                />
-                                <div className="flex flex-col ml-[20px]">
-                                    <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
-                                        Sarah Johnson
-                                    </h4>
-                                    <div className="flex items-center mt-1">
-                                        <div className="flex mr-3">
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px]" />
-                                        </div>
-                                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                            2 weeks ago
-                                        </span>
-                                    </div>
-                                    {/* Description */}
-                                    <p className="font-inter font-normal text-[19.1px] leading-[28.65px] text-[#374151] mt-3">
-                                        "The staff at Sunset Manor has been incredibly caring and attentive to my mother&apos;s needs.
-                                        The facility is clean, well-maintained, and the activities program keeps residents engaged.
-                                        The nursing staff is professional and responsive to concerns. Highly recommend for families
-                                        looking for quality care."
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="w-[897.58px] h-[211.26px] border-b-[1.19px] mt-8 border-gray-300 flex items-start ">
-                                <img
-                                    src="/Reviewer2.png"
-                                    alt="Michael Chen"
-                                    className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4"
-                                />
-                                <div className="flex flex-col ml-[20px]">
-                                    <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
-                                        Michael Chen
-                                    </h4>
-                                    <div className="flex items-center mt-1">
-                                        <div className="flex mr-3">
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px]" />
-                                        </div>
-                                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                            1 month ago
-                                        </span>
-                                    </div>
-                                    <p className="font-inter font-normal text-[19.1px] leading-[28.65px] text-[#374151] mt-3">
-                                        "Good facility overall, but communication could be improved. Sometimes it's difficult to get
-                                        updates on my father's condition. The dining options are limited, and the physical therapy
-                                        program could use more resources. However, the location is convenient and the rooms are
-                                        comfortable."
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="w-[897.58px] h-[211.26px] border-b-[1.19px] mt-8 border-gray-300 flex items-start ">
-                                <img
-                                    src="/Reviewer3.png"
-                                    alt="Linda Martinez"
-                                    className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4"
-                                />
-                                <div className="flex flex-col ml-[20px]">
-                                    <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
-                                        Linda Martinez
-                                    </h4>
-                                    <div className="flex items-center mt-1">
-                                        <div className="flex mr-3">
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px]" />
-                                        </div>
-                                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                            2 months ago
-                                        </span>
-                                    </div>
-                                    {/* Description */}
-                                    <p className="font-inter font-normal text-[19.1px] leading-[28.65px] text-[#374151] mt-3">
-                                        "Exceptional care and attention to detail. The medical director is excellent and the nursing
-                                        staff genuinely cares about residents. My grandmother has been here for 6 months and
-                                        has shown remarkable improvement in her mobility and mood. The family support services
-                                        are also very helpful."
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="w-[897.58px] h-[211.26px] mt-8 border-gray-300 flex items-start ">
-                                <img
-                                    src="/Reviewer4.png"
-                                    alt="Robert Davis"
-                                    className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4"
-                                />
-                                <div className="flex flex-col ml-[20px]">
-                                    <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
-                                        Robert Davis
-                                    </h4>
-                                    <div className="flex items-center mt-1">
-                                        <div className="flex mr-3">
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px]" />
-                                        </div>
-                                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                            3 months ago
-                                        </span>
-                                    </div>
-                                    <p className="font-inter font-normal text-[19.1px] leading-[28.65px] text-[#374151] mt-3">
-                                        "Mixed experience. Some staff members are wonderful, but there seems to be high
-                                        turnover which affects consistency of care. The facility needs some updates to common
-                                        areas. Pricing is competitive for the area, but I wish there were more specialized programs
-                                        available."
-                                    </p>
-                                </div>
-                            </div>
-                            <Button className="mt-1 w-[154.57px] h-[28.65px] text-[19.1px] leading-[28.65px] font-inter font-medium text-[#D02B38] bg-transparent hover:bg-transparent shadow-none">
-                                View All Reviews
-                            </Button>
-                        </div>
-                        <div className="flex flex-col gap-6">
-                            <div className="w-[458.34px] h-[486.98px] rounded-[9.55px] bg-[#F5F5F5] p-4">
-                                <div className="ml-4">
-                                    <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mt-5 mb-4">
-                                        AI-Generated Summary
-                                    </h3>
-                                    <div className="flex items-center mt-2 space-x-2">
-                                        <img src="/icons/like_icon.png" alt="Pros" className="w-[19.09px] h-[19.09px]" />
-                                        <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#16A34A]">
-                                            Pros
-                                        </span>
-                                    </div>
-                                    {/* Pros List */}
-                                    <div className="mt-2 w-[401.05px] h-[157.55px] flex flex-col gap-3">
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                Caring and attentive nursing staff
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                Clean and well-maintained facilities
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                Engaging activities program
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                Professional medical director
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                Convenient location
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center mt-7 space-x-2">
-                                        <img src="/icons/dislike_icon.png" alt="Cons" className="w-[19.09px] h-[19.09px]" />
-                                        <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#DC2626]">
-                                            Cons
-                                        </span>
-                                    </div>
-                                    {/* Cons List */}
-                                    <div className="mt-2 w-[401.05px] h-[157.55px] flex flex-col gap-3">
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                Communication could be improved
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                Limited dining options
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                High staff turnover
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
-                                                Common areas need updates
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="w-[458.34px] h-[286.46px] rounded-[9.55px] bg-white border border-[#E5E7EB] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
-                                <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-6">
-                                    Review Distribution
-                                </h3>
-                                <div className="flex items-center space-x-4">
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                                        5★
-                                    </span>
-                                    <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                                        <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '142.74px' }}></div>
-                                    </div>
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                        21
-                                    </span>
-                                </div>
-                                <div className="flex items-center space-x-4 mt-3">
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                                        4★
-                                    </span>
-                                    <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                                        <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '94.96px' }}></div>
-                                    </div>
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                        14
-                                    </span>
-                                </div>
-                                <div className="flex items-center space-x-4 mt-3">
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                                        3★
-                                    </span>
-                                    <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                                        <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '48.7px' }}></div>
-                                    </div>
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                        7
-                                    </span>
-                                </div>
-                                <div className="flex items-center space-x-4 mt-3">
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                                        2★
-                                    </span>
-                                    <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                                        <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '26px' }}></div>
-                                    </div>
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                        4
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center space-x-4 mt-3">
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                                        1★
-                                    </span>
-                                    <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                                        <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '6.54px' }}></div>
-                                    </div>
-                                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                        1
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        <img
+                            src="/icons/star_icon.png"
+                            alt="star"
+                            className="w-[19.1px] h-[19.1px]"
+                        />
+                        <span className="font-inter font-bold text-[19.1px] leading-[28.65px] text-[#111827]">
+                            {/* NOTE: 'facility' variable assumed from outside context */}
+                            {facility.rating ? facility.rating.toFixed(1) : 'N/A'} 
+                        </span>
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                            {/* NOTE: 'facility' variable assumed from outside context */}
+                            ({facility.reviews.length} reviews)
+                        </span>
                     </div>
                 </div>
-            </section>
+
+                {/* Scrollable Container for 5 Reviews */}
+                <div className="flex-grow overflow-y-auto pr-4"> 
+                    {reviewsData.length > 0 ? (
+                        reviewsToShow.map((review, index) => (
+                            <div 
+                                key={index} 
+                                
+                                className={`w-full ${index < 4 ? 'border-b-[1.19px] border-gray-300' : ''} mt-8 pb-8 flex items-start`}
+                            >
+                                <img
+                                    src={review.profile_photo_url || '/icons/default_avatar.png'}
+                                    alt={review.author_name}
+                                    className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4 flex-shrink-0"
+                                />
+                                
+                                <div className="flex flex-col ml-[20px] flex-grow">
+                                    <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
+                                        {review.author_name}
+                                    </h4>
+                                    
+                                    <div className="flex items-center mt-1">
+                                        <StarRating rating={review.rating} /> 
+                                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                                            {review.relative_time_description}
+                                        </span>
+                                    </div>
+                                    
+                                    <p className="font-inter font-normal text-[19.1px] leading-[28.65px] text-[#374151] mt-3">
+                                        {review.text || "(No text provided with this review)"}
+                                    </p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="font-inter text-center text-gray-500 mt-10">
+                            No recent Google reviews available for this facility.
+                        </p>
+                    )}
+                </div>
+
+                {hasMoreReviews && (
+                    <Button 
+                        onClick={() => setIsModalOpen(true)}
+                        className="mt-4 w-[154.57px] h-[28.65px] text-[19.1px] leading-[28.65px] font-inter font-medium text-[#D02B38] bg-transparent hover:bg-transparent shadow-none flex-shrink-0"
+                    >
+                        View All Reviews
+                    </Button>
+                )}
+            </div>
+            <div className="flex flex-col gap-6">
+                <div 
+                    className="w-[458.34px] h-[486.98px] bg-[#F5F5F5] rounded-[9.55px] p-4 
+                             overflow-y-auto 
+                             flex flex-col gap-4"
+                >
+                    <div className="ml-4">
+                        <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mt-5 mb-4">
+                            AI-Generated Summary
+                        </h3>
+                        {/* Dynamic Summary Paragraph */}
+                        {facility.aiSummary?.summary && (
+                            <p className="font-inter font-normal text-[18px] leading-[28px] text-[#374151] mb-6 pr-4">
+                                {facility.aiSummary.summary}
+                            </p>
+                        )}
+
+                        {/* Pros Section (Render only if pros exist) */}
+                        {facility.aiSummary?.pros?.length > 0 && (
+                            <>
+                                <div className="flex items-center mt-2 space-x-2">
+                                    <img src="/icons/like_icon.png" alt="Pros" className="w-[19.09px] h-[19.09px]" />
+                                    <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#16A34A]">
+                                        Pros
+                                    </span>
+                                </div>
+                                {/* Dynamic Pros List */}
+                                <div className="mt-2 w-full flex flex-col gap-3 pr-4"> 
+                                    {facility.aiSummary.pros.map((pro, index) => (
+                                        <div key={`pro-${index}`} className="flex items-start"> 
+                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px] mt-1 flex-shrink-0" />
+                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
+                                                {pro}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+
+                        {/* Cons Section (Render only if cons exist) */}
+                        {facility.aiSummary?.cons?.length > 0 && (
+                            <>
+                                <div className="flex items-center mt-7 space-x-2">
+                                    <img src="/icons/dislike_icon.png" alt="Cons" className="w-[19.09px] h-[19.09px]" />
+                                    <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#DC2626]">
+                                        Cons
+                                    </span>
+                                </div>
+                                {/* Dynamic Cons List */}
+                                <div className="mt-2 w-full flex flex-col gap-3 pr-4"> 
+                                    {facility.aiSummary.cons.map((con, index) => (
+                                        <div key={`con-${index}`} className="flex items-start"> 
+                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px] mt-1 flex-shrink-0" />
+                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
+                                                {con}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+                <div className="w-[458.34px] h-[286.46px] rounded-[9.55px] bg-white border border-[#E5E7EB] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
+                    <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-6">
+                        Review Distribution
+                    </h3>
+                    <div className="flex items-center space-x-4">
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
+                            5★
+                        </span>
+                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '142.74px' }}></div>
+                        </div>
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                            21
+                        </span>
+                    </div>
+                    <div className="flex items-center space-x-4 mt-3">
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
+                            4★
+                        </span>
+                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '94.96px' }}></div>
+                        </div>
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                            14
+                        </span>
+                    </div>
+                    <div className="flex items-center space-x-4 mt-3">
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
+                            3★
+                        </span>
+                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '48.7px' }}></div>
+                        </div>
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                            7
+                        </span>
+                    </div>
+                    <div className="flex items-center space-x-4 mt-3">
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
+                            2★
+                        </span>
+                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '26px' }}></div>
+                        </div>
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                            4
+                        </span>
+                    </div>
+
+                    <div className="flex items-center space-x-4 mt-3">
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
+                            1★
+                        </span>
+                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '6.54px' }}></div>
+                        </div>
+                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                            1
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+     {/* 🔥 MODAL RENDER 🔥: Called at the end of the component's return */}
+            <AllReviewsModal 
+                reviews={reviewsData} 
+                open={isModalOpen} 
+                onOpenChange={setIsModalOpen} 
+            />
+</section>
 
             
            <section className="w-[2134px] h-[1094px] bg-[#F5F5F5] opacity-100 p-2 mx-auto">
@@ -935,7 +1145,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                             Health Inspections
                             </span>
                             <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                            3.8/5
+                             {parseRatingDisplay(facility.health_inspection_rating)}
                             </span>
                         </div>
                          <div className="flex justify-between items-center mt-2 ml-3 mr-3">
@@ -943,7 +1153,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                             Staffing
                             </span>
                             <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                            4.5/5
+                           {parseRatingDisplay(facility.staffing_rating)}
                             </span>
                         </div>
                          <div className="flex justify-between items-center mt-2 ml-3 mr-3">
@@ -951,7 +1161,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                             Quality Measures
                             </span>
                             <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                            4.1/5
+                             {parseRatingDisplay(facility.qm_rating)}
                             </span>
                         </div>
                     </div>
@@ -1038,60 +1248,56 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                         </h3>
 
                             {/* Two rows */}
-                            <div className="flex flex-col gap-4 mt-4">
-                                <div className="w-full bg-[#FFFFFF] border-l-[4.77px] border-l-[#D02B38] p-4 flex flex-col gap-2">
-                                        {/* Heading row */}
-                                        <div className="flex justify-between items-center">
-                                            <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
-                                            Standard Health Inspection
-                                            </h4>
-                                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                            March 15, 2024
-                                            </span>
-                                        </div>
+                            {/* Dynamic Inspections List */}
+<div className="flex flex-col gap-4 mt-4">
+    {/* Map over the facility's actual inspections array (using facilityInspections placeholder) */}
+    {facilityInspections.map((inspection, index) => {
+        const props = getInspectionProps(inspection.status);
 
-                                        {/* Description row */}
-                                        <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                            3 deficiencies found - All corrected
-                                        </p>
+        return (
+            <div 
+                key={index} 
+                // Apply dynamic border color based on status
+                className={`w-full bg-[#FFFFFF] border-l-[4.77px] ${props.borderColor} p-4 flex flex-col gap-2 shadow-sm rounded-sm`}
+            >
+                {/* Heading row */}
+                <div className="flex justify-between items-center">
+                    <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
+                        {/* Dynamic Inspection Type */}
+                        {inspection.type}
+                    </h4>
+                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                        {/* Dynamic Inspection Date */}
+                        {inspection.date}
+                    </span>
+                </div>
 
-                                        {/* Status row with icon */}
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <img
-                                            src="/icons/right_icon (2).png"
-                                            alt="Passed"
-                                            className="w-[19.09px] h-[19.09px]"
-                                            />
-                                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#16A34A]">
-                                            Passed
-                                            </span>
-                                        </div>
-                                </div>
+                {/* Description row */}
+                <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                    {/* Dynamic Deficiencies and Description */}
+                    {inspection.deficiencies} deficiencies found - {inspection.statusDescription}
+                </p>
 
-                                <div className="w-full bg-[#FFFFFF] border-l-[4.77px] border-l-[#FACC15] p-4 flex flex-col gap-2">
-                                        <div className="flex justify-between items-center">
-                                            <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
-                                            Complaint Investigation
-                                            </h4>
-                                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                            January 8, 2024
-                                            </span>
-                                        </div>
-                                        <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                            1 deficiency found - Under review
-                                        </p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <img
-                                            src="/icons/timer_icon.png"
-                                            alt="Passed"
-                                            className="w-[19.09px] h-[19.09px]"
-                                            />
-                                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#CA8A04]">
-                                            In Progress
-                                            </span>
-                                        </div>
-                                </div>
-                            </div>
+                {/* Status row with icon (DYNAMIC) */}
+                <div className="flex items-center gap-2 mt-1">
+                    <img
+                        // Dynamic icon source
+                        src={props.iconSrc}
+                        alt={props.statusText}
+                        className="w-[19.09px] h-[19.09px]"
+                    />
+                    <span 
+                        // Dynamic status text color
+                        className={`font-inter font-normal text-[16.71px] leading-[23.87px] ${props.statusColor}`}
+                    >
+                        {/* Dynamic Status Text */}
+                        {props.statusText}
+                    </span>
+                </div>
+            </div>
+        );
+    })}
+</div>
                         </div>
 
                         <div className="w-[711.38px] h-[415.37px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col gap-4">
@@ -1114,7 +1320,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                 Type:
                                 </span>
                                 <span className="font-inter font-medium text-[19.1px] leading-[20px] text-[#000000]">
-                                For-Profit Corporation
+                                {facility.ownership_type || 'N/A'}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center mx-5 ">
@@ -1122,7 +1328,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                 Parent Company:
                                 </span>
                                 <span className="font-inter font-medium text-[19.1px] leading-[20px] text-[#000000]">
-                                Sunset Healthcare Group
+                                {facility.chain_name || 'Independent'}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center mx-5 ">
@@ -1130,7 +1336,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                 Administrator:
                                 </span>
                                 <span className="font-inter font-medium text-[19.1px] leading-[20px] text-[#000000]">
-                                Maria Rodriguez, RN
+                               {facility.administrator_name || 'N/A'} 
                                 </span>
                             </div>
 
@@ -1145,7 +1351,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                     Medicare Certified:
                                 </span>
                                 <span className="font-inter font-medium text-[19.1px] leading-[20px] text-[#16A34A]">
-                                    Yes
+                                    {formatCertification('Medicare', facility)}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center mx-5 ">
@@ -1153,7 +1359,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                 Medicaid Certified:
                                 </span>
                                 <span className="font-inter font-medium text-[19.1px] leading-[20px] text-[#16A34A]">
-                                    Yes
+                                    {formatCertification('Medicaid', facility)}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center mx-5 ">
@@ -1161,7 +1367,7 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
                                     Accepts Private Pay:
                                 </span>
                                 <span className="font-inter font-medium text-[19.1px] leading-[20px] text-[#16A34A]">
-                                    Yes
+                                    {facility.accepts_private_pay ? formatCertification('Medicare', facility) : formatCertification('No', facility)}
                                 </span>
                             </div>
 
@@ -1198,33 +1404,41 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
         Find us easily with detailed location information
       </p>
 
-      {/* Map container card */}
-      <div
+     {/* Map container card */}
+    <div
         className="
-          w-[954.87px]
-          h-[515.63px]
-          bg-white
-          rounded-[9.55px]
-          shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)]
-          mt-4
-          flex 
-          items-center 
-          justify-center
-        "
-      >
-        {/* Map image */}
-        <img
-          src="/map_location.png"
-          alt="Map"
-          className="
-            w-[897.58px]
-            h-[458.34px]
+            w-[954.87px]
+            h-[515.63px]
+            bg-white
             rounded-[9.55px]
-            bg-[#D1D5DB]
-            object-cover
-          "
-        />
-      </div>
+            shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)]
+            mt-4
+            flex 
+            items-center 
+            justify-center
+            p-4 
+        "
+    >
+        {/* INTERACTIVE GOOGLE MAP IFRAME */}
+        <iframe
+            title={`Map for ${facility.provider_name}`}
+            // Use the dynamically generated URL
+            src={getGoogleMapsIframeSrc(facility.latitude, facility.longitude, facility.provider_name)}
+            // Match the desired visual size/styling
+            className="
+                w-full 
+                h-full
+                rounded-[9.55px]
+                border-0
+            "
+            allowFullScreen={true}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+        >
+            {/* Fallback content for browsers that don't support iframes */}
+            <p>Map not available. Coordinates: {facility.latitude}, {facility.longitude}</p>
+        </iframe>
+    </div>
     </div>
 
     {/* RIGHT COLUMN – 3 boxes */}
@@ -1360,6 +1574,20 @@ export default function FacilityDetailPage({ params }: FacilityDetailPageProps) 
             </div>
         </div>
         </div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
 
         {/* <SearchNursing />
         <Footer /> */}

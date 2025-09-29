@@ -20,93 +20,55 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
 
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     setError("");
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(""); // clear previous error
 
-//     try {
-//       const endpoint = isLogin ? `${API_URL}/auth/login` : `${API_URL}/auth/register`;
+  try {
+    const endpoint = isLogin ? `${API_URL}/auth/login` : `${API_URL}/auth/register`;
+    const body = isLogin
+      ? { email: email.trim().toLowerCase(), password: password.trim() }
+      : {
+          email: email.trim().toLowerCase(),
+          password: password.trim(),
+          fullName: fullName.trim(),
+        };
 
-//       const body = isLogin
-//         ? { email, password }
-//         : { email, password, fullName }; // adapt to your backend's expected fields
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
-//       const res = await fetch(endpoint, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(body),
-//       });
+    const data = await res.json();
 
-//       const data = await res.json();
-//       if (!res.ok) {
-//         toast.error(data.message || "Something went wrong");
-//         // setError(data.message || "Something went wrong");
-//         return;
-//       }
+    if (!res.ok) {
+      setError(data.message || "Something went wrong");
+      toast.error(data.message || "Something went wrong");
+      return;
+    }
 
-//       // if login, store token
-//       if (isLogin && data.token) {
-//         localStorage.setItem("token", data.token);
-//       }
+    if (isLogin && data.token) {
+      localStorage.setItem("token", data.token);
+      toast.success("Logged in successfully!");
+    } else {
+      toast.success("Registered successfully!");
+    }
 
-//       // close modal on success
-//       onOpenChange(false);
+    onOpenChange(false); // close modal
+    setEmail("");
+    setPassword("");
+    setFullName("");
+  } catch (err) {
+    console.error(err);
+    setError("Network error");
+    toast.error("Network error");
+  } finally {
+    setLoading(false);
+  }
+};
 
-//       // optionally clear fields
-//       setEmail("");
-//       setPassword("");
-//       setFullName("");
-//     } catch (err: any) {
-//       console.error(err);
-//       setError("Network error");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-        const endpoint = isLogin ? `${API_URL}/auth/login` : `${API_URL}/auth/register`;
-        const body = isLogin ? { email, password } : { email, password, fullName };
-
-        const res = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            toast.error(data.message || "Something went wrong");
-            return;
-        }
-
-        if (isLogin && data.token) {
-            localStorage.setItem("token", data.token);
-            toast.success("Logged in successfully!");
-        } else {
-            toast.success("Registered successfully!");
-        }
-
-        // close modal on success
-        onOpenChange(false);
-
-        // clear fields
-        setEmail("");
-        setPassword("");
-        setFullName("");
-        } catch (err) {
-        console.error(err);
-        toast.error("Network error");
-        } finally {
-        setLoading(false);
-        }
-    };
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>

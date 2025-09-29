@@ -61,7 +61,6 @@ export function ResultsSection() {
   const centerLng = facilities[0]?.lng ?? -86.9775;
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
 
-
   return (
     <section className=" w-full min-h-[907px] bg-[#F9F9F9] flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="relative w-full max-w-[1450px] flex flex-col items-center justify-start text-center space-y-8">
@@ -199,44 +198,53 @@ export function ResultsSection() {
                   </div>
                 </div>
               ))} */}
-              {facilities.slice(0, 15).map((facility) => (
-  <div
-    key={facility._id}
-    onClick={() => setSelectedFacility(facility)}
-    className={`cursor-pointer flex-1 bg-white border border-gray-300 rounded-lg shadow-sm p-4 
-                relative flex flex-col justify-between hover:shadow-md transition`}
-  >
-    {/* Thumbnail */}
-    {facility.photo && (
-      <img
-        src={facility.photo}
-        alt={facility.name}
-        className="w-full h-32 object-cover rounded mb-2"
-      />
-    )}
+    
+    {facilities.slice(0, 15).map((facility) => (
+    <div
+        key={facility.id}
+        // 🏆 Assuming setSelectedFacility is a function in the parent component
+        onClick={() => setSelectedFacility(facility)}
+        className={`cursor-pointer flex-1 bg-white border border-gray-300 rounded-lg shadow-sm p-4 
+                    relative flex flex-col justify-between hover:shadow-md transition`}
+    >
+        {/* Thumbnail */}
+        {/* 🏆 Use facility.imageUrl */}
+        {facility.imageUrl && (
+            <img
+                src={facility.imageUrl}
+                alt={facility.name}
+                className="w-full h-32 object-cover rounded mb-2"
+            />
+        )}
 
-    <h4 className="text-[17px] font-semibold text-black">{facility.name}</h4>
-    <p className="text-[15px] text-gray-700 mt-1">
-      {facility.address}, {facility.city}, {facility.state} {facility.zip}
-    </p>
+        <h4 className="text-[17px] font-semibold text-black">{facility.name}</h4>
+        
+        {/* 🏆 Use the single 'address' field from the Facility interface */}
+        <p className="text-[15px] text-gray-700 mt-1">
+            {facility.address}
+        </p>
 
-    {/* Stars */}
-    <div className="flex items-center gap-1 mt-2">
-      {Array.from({ length: 5 }).map((_, idx) => (
-        <svg
-          key={idx}
-          width="16.93"
-          height="15.05"
-          viewBox="0 0 24 24"
-          fill={idx < Math.round(facility.rating) ? "#C71F37" : "#ccc"}
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M12 .587l3.668 7.431L24 9.748l-6 5.845L19.335 24 12 19.897 4.665 24 6 15.593 0 9.748l8.332-1.73L12 .587z" />
-        </svg>
-      ))}
-      <span className="text-[15px] text-gray-700">{facility.rating}</span>
+        {/* Stars - Using a Placeholder 'rating' value (replace with actual field like overall_rating or googleRating) */}
+        <div className="flex items-center gap-1 mt-2">
+            {/* Assume a property for rating exists, for this example, let's use 4.0 as a placeholder */}
+            {/* You must define a 'rating' property on your Facility interface or derive it from 'overall_rating' */}
+            {Array.from({ length: 5 }).map((_, idx) => (
+                <svg
+                    key={idx}
+                    width="16.93"
+                    height="15.05"
+                    viewBox="0 0 24 24"
+                    // 🏆 Use a rating property. Using a static value (4) as an example.
+                    fill={idx < Math.round(facility.rating || 4) ? "#D02B38" : "#ccc"} 
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path d="M12 .587l3.668 7.431L24 9.748l-6 5.845L19.335 24 12 19.897 4.665 24 6 15.593 0 9.748l8.332-1.73L12 .587z" />
+                </svg>
+            ))}
+            {/* 🏆 Display the rating value */}
+            <span className="text-[15px] text-gray-700">{facility.rating || 'N/A'}</span>
+        </div>
     </div>
-  </div>
 ))}
 
             </div>

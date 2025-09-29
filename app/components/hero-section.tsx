@@ -8,160 +8,164 @@ import { Badge } from "@/components/ui/badge"
 import { useFacilities } from "../context/FacilitiesContext";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-
-interface Facility {
-  _id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  phone: string;
-  rating: number;
-  lat?: number | null;
-  lng?: number | null;
-  photo?: string | null;
-  aiSummary?: {
-    summary: string;
-    pros: string[];
-    cons: string[];
-  };
-}
+import { mapRawFacilityToCard } from '../utils/facilityMapper'; // CRITICAL: This path might need adjustment based on your structure.
 
 export function HeroSection() {
-   const popularSearches = ["New York", "Mexico City", "Toronto", "Los Angeles"];
-  const router = useRouter();
+    const popularSearches = ["New York", "Mexico City", "Toronto", "Los Angeles"];
+    const router = useRouter();
 
-  const [active, setActive] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+    const [active, setActive] = useState<boolean>(false);
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
-  // from context
-  const {
-    facilities,
-    setFacilities,
-    coords,
-    setCoords,
-    locationName,
-    setLocationName,
-  } = useFacilities();
+    // from context
+    const {
+        setFacilities,
+        coords,
+        setCoords,
+        locationName,
+        setLocationName,
+        // Assuming context also has setters for global loading/error state if needed
+        setIsLoading: setContextIsLoading,
+        setError: setContextError,
+    } = useFacilities();
 
-  const API_URL = process.env.NEXT_PUBLIC_FACILITIES_API as string;
+    const API_URL = "http://localhost:5000/api/facilities/with-reviews";
+    // const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/facilities/with-reviews";
 
-  // use current location
-  const handleUseLocation = () => {
-    if (!localStorage.getItem("token")) {
-      toast.error("Please log in to use this feature");
-      return;
-    }
+    
+    const fetchFacilities = async (currentSearchQuery: string, currentCoords: { lat: number, lng: number } | null) => {
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (!token) {
+            toast.error("Please log in to search facilities");
+            return;
+        }
 
-    setActive(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          setCoords({ lat, lon });
+        setIsLoading(true);
+        setContextIsLoading && setContextIsLoading(true);
+        setError(null);
+        setContextError && setContextError(null);
 
-          try {
-            const rev = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
-            );
-            const data = await rev.json();
-            const city =
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              "";
-            const state = data.address.state || "";
-            const postcode = data.address.postcode || "";
-            const fullName = `${city} ${state} ${postcode}`.trim();
-            setLocationName(fullName || `${lat}, ${lon}`);
-            toast.success("Location detected successfully!");
-            // after setting coords, useEffect below triggers fetch
-          } catch (err: unknown) {
-            if (err instanceof Error) {
-                toast.error(err.message || "Failed to load facilities");
-                console.error("Reverse geocode error:", err);
-            } else {
-              toast.error("Failed to load facilities");
-              console.error("Reverse geocode error:", err);
+        try {
+            const params = new URLSearchParams();
+            if (currentSearchQuery) params.append("city", currentSearchQuery);
+            if (currentCoords?.lat && currentCoords?.lng) {
+                params.append("lat", currentCoords.lat.toString());
+                params.append("lng", currentCoords.lng.toString());
             }
+
+            const url = `${API_URL}?${params.toString()}`;
+            console.log("Fetching from URL:", url);
+
+            const res = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });      
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();  
+            const rawFacilitiesList = Array.isArray(data) ? data : (data?.facilities || []);
+           console.log(`DEBUG 4: Fetched ${data} raw facilities.`);
+
+            // Map the raw data to the clean Facility format
+            const facilitiesList = rawFacilitiesList.map((rawFacility: any) => {
+                return mapRawFacilityToCard(rawFacility, currentCoords); 
+            });
+
+            setFacilities(facilitiesList);
+            toast.success("Facilities loaded successfully!");
+
+            router.push("/facility-search");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to load facilities");
+            setError(err.message || "Unknown error");
+            setContextError && setContextError(err.message || "Unknown error");
+        } finally {
+            setIsLoading(false);
+            setContextIsLoading && setContextIsLoading(false);
         }
-        },
-        (err: unknown) => {
-          if (err instanceof Error) {
-                toast.error(err.message || "Failed to load facilities");
-                console.error("Reverse geocode error:", err);
-            } else {
-              toast.error("Failed to load facilities");
-              console.error("Reverse geocode error:", err);
-            }     
-          // console.error("Error getting location:", error);
-          // toast.error(error.message || "Failed to get location");
-          // setActive(false);
+    };
+
+
+    const handleUseLocation = () => {
+        if (!localStorage.getItem("token")) {
+            toast.error("Please log in to use this feature");
+            return;
         }
-      );
-    } else {
-      alert("Geolocation not supported");
-      setActive(false);
-    }
-  };
 
-  const fetchFacilities = async () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (!token) {
-      toast.error("Please log in to search facilities");
-      return;
-    }
+        setActive(true);
+        setSearchQuery(""); 
 
-    if (!localStorage.getItem("token")) {
-      toast.error("Please log in to search facilities");
-      return;
-    }
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    setCoords({ lat, lon });
 
-    setIsLoading(true);
-    setError(null);
+                    try {
+                        // Reverse geocode
+                        const rev = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+                        );
+                        const data = await rev.json();
+                        const city = data.address.city || data.address.town || data.address.village || "";
+                        const state = data.address.state || "";
+                        const postcode = data.address.postcode || "";
+                        const fullName = `${city} ${state} ${postcode}`.trim();
+                        
+                        setLocationName(fullName || `${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+                        toast.success("Location detected successfully!");
+                    } catch (err) {
+                        console.error("Reverse geocode error:", err);
+                        toast.error("Could not determine location name.");
+                    }
+                },
+                (err: GeolocationPositionError) => {
+                    console.error("Geolocation error:", err);
+                    toast.error(`Geolocation error: ${err.message}`);
+                    setActive(false);
+                }
+            );
+        } else {
+            toast.error("Geolocation not supported by this browser.");
+            setActive(false);
+        }
+    };
 
-    try {
-      const params = new URLSearchParams();
-      if (searchQuery) params.append("city", searchQuery);
-      if (coords?.lat && coords?.lon) {
-        params.append("lat", coords.lat.toString());
-        params.append("lon", coords.lon.toString());
-      }
+    const handleSubmit = (e?: React.FormEvent, cityQuery?: string) => {
+        e?.preventDefault();
+        
+        const finalQuery = cityQuery || searchQuery;
 
-      const url = `${API_URL}?${params.toString()}`;
-      console.log("Fetching from URL:", url);
+        if (!localStorage.getItem("token")) {
+            toast.error("Please log in to search facilities");
+            return;
+        }
 
-      const res = await fetch(url, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });      
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+        if (!finalQuery.trim()) {
+            toast.error("Please enter a city or location name.");
+            return;
+        }
 
-      setFacilities(data || data.facilities || []);
-      toast.success("Facilities loaded successfully!");
+        setCoords(null);
+        setLocationName(finalQuery);
+        setSearchQuery(finalQuery);
 
-      router.push("/facility-search");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to load facilities");
-      // console.error("Fetch facilities failed", err);
-      setError(err.message || "Unknown error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        fetchFacilities(finalQuery, null);
+    };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchFacilities();
-  };
 
+    
+    useEffect(() => {
+        if (coords?.lat && coords.lon && locationName && active) {
+             fetchFacilities(locationName, coords);
+             setActive(false);
+        }
+    }, [coords, locationName]);
   // auto-fetch if coords changes
   useEffect(() => {
     if ((coords && coords.lat) || searchQuery) {
