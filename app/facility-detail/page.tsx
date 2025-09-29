@@ -12,14 +12,12 @@ import { SearchNursing } from '../components/SearchNursing';
 import { Footer } from '../components/Footer';
 
 
-interface FacilityDetailPageProps {
-    params: {
-        id: string; // This is the facility ID
-        slug: string; // This is the facility name slug (optional for lookup, but in the URL)
-    };
-}
-export default function FacilityDetailPage({ params }: FacilityDetailPageProps) {
-    const { id, slug } = params; 
+// interface FacilityDetailPageProps {
+//   params: { id: string; slug: string };
+//   searchParams?: Record<string, string | string[] | undefined>; 
+// }
+
+export default async function FacilityDetailPage() {
 
     const router = useRouter();
     const { facilities } = useFacilities();

@@ -47,8 +47,9 @@ const calculateMapCenter = (
   if (validFacilities.length === 0)
     return { lat: 34.0522, lng: -118.2437 }; // Default LA
 
-  const totalLat = validFacilities.reduce((sum, f) => sum + f.lat, 0);
-  const totalLng = validFacilities.reduce((sum, f) => sum + f.lng, 0);
+  const totalLat = validFacilities.reduce((sum, f) => sum + (f.lat ?? 0), 0);
+  const totalLng = validFacilities.reduce((sum, f) => sum + (f.lng ?? 0), 0);
+
 
   return {
     lat: totalLat / validFacilities.length,
@@ -474,7 +475,8 @@ export default function FacilitySearchPage() {
                               <div className="flex items-center gap-2 mt-2">
                                 <img src="/icons/location_icon_new.png" alt="Location Icon" className="w-[12.54px] h-[16.72px] self-start mt-1"/>
                                 <span className="font-inter font-normal text-[16.72px] leading-[23.89px] text-[#4B5563]">
-                                  {`${facility.distance !== null ? facility.distance.toFixed(1) : 'N/A'} miles`} • {facility.address}
+                                  {facility.distance != null ? `${facility.distance.toFixed(1)} miles` : ''} 
+                                  {facility.address ? ` • ${facility.address}` : ''}
                                 </span>
                               </div>
 

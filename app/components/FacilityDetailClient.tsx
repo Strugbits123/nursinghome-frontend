@@ -271,7 +271,7 @@ const getFullAddress = (facility: FacilityData): string => {
     return `${address}, ${city}, ${state} ${zip}`;
 };
 
-const formatCertification = (type: string, facility: any): JSX.Element => {
+const formatCertification = (type: string, facility: any): React.ReactElement => {
     const isCertified = facility.provider_type?.toLowerCase().includes(type.toLowerCase()) || false;
     const colorClass = isCertified ? 'text-[#16A34A]' : 'text-[#DC2626]';
     const text = isCertified ? 'Yes' : 'No';
@@ -297,6 +297,13 @@ const getGoogleMapsIframeSrc = (lat: number, lng: number, facilityName: string):
            `&center=${lat},${lng}` +
            `&zoom=15`; 
 };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    toast.success("Logged out successfully!");
+  };
+
 
 useEffect(() => {
     const fetchFacilityDetails = async () => {

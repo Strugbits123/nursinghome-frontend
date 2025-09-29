@@ -5,17 +5,14 @@ import * as React from 'react';
 import FacilityDetailClient from "../../../components/FacilityDetailClient";
 
 
-interface FacilityDetailPageProps {
-    params: {
-        id: string;
-        slug: string;
-    };
-}
+// interface Params {
+//   id: string;
+//   slug: string[];
+// }
 
-// Keep the function 'async'
-export default async function FacilityDetailPage({ params }: FacilityDetailPageProps) {
-    // Accessing params after 'async' is the standard App Router solution.
-    const { slug } = params; 
-    
-    return <FacilityDetailClient slug={slug} />;
+// Page is async by default for server components
+export default async function FacilityDetailPage({params}: {params: Promise<{ slug: string }>}) {
+  const { slug } = await params;
+
+  return <FacilityDetailClient slug={slug} />;
 }

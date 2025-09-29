@@ -203,7 +203,7 @@ export function ResultsSection() {
     <div
         key={facility.id}
         // 🏆 Assuming setSelectedFacility is a function in the parent component
-        onClick={() => setSelectedFacility(facility)}
+        // onClick={() => setSelectedFacility(facility)}
         className={`cursor-pointer flex-1 bg-white border border-gray-300 rounded-lg shadow-sm p-4 
                     relative flex flex-col justify-between hover:shadow-md transition`}
     >

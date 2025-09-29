@@ -27,32 +27,35 @@ export const mapRawFacilityToCard = (raw: any, searchCoords: Coords | null): Fac
     const overallRating = raw.overall_rating ? parseFloat(raw.overall_rating) : 0;
     const finalRating = raw.rating || overallRating;
 
-    return {
+   return {
+        _id: raw._id,
         id: raw._id,
         name: raw.googleName || raw.provider_name || 'N/A Facility',
         address: getAddress(raw),
+        city: raw.city_town || '',   // default empty string
+        state: raw.state || '',      // default empty string
+        zip: raw.zip_code || '',     // default empty string
         phone: raw.telephone_number || 'N/A',
         beds: raw.number_of_certified_beds || 0,
-        isNonProfit: raw.ownership_type?.toLowerCase().includes('for profit') === false,
+        isNonProfit: !(raw.ownership_type?.toLowerCase().includes('for profit')),
 
-        // 🏆 LOCATION FIX: Map raw.lat and raw.lng to Facility.lat and Facility.lon
-        lat: raw.lat || 0,
-        lon: raw.lng || 0, // <--- Maps API's 'lng' (longitude) to Facility's 'lon'
+        lat: raw.lat ?? 0,
+        lng: raw.lng ?? 0,
 
-        // Display Data
-        rating: finalRating,
-        imageUrl: raw.photo || null,
-        isFeatured: finalRating >= 4.5, // Example logic
+        provider_name: raw.provider_name || '',
+        legal_business_name: raw.legal_business_name || '',
 
-        // AI Summary (safely joining arrays)
         pros: Array.isArray(raw.aiSummary?.pros) ? raw.aiSummary.pros.join(', ') : 'None listed',
         cons: Array.isArray(raw.aiSummary?.cons) ? raw.aiSummary.cons.join(', ') : 'None listed',
+        imageUrl: raw.photo || null,
+        isFeatured: finalRating >= 4.5,
 
-        // Computed/Placeholder
-        distance: (raw.lat && raw.lng && searchCoords) 
-            ? calculateDistance(raw.lat, raw.lng, searchCoords.lat, searchCoords.lon) 
+        distance:
+        raw.lat && raw.lng && searchCoords
+            ? calculateDistance(raw.lat, raw.lng, searchCoords.lat, searchCoords.lng)
             : null,
         status: getStatus(raw.overall_rating),
-        hours: 'Mon-Fri: 9am-5pm', // Placeholder
+        hours: 'Mon-Fri: 9am-5pm',
     };
+
 };

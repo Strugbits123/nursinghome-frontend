@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react";
+
 import { useState, useEffect } from "react"
 import { Search, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -18,6 +20,7 @@ export function HeroSection() {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [currentCoords, setCurrentCoords] = React.useState<{ lat: number; lng: number } | null>(null);
 
     // from context
     const {
@@ -35,7 +38,8 @@ export function HeroSection() {
     // const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/facilities/with-reviews";
 
     
-    const fetchFacilities = async (currentSearchQuery: string, currentCoords: { lat: number, lng: number } | null) => {
+    const fetchFacilities = async (currentSearchQuery: string, 
+        currentCoords: { lat: number; lng: number } | null) => {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
         if (!token) {
             toast.error("Please log in to search facilities");
@@ -102,14 +106,14 @@ export function HeroSection() {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
+                    const lng = position.coords.longitude;
                     
-                    setCoords({ lat, lon });
+                    setCoords({ lat, lng });
 
                     try {
                         // Reverse geocode
                         const rev = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+                            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
                         );
                         const data = await rev.json();
                         const city = data.address.city || data.address.town || data.address.village || "";
@@ -117,7 +121,7 @@ export function HeroSection() {
                         const postcode = data.address.postcode || "";
                         const fullName = `${city} ${state} ${postcode}`.trim();
                         
-                        setLocationName(fullName || `${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+                        setLocationName(fullName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
                         toast.success("Location detected successfully!");
                     } catch (err) {
                         console.error("Reverse geocode error:", err);
@@ -161,7 +165,7 @@ export function HeroSection() {
 
     
     useEffect(() => {
-        if (coords?.lat && coords.lon && locationName && active) {
+        if (coords?.lat && coords.lng && locationName && active) {
              fetchFacilities(locationName, coords);
              setActive(false);
         }
@@ -327,7 +331,7 @@ export function HeroSection() {
 
           {/* Search button */}
           <button
-            onClick={fetchFacilities}
+            // onClick={() => fetchFacilities(searchQuery, currentCoords)}
             disabled={isLoading}
             className="w-[207px] h-[56px] rounded-[6px] bg-[#C71F37] border border-[#C71F37] text-white flex items-center justify-center gap-2 font-jost font-medium"
           >
