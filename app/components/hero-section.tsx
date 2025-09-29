@@ -238,58 +238,7 @@ export function HeroSection() {
               gap-3
             "
         >
-          {/* Button on the left */}
-
-          {/* <button onClick={handleClick} className={`
-              w-[241px] h-[56px]
-              rounded-[6px]
-              flex items-center px-3 space-x-2 transition-colors duration-200
-              ${active ? "bg-[#C71F37]" : "bg-white"}
-            `}
-          >
-            <img
-              src="/icons/location_svg.png"
-              alt="Location icon"
-              className={`
-                w-[20px] h-[20px] transition duration-200
-                ${active ? "invert brightness-0" : ""}
-              `}
-            />
-            <span
-              className={`
-                font-jost font-medium
-                text-[16px] leading-[100%] tracking-[0%] transition-colors duration-200
-                ${active ? "text-white" : "text-[#212529B2]"}
-              `}
-            >
-              Use My Location
-            </span>
-          </button>
-
-          <input
-            type="text"
-            value={locationName}
-            onChange={(e) => setLocationName(e.target.value)}
-            placeholder="Enter Location ZIP code, city, or state..."
-            className="
-              w-[703px] h-[56px]
-              border-x border-[#ADADAD]
-              rounded-none
-              px-4
-              focus:outline-none
-              font-jost font-medium
-              text-[16px] leading-[100%]
-              text-[#212529B2]
-              placeholder:text-[#212529B2]
-            "
-          />
-
-
-          <button
-            className="w-[207px] h-[56px] rounded-[6px] bg-[#C71F37] border border-[#C71F37] text-white flex items-center justify-center gap-1 font-jost font-medium" >
-            <img src="/icons/search_svg.png" alt="Eye icon" className=" w-[24px] h-[24px]" />
-            Search
-          </button> */}
+        
           {/* Use my location button */}
           <button
             onClick={handleUseLocation}
@@ -331,7 +280,7 @@ export function HeroSection() {
 
           {/* Search button */}
           <button
-            // onClick={() => fetchFacilities(searchQuery, currentCoords)}
+            onClick={() => fetchFacilities(searchQuery, currentCoords)}
             disabled={isLoading}
             className="w-[207px] h-[56px] rounded-[6px] bg-[#C71F37] border border-[#C71F37] text-white flex items-center justify-center gap-2 font-jost font-medium"
           >
