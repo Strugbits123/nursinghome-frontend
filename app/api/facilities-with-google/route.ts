@@ -52,7 +52,7 @@ export async function GET(req: Request) {
     const state = searchParams.get("state") || "";
 
     const backendRes = await fetch(
-      `http://localhost:5000/api/facilities/with-reviews?zip=${zip}&city=${city}&state=${state}`
+      `http://13.61.57.246:5000/api/facilities/with-reviews?zip=${zip}&city=${city}&state=${state}`
     );
     const facilities = await backendRes.json();
 

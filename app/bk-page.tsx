@@ -39,7 +39,7 @@ export default function HomePage() {
       setLoading(true);
       setError("");
       const query = new URLSearchParams({ zip, city, state }).toString();
-      const res = await fetch(`http://localhost:5000/api/facilities/with-reviews?${query}`);
+      const res = await fetch(`http://13.61.57.246:5000/api/facilities/with-reviews?${query}`);
       const result = await res.json();
       console.log("Fetched facilities:", result);
       setFacilities(result);
