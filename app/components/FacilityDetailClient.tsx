@@ -3,19 +3,24 @@
 'use client' 
 
 import * as React from "react";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-// 💡 IMPORTANT: Update these paths if your files are not 3 levels up
 import { useFacilities } from "../context/FacilitiesContext";
 import AuthModal from "../components/AuthModal";
 import toast from "react-hot-toast";
 import * as Dialog from '@radix-ui/react-dialog'; 
 import { X } from 'lucide-react';
-import FacilityServices from "../components/facilityDetail/FacilityServices";
 import { Button } from "@/components/ui/button";
-import { Footer } from '../components/Footer';
-import { SearchNursing } from '../components/SearchNursing';
 import FacilityReviewSkeleton from './ReviewSkeleton'; 
+import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import ReviewDistribution from './ReviewDistribution';
+
+import FacilityRatingGauge from './FacilityRatingGauge'; 
+import StaffingLevelsChart from './StaffingLevelsChart';
+import FacilityQualityMeasures from "./FacilityQualityMeasures";
+import MapView from '../components/MapView';
 
 interface ReviewData {
     author_name: string;
@@ -29,6 +34,7 @@ interface ReviewData {
     translated: boolean;
 }
 
+
 interface FacilityData {
     _id: string;
     cms_certification_number_ccn: string;
@@ -38,6 +44,31 @@ interface FacilityData {
     health_inspection_rating: string; 
     staffing_rating: string; 
     qm_rating: string; 
+    cmsStarRatings: {
+        overall: number;
+        healthInspection: number;
+        staffing: number;
+        qualityMeasure: number;
+    };
+    
+    staffingMetrics: {
+        rnHprd: number;
+        lpnHprd: number;
+        aideHprd: number;
+        totalNurseHprd: number;
+        ptHprd?: number;
+        rnTurnover: number;
+        totalNurseTurnover: number;
+    };
+    
+    inspectionMetrics: {
+        totalHealthDeficiencies: number;
+        totalWeightedScore: number;
+        numberOfFines: number;
+        totalFinesInDollars: number;
+        mostRecentSurveyDate: string;
+    }
+
     provider_address: string;
     city_town: string;
     state: string; 
@@ -57,19 +88,21 @@ interface FacilityData {
     reviews: ReviewData[]; 
     lat: number;
     lng: number;
+    slug: string;
     aiSummary: {
         summary: string;
         pros: string[];
         cons: string[];
     }
-    inspections?: { // Made optional as it's an array and might not always be there
+    inspections?: {
         type: string;
         date: string;
         deficiencies: number;
-        status: string; // 'Passed', 'Under Review', 'Failed'
+        status: string;
         statusDescription: string;
     }[];
 }
+
 interface FacilityDetailClientProps {
     slug: string;
 }
@@ -82,12 +115,13 @@ interface Review {
 }
 
 
-
 const ReviewItem = ({ review }: { review: Review }) => (
     <div className="w-full border-b border-gray-200 last:border-b-0 py-4 flex items-start">
-        <img
+        <Image
             src={review.profile_photo_url || '/icons/default_avatar.png'}
             alt={review.author_name}
+            width={48}
+            height={48}
             className="w-[48px] h-[48px] rounded-full object-cover mr-4 flex-shrink-0"
         />
         <div className="flex flex-col flex-grow">
@@ -161,7 +195,9 @@ const StarRating = ({ rating }: { rating: number }) => {
 
     for (let i = 0; i < fullStars; i++) {
         stars.push(
-            <img 
+            <Image 
+                width={19}
+                height={19}
                 key={`full-${i}`} 
                 src="/icons/star_icon.png" 
                 alt="full star" 
@@ -172,7 +208,9 @@ const StarRating = ({ rating }: { rating: number }) => {
     
     for (let i = 0; i < emptyStars; i++) {
         stars.push(
-            <img 
+            <Image 
+                width={19}
+                height={19}
                 key={`empty-${i}`} 
                 src="/icons/empty_star.png"
                 alt="empty star" 
@@ -185,162 +223,179 @@ const StarRating = ({ rating }: { rating: number }) => {
 
 
 
-const parseRatingDisplay = (rating: string) => {
-    const num = parseInt(rating);
-    return isNaN(num) ? 'N/A' : `${num}/5`;
-};
+// const parseRatingDisplay = (rating: string) => {
+//     const num = parseInt(rating);
+//     return isNaN(num) ? 'N/A' : `${num}/5`;
+// };
     
 export default function FacilityDetailClient({ slug }: FacilityDetailClientProps) {
-    const router = useRouter();
-    const { facilities } = useFacilities(); 
-                console.log("Current Slug:", slug); // <--- ADD THIS LOG
+    // const router = useRouter();
+    // const { facilities } = useFacilities(); 
 
-    // State to hold the fetched facility details
     const [facility, setFacility] = useState<FacilityData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [openAuth, setOpenAuth] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [coverImage, setCoverImage] = useState<string>("");
+    const [contactModal, setContactModal] = useState(false);
 
 
     const reviewsData = facility?.reviews ?? [];
     const reviewsToShow = reviewsData.slice(0, 3);
     const hasMoreReviews = reviewsData.length > 3;
 
-    
-const getInspectionProps = (status: 'Passed' | 'Under Review' | 'Failed' | string) => {
-    switch (status) {
-        case 'Passed':
-            return {
-                borderColor: 'border-l-[#16A34A]',
-                statusColor: 'text-[#16A34A]',
-                iconSrc: '/icons/right_icon (2).png',
-                statusText: 'Passed',
-            };
-        case 'Under Review':
-            return {
-                borderColor: 'border-l-[#FACC15]',
-                statusColor: 'text-[#CA8A04]',
-                iconSrc: '/icons/timer_icon.png',
-                statusText: 'In Progress',
-            };
-        case 'Failed':
-            return {
-                borderColor: 'border-l-[#D02B38]', 
-                statusColor: 'text-[#D02B38]',
-                iconSrc: '/icons/cross_icon.png',
-                statusText: 'Failed',
-            };
-        default:
-            return {
-                borderColor: 'border-l-[#9CA3AF]',
-                statusColor: 'text-[#4B5563]',
-                iconSrc: '/icons/info_icon.png',
-                statusText: 'N/A',
-            };
-    }
-};
+    const facilityCoords = useMemo(() => {
+        if (!facility || !facility.latitude || !facility.longitude) return [];
+        return [
+            {
+            lat: facility.latitude,
+            lng: facility.longitude,
+            name: facility.provider_name,
+            },
+        ];
+    }, [facility]);
+
+    const mapCenter = useMemo(() => {
+        if (!facility || !facility.latitude || !facility.longitude) {
+              return { lat: 39.8283, lng: -98.5795 }; 
+
+        }
+        return { lat: facility.latitude, lng: facility.longitude };
+    }, [facility]);
 
 
-const facilityInspections = [
-    {
-        type: "Standard Health Inspection",
-        date: "March 15, 2024",
-        deficiencies: 3,
-        status: "Passed",
-        statusDescription: "All corrected",
-    },
-    {
-        type: "Complaint Investigation",
-        date: "January 8, 2024",
-        deficiencies: 1,
-        status: "Under Review",
-        statusDescription: "Under review",
-    },
-    
-];
-
-const getFullAddress = (facility: FacilityData): string => { 
-    const address = facility.provider_address.trim() || '';
-    const city = facility.city_town.trim() || '';
-    const state = facility.state.trim() || ''; 
-    const zip = facility.zip_code.trim() || ''; 
-
-    if (!address) return `${city}, ${state}`;
-    return `${address}, ${city}, ${state} ${zip}`;
-};
-
-const formatCertification = (type: string, facility: any): React.ReactElement => {
-    const isCertified = facility.provider_type?.toLowerCase().includes(type.toLowerCase()) || false;
-    const colorClass = isCertified ? 'text-[#16A34A]' : 'text-[#DC2626]';
-    const text = isCertified ? 'Yes' : 'No';
-    
-    return (
-        <span className={`font-inter font-medium text-[19.1px] leading-[20px] ${colorClass}`}>
-            {text}
-        </span>
-    );
-};
-
-
-const getGoogleMapsIframeSrc = (lat: number, lng: number, facilityName: string): string => {
-    if (typeof lat !== 'number' || typeof lng !== 'number') {
-        return ''; 
-    }
-
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; 
-    const query = encodeURIComponent(`${facilityName}, ${lat},${lng}`);
-    return `https://www.google.com/maps/embed/v1/search?` + 
-           `key=${apiKey}` +
-           `&q=${query}` +
-           `&center=${lat},${lng}` +
-           `&zoom=15`; 
-};
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
-    toast.success("Logged out successfully!");
-  };
-
-
-useEffect(() => {
-    const fetchFacilityDetails = async () => {
-        setIsLoading(true);
-        const facilityName = slug.replace(/-/g, ' ');
-        const API_URL = "http://13.61.57.246:5000/api/facilities/details";
-        const params = new URLSearchParams({ name: facilityName }); 
-        const url = `${API_URL}?${params.toString()}`;
-        
-        console.log("Fetching from URL:", url);
-
-        try {
-            const response = await fetch(url);            
-            if (!response.ok) {
-                throw new Error(`Failed to fetch facility details. Status: ${response.status}`);
-            }
-            const data = await response.json();
-            if (!data || Object.keys(data).length === 0) {
-                 setFacility(null); 
-                 toast.error("Facility data is empty or invalid.");
-            } else {
-                 setFacility(data);
-            }
-
-        } catch (error) {
-            console.error("Error fetching facility details:", error);
-            toast.error("Could not load facility details.");
-            setFacility(null); 
-        } finally {
-            setIsLoading(false);
+    const getInspectionProps = (status: 'Passed' | 'Under Review' | 'Failed' | string) => {
+        switch (status) {
+            case 'Passed':
+                return {
+                    borderColor: 'border-l-[#16A34A]',
+                    statusColor: 'text-[#16A34A]',
+                    iconSrc: '/icons/right_icon (2).png',
+                    statusText: 'Passed',
+                };
+            case 'Under Review':
+                return {
+                    borderColor: 'border-l-[#FACC15]',
+                    statusColor: 'text-[#CA8A04]',
+                    iconSrc: '/icons/timer_icon.png',
+                    statusText: 'In Progress',
+                };
+            case 'Failed':
+                return {
+                    borderColor: 'border-l-[#D02B38]', 
+                    statusColor: 'text-[#D02B38]',
+                    iconSrc: '/icons/cross_icon.png',
+                    statusText: 'Failed',
+                };
+            default:
+                return {
+                    borderColor: 'border-l-[#9CA3AF]',
+                    statusColor: 'text-[#4B5563]',
+                    iconSrc: '/icons/info_icon.png',
+                    statusText: 'N/A',
+                };
         }
     };
 
-    if (slug) {
-        fetchFacilityDetails();
+
+    const facilityInspections = [
+        {
+            type: "Standard Health Inspection",
+            date: "March 15, 2024",
+            deficiencies: 3,
+            status: "Passed",
+            statusDescription: "All corrected",
+        },
+        {
+            type: "Complaint Investigation",
+            date: "January 8, 2024",
+            deficiencies: 1,
+            status: "Under Review",
+            statusDescription: "Under review",
+        },
+        
+    ];
+
+    // const getFullAddress = (facility: FacilityData): string => { 
+    //     const address = facility.provider_address.trim() || '';
+    //     const city = facility.city_town.trim() || '';
+    //     const state = facility.state.trim() || ''; 
+    //     const zip = facility.zip_code.trim() || ''; 
+
+    //     if (!address) return `${city}, ${state}`;
+    //     return `${address}, ${city}, ${state} ${zip}`;
+    // };
+
+    /**
+     * Renders a certification status (Yes/No) based on facility provider type.
+     * @param type The certification type to check (e.g., 'Medicare', 'Medicaid').
+     * @param facility The facility data object.
+     * @returns A React span element indicating certification status.
+     */
+    const formatCertification = (type: string, facility: any): React.ReactElement => {
+        const isCertified = facility.provider_type?.toLowerCase().includes(type.toLowerCase()) || false;
+        const colorClass = isCertified ? 'text-[#16A34A]' : 'text-[#DC2626]';
+        const text = isCertified ? 'Yes' : 'No';
+        
+        return (
+            <span className={`font-inter font-medium text-[19.1px] leading-[20px] ${colorClass}`}>
+                {text}
+            </span>
+        );
+    };
+    
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        setIsAuthenticated(false);
+        toast.success("Logged out successfully!");
+    };
+
+
+    useEffect(() => {
+        const fetchFacilityDetails = async () => {
+            setIsLoading(true);
+            const facilityName = slug.replace(/-/g, ' ');
+            const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api/facilities/details';
+            const params = new URLSearchParams({ name: facilityName }); 
+            const url = `${API_URL}?${params.toString()}`;
+            
+            console.log("Fetching from URL:", url);
+
+            try {
+                const response = await fetch(url);            
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch facility details. Status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (!data || Object.keys(data).length === 0) {
+                    setFacility(null); 
+                    toast.error("Facility data is empty or invalid.");
+                } else {
+                    setFacility(data);
+                }
+
+            } catch (error) {
+                console.error("Error fetching facility details:", error);
+                toast.error("Could not load facility details.");
+                setFacility(null); 
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (slug) {
+            fetchFacilityDetails();
+        }
+    }, [slug]);
+
+    useEffect(() => {
+    if (facility && facility.photos?.length > 0) {
+        setCoverImage(facility.photos[0]);
     }
-}, [slug]);
+    }, [facility]);
 
     if (isLoading) {
         return <FacilityReviewSkeleton />;
@@ -349,6 +404,7 @@ useEffect(() => {
     if (!facility) {
         return <div className="text-center p-10">Facility not found.</div>;
     }
+
     
     const fullAddress = `${facility.provider_address}, ${facility.city_town}, ${facility.state} ${facility.zip_code}`;
     const parseCmsRating = (rating: string) => parseInt(rating) || 0;
@@ -360,9 +416,11 @@ useEffect(() => {
             <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
                 <div className="max-w-[1856px] h-[46px] mx-auto px-[32px] flex items-center justify-between">
                     {/* Logo */}
-                    <img
+                    <Image
                         src="/footer_icon.png"
                         alt="NursingHome Logo"
+                        width={176}
+                        height={47}
                         className="w-[176px] h-[47px] mt-7 ml-30"
                     />
 
@@ -401,9 +459,11 @@ useEffect(() => {
                                 onClick={handleLogout}
                                 className="flex cursor-pointer items-center w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-4 py-6"
                             >
-                                <img
-                                    src="/arrow-btn.png"
+                                <Image
+                                    src="/arrow_btn.png" 
                                     alt="Logout icon"
+                                    width={19}
+                                    height={19}
                                     className="w-[18.78px] h-[18.78px] mr-2"
                                 />
                                 <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
@@ -415,10 +475,12 @@ useEffect(() => {
                                 onClick={() => setOpenAuth(true)}
                                 className="flex cursor-pointer items-center w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-4 py-6"
                             >
-                                <img
+                                <Image
                                     src="/icons/header_sign.png"
                                     alt="Sign in icon"
-                                    className="w-[18.78px] h-[18.78px]  mr-2"
+                                    width={19}
+                                    height={19}
+                                    className="w-[18.78px] h-[18.78px] mr-2"
                                 />
                                 <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
                                     Sign In
@@ -427,14 +489,16 @@ useEffect(() => {
                         )}
 
                         <button className="flex items-center justify-center w-[163.37px] h-[54px] bg-white hover:bg-[#a91a2e] rounded-[7.04px] px-4">
-                            {/* <img
-                src="/icons/faciltiy_search_svg.png"
-                alt="Add icon"
-                className="w-[18.78px] h-[18.78px] fill-red-500  mr-2 invert"
-                /> */}
-                            <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
+                            {/* <Image
+                            src="/icons/faciltiy_search_svg.png"
+                            alt="Add icon"
+                            width={19}
+                            height={19}
+                            className=" fill-red-500  mr-2 invert"
+                            /> */}
+                            {/* <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
                                 Add Listing
-                            </span>
+                            </span> */}
                         </button>
                     </div>
                 </div>
@@ -454,21 +518,27 @@ useEffect(() => {
             <section className="w-full h-[60px] bg-[#F5F5F5] flex items-center justify-between px-22 ">
                 <div className="flex items-center gap-x-2 text-[#4B5563] mx-25 font-inter font-normal text-[16.28px] leading-[23.26px]">
                     <span className="align-middle">Home</span>
-                    <img
+                    <Image
                         src="/icons/search_fac_right_icon.png"
                         alt="Arrow"
+                        width={9}
+                        height={14}
                         className="w-[8.72px] h-[13.95px] align-middle"
                     />
                     <span className="align-middle">California</span>
-                    <img
+                    <Image
                         src="/icons/search_fac_right_icon.png"
                         alt="Arrow"
+                        width={9}
+                        height={14}
                         className="w-[8.72px] h-[13.95px] align-middle"
                     />
                     <span className="align-middle">Los Angeles</span>
-                    <img
+                    <Image
                         src="/icons/search_fac_right_icon.png"
                         alt="Arrow"
+                        width={9}
+                        height={14}
                         className="w-[8.72px] h-[13.95px] align-middle"
                     />
                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-[#111827] align-middle">
@@ -477,16 +547,18 @@ useEffect(() => {
                 </div>
 
 
-                <button className="flex items-center gap-2 bg-[#F5F5F5] text-[#C71F37] px-4 mx-45 py-2 hover:bg-[#f5f5f5] transition">
-                    <img
+                {/* <button className="flex items-center gap-2 bg-[#F5F5F5] text-[#C71F37] px-4 mx-45 py-2 hover:bg-[#f5f5f5] transition">
+                    <Image
                         src="/icons/facility_search_heart_icon.png"
                         alt="Save icon"
+                        width={16}
+                        height={16}
                         className="w-[16.28px] h-[16.28px]"
-                    />
-                    <span className="font-inter font-normal text-[16.28px] leading-[23.26px] text-center">
+                    /> */}
+                    {/* <span className="font-inter font-normal text-[16.28px] leading-[23.26px] text-center">
                         Save Search
-                    </span>
-                </button>
+                    </span> */}
+                {/* </button> */}
             </section>
 
             <div className="w-full h-[572px] bg-white mt-[33px]">
@@ -501,13 +573,15 @@ useEffect(() => {
                         </p>
                         <div className="flex items-center space-x-3 mt-4">
                             <button className="flex items-center px-4 h-[40.42px] w-[90px] rounded-[20px] bg-[#D02B38]">
-                                <img
+                                <Image
+                                    width={23}
+                                    height={20}
                                     src="/icons/Vector (3).png"
                                     alt="Star"
                                     className="w-[22.74px] h-[20.21px] mr-2"
                                 />
                                 <span className="font-inter font-bold text-[20.21px] leading-[30.32px] text-white">
-                                    {facility.rating.toFixed(1)}
+                                    {facility.rating?.toFixed(1) ?? ''}
                                 </span>
                             </button>
                             <div className="flex items-center space-x-6">
@@ -515,7 +589,9 @@ useEffect(() => {
                                     CMS Overall Rating
                                 </span>
                                 <div className="flex items-center space-x-2">
-                                    <img
+                                    <Image
+                                        width={22}
+                                        height={18}
                                         src="/icons/Bed_icon.png"
                                         alt="Beds"
                                         className="w-[22.1px] h-[17.68px]"
@@ -556,7 +632,7 @@ useEffect(() => {
                         <div className="flex flex-row space-x-6 mt-10">
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
-                                    {parseCmsRating(facility.overall_rating)}
+                                    {parseCmsRating(facility?.overall_rating)}
                                 </span>
                                 <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
                                     Overall Rating
@@ -564,7 +640,7 @@ useEffect(() => {
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
-                                    {parseCmsRating(facility.health_inspection_rating)}
+                                    {parseCmsRating(facility?.health_inspection_rating)}
                                 </span>
                                 <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
                                     Health Inspections
@@ -572,7 +648,7 @@ useEffect(() => {
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
-                                    {parseCmsRating(facility.staffing_rating)}
+                                    {parseCmsRating(facility?.staffing_rating)}
                                 </span>
                                 <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
                                     Staffing
@@ -580,7 +656,7 @@ useEffect(() => {
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
-                                    {parseCmsRating(facility.qm_rating)}
+                                    {parseCmsRating(facility?.qm_rating)}
                                 </span>
                                 <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
                                     Quality Measures
@@ -588,48 +664,88 @@ useEffect(() => {
                             </div>
                         </div>
                         <div className="mt-6">
-                            <button className="flex items-center justify-center w-[241.34px] h-[60.63px] bg-[#D02B38] rounded-[10.11px] hover:bg-red-700 transition gap-x-3">
-                                <img
-                                    src="/icons/Cell_phone_icon.png"
-                                    alt="Contact Icon"
-                                    className="w-[20.21px] h-[20.21px]"
+                            <button
+                                className="flex items-center justify-center w-[241.34px] h-[60.63px] bg-[#D02B38] rounded-[10.11px] hover:bg-red-700 transition gap-x-3"
+                                onClick={() => setContactModal(true)}
+                            >
+                                <Image
+                                src="/icons/Cell_phone_icon.png"
+                                alt="Contact Icon"
+                                width={20}
+                                height={20}
+                                className="w-[20.21px] h-[20.21px]"
                                 />
                                 <span className="font-inter font-medium text-[20.21px] leading-[30.32px] text-white">
-                                    Contact Facility
+                                Contact Facility
                                 </span>
                             </button>
+
+                            {contactModal && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                                    <div className="bg-white rounded-lg p-6 w-[300px] text-center relative shadow-lg">
+                                    {/* Close Icon */}
+                                    <button
+                                        onClick={() => setContactModal(false)}
+                                        className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl font-bold"
+                                    >
+                                        &times;
+                                    </button>
+
+                                    <h2 className="font-bold text-xl mb-4">Facility Contact</h2>
+                                    <p className="text-[18px] mb-4">{facility?.telephone_number}</p>
+
+                                    <button
+                                        onClick={() => window.open(`tel:${facility?.telephone_number}`)}
+                                        className="px-4 py-2 bg-[#D02B38] text-white rounded-[8px] hover:bg-red-700 transition"
+                                    >
+                                        Call Now
+                                    </button>
+                                    </div>
+                                </div>
+                            )}
+
                         </div>
                     </div>
 
                     <div className="w-1/4 flex flex-col space-y-4">
-                        <div className="w-[458px] h-[323px] rounded-[10.11px] bg-[#F5F5F5] flex items-center justify-center">
-                            <span className="font-inter font-medium text-[16px] text-[#111827]">
-                                <img
-                                    // src="/modern nursing home exterior with beautiful landscaping and welcoming entrance.png"
-                                    // alt="Image 1"
-                                     src={facility.photos[0]}
-                                     alt={`${facility.provider_name} exterior`}
-                                    className="w-full h-full rounded-[10.11px] object-cover"
-                                />
-                            </span>
+                        {/* Cover Image */}
+                        <div className="w-[458px] h-[323px] rounded-[10.11px] flex items-center justify-center overflow-hidden">
+                            <Image
+                            src={coverImage}
+                            alt={`${facility.provider_name} exterior`}
+                            width={458}
+                            height={323}
+                            className="w-full h-full rounded-[10.11px] object-cover transition-all duration-500 ease-in-out"
+                            />
                         </div>
-                        <div className="w-[458px] h-[23px] flex items-center  space-x-2 mt-12">
-                             {facility.photos.slice(1, 4).map((photoUrl, index) => (
-                                <div 
-                                    key={index} 
-                                    // Adjusted w/h to fit 3 in a row with spacing (146*3 + 2*2 = 442)
-                                    className="w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center overflow-hidden"
+
+                        {/* Thumbnails */}
+                        <Swiper
+                            spaceBetween={8}
+                            slidesPerView={3}
+                            className="w-[458px] h-[101px]"
+                        >
+                            {facility.photos.slice(1, 4).map((photoUrl, index) => (
+                            <SwiperSlide key={index}>
+                                <div
+                                onClick={() => setCoverImage(photoUrl)}
+                                 className={`w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center cursor-pointer overflow-hidden border-2 transition-all duration-300 ${
+                                    coverImage === photoUrl ? "border-transparent" : "border-transparent"
+                                }`}
                                 >
-                                    <img
-                                        // DYNAMIC: Use the photo URL
-                                        src={photoUrl}
-                                        alt={`${facility.provider_name} interior ${index + 2}`}
-                                        className="w-full h-full rounded-[5.05px] object-cover"
-                                    />
+                                <Image
+                                    src={photoUrl}
+                                    alt={`${facility.provider_name} interior ${index + 2}`}
+                                    width={146}
+                                    height={101}
+                                    className="w-full h-full rounded-[5.05px] object-cover transition-all duration-500"
+
+                                />
                                 </div>
+                            </SwiperSlide>
                             ))}
+                        </Swiper>
                         </div>
-                    </div>
                 </div>
             </div>
 
@@ -649,9 +765,11 @@ useEffect(() => {
                             </h3>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img
+                                    <Image
                                         src="/icons/medical_icon1.png"
                                         alt="Nursing"
+                                        width={21}
+                                        height={24}
                                         className="w-[20.88px] h-[23.87px] mr-3 "
                                     />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
@@ -659,9 +777,11 @@ useEffect(() => {
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img
+                                    <Image
                                         src="/icons/medical_icon2.png"
                                         alt=""
+                                        width={27}
+                                        height={24}
                                         className="w-[27px] h-[23.87px] mr-3 "
                                     />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
@@ -669,25 +789,37 @@ useEffect(() => {
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon3.png" alt="" className="w-[23.88px] h-[23.87px] mr-3 " />
+                                    <Image src="/icons/medical_icon3.png" alt=""
+                                        width={24}
+                                        height={24}
+                                        className="w-[27px] h-[23.87px] mr-3 " />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Skilled Doctors
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon4.png" alt="" className="w-[23.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon4.png" alt="" 
+                                     width={24}
+                                    height={24}
+                                    className="w-[27px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Emergency Response
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon5.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon5.png" alt="" 
+                                    width={21}
+                                    height={24}
+                                    className="w-[27px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Pharmacy Support
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon6.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon6.png" alt="" 
+                                    width={21}
+                                    height={24}
+                                    className="w-[27px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Rehab Programs
                                     </span>
@@ -702,10 +834,12 @@ useEffect(() => {
 
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img
+                                    <Image
                                         src="/icons/medical_icon1.png"
                                         alt="Nursing"
-                                        className="w-[20.88px] h-[23.87px] mr-3 "
+                                        width={21}
+                                        height={24}
+                                        className="w-[27px] h-[23.87px] mr-3 "
                                     />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Dining Room
@@ -713,9 +847,11 @@ useEffect(() => {
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img
+                                    <Image
                                         src="/icons/medical_icon2.png"
                                         alt=""
+                                        width={27}
+                                        height={24}
                                         className="w-[27px] h-[23.87px] mr-3 "
                                     />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
@@ -724,28 +860,41 @@ useEffect(() => {
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon3.png" alt="" className="w-[23.88px] h-[23.87px] mr-3 " />
+                                    <Image src="/icons/medical_icon3.png" alt="" 
+                                        width={24}
+                                        height={24}
+                                        className="w-[23.88px] h-[23.87px] mr-3 "
+                                         />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Garden Courtyard
                                     </span>
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon4.png" alt="" className="w-[23.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon4.png" alt="" 
+                                    width={24}
+                                    height={24}
+                                    className="w-[23.88px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Activity Room
                                     </span>
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon5.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon5.png" alt="" 
+                                    width={21}
+                                    height={24}
+                                    className="mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Library
                                     </span>
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon6.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon6.png" alt=""
+                                        width={21}
+                                        height={24}
+                                        className="mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Entertainment Room
                                     </span>
@@ -804,10 +953,11 @@ useEffect(() => {
                             </h3>
 
                             <div className="flex items-center mt-5 gap-3">
-                                <img
+                                <Image
                                     src="/icons/phone_icon.png"
                                     alt="Phone"
-                                    className="w-[19.1px] h-[19.1px]"
+                                     width={19}
+                                    height={19}
                                 />
 
                                 <span className="font-inter font-normal text-[19.1px] leading-[28.65px] text-black">
@@ -815,10 +965,11 @@ useEffect(() => {
                                 </span>
                             </div>
                             <div className="flex items-center mt-4 gap-3">
-                                <img
+                                <Image
                                     src="/icons/email_icon.png"
                                     alt="email"
-                                    className="w-[19.1px] h-[15px]"
+                                    width={19}
+                                    height={15}
                                 />
                                 <span className="font-inter font-[400] italic:false         
                                     text-[19.1px]       
@@ -832,20 +983,22 @@ useEffect(() => {
                                 </span>
                             </div>
                             <div className="flex items-center mt-4  gap-3">
-                                <img
+                                <Image
                                     src="/icons/location_icon (2).png"
                                     alt="Phone"
-                                    className="w-[14.32px] h-[19.1px]"
+                                    width={14}
+                                    height={19}
                                 />
                                 <span className="font-inter font-normal text-[19.1px] leading-[28.65px] text-black">
                                     1234 Sunset Boulevard Los Angeles, CA 90028
                                 </span>
                             </div>
                             <div className="flex items-center  mt-4 gap-3">
-                                <img
+                                <Image
                                     src="/icons/earth_icon.png"
                                     alt="Phone"
-                                    className="w-[19.1px] h-[19.1px]"
+                                    width={19}
+                                    height={19}
                                 />
                                 <span className="font-inter font-normal text-[19.1px] leading-[28.65px] text-black">
                                     www.sunsetmanor.com
@@ -887,10 +1040,12 @@ useEffect(() => {
                                 </div>
                             </div>
                             <div className="flex items-center mt-10">
-                                <img
+                                <Image
                                     src="/icons/expectation_icon.png"
                                     alt="phone"
-                                    className="w-[16.71px] h-[16.71px] mr-2"
+                                    width={17}
+                                    height={17}
+                                    className="mr-2"
                                 />
                                 <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
                                     Please call ahead to schedule visits
@@ -918,10 +1073,11 @@ useEffect(() => {
                     </h3>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                        <img
+                        <Image
                             src="/icons/star_icon.png"
                             alt="star"
-                            className="w-[19.1px] h-[19.1px]"
+                            width={19}
+                            height={19}
                         />
                         <span className="font-inter font-bold text-[19.1px] leading-[28.65px] text-[#111827]">
                             {/* NOTE: 'facility' variable assumed from outside context */}
@@ -943,10 +1099,12 @@ useEffect(() => {
                                 
                                 className={`w-full ${index < 4 ? 'border-b-[1.19px] border-gray-300' : ''} mt-8 pb-8 flex items-start`}
                             >
-                                <img
+                                <Image
                                     src={review.profile_photo_url || '/icons/default_avatar.png'}
                                     alt={review.author_name}
-                                    className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4 flex-shrink-0"
+                                    width={57}
+                                    height={57}
+                                    className="rounded-full object-cover mr-4 flex-shrink-0"
                                 />
                                 
                                 <div className="flex flex-col ml-[20px] flex-grow">
@@ -1004,7 +1162,10 @@ useEffect(() => {
                         {facility.aiSummary?.pros?.length > 0 && (
                             <>
                                 <div className="flex items-center mt-2 space-x-2">
-                                    <img src="/icons/like_icon.png" alt="Pros" className="w-[19.09px] h-[19.09px]" />
+                                    <Image src="/icons/like_icon.png" alt="Pros"
+                                        width={19}
+                                        height={19}
+                                         />
                                     <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#16A34A]">
                                         Pros
                                     </span>
@@ -1013,7 +1174,10 @@ useEffect(() => {
                                 <div className="mt-2 w-full flex flex-col gap-3 pr-4"> 
                                     {facility.aiSummary.pros.map((pro, index) => (
                                         <div key={`pro-${index}`} className="flex items-start"> 
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px] mt-1 flex-shrink-0" />
+                                            <Image src="/icons/check_icon.png" alt="icon"
+                                             width={13}
+                                             height={14}
+                                             className="mt-1 flex-shrink-0" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 {pro}
                                             </span>
@@ -1027,7 +1191,10 @@ useEffect(() => {
                         {facility.aiSummary?.cons?.length > 0 && (
                             <>
                                 <div className="flex items-center mt-7 space-x-2">
-                                    <img src="/icons/dislike_icon.png" alt="Cons" className="w-[19.09px] h-[19.09px]" />
+                                    <Image src="/icons/dislike_icon.png" alt="Cons" 
+                                        width={19}
+                                        height={19}
+                                        />
                                     <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#DC2626]">
                                         Cons
                                     </span>
@@ -1036,7 +1203,10 @@ useEffect(() => {
                                 <div className="mt-2 w-full flex flex-col gap-3 pr-4"> 
                                     {facility.aiSummary.cons.map((con, index) => (
                                         <div key={`con-${index}`} className="flex items-start"> 
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px] mt-1 flex-shrink-0" />
+                                            <Image src="/icons/cross_icon.png" alt="icon"
+                                                width={11}
+                                                height={14} 
+                                                className=" mt-1 flex-shrink-0" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 {con}
                                             </span>
@@ -1047,71 +1217,11 @@ useEffect(() => {
                         )}
                     </div>
                 </div>
-                <div className="w-[458.34px] h-[286.46px] rounded-[9.55px] bg-white border border-[#E5E7EB] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
-                    <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-6">
-                        Review Distribution
-                    </h3>
-                    <div className="flex items-center space-x-4">
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                            5★
-                        </span>
-                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '142.74px' }}></div>
-                        </div>
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            21
-                        </span>
-                    </div>
-                    <div className="flex items-center space-x-4 mt-3">
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                            4★
-                        </span>
-                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '94.96px' }}></div>
-                        </div>
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            14
-                        </span>
-                    </div>
-                    <div className="flex items-center space-x-4 mt-3">
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                            3★
-                        </span>
-                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '48.7px' }}></div>
-                        </div>
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            7
-                        </span>
-                    </div>
-                    <div className="flex items-center space-x-4 mt-3">
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                            2★
-                        </span>
-                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '26px' }}></div>
-                        </div>
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            4
-                        </span>
-                    </div>
+                <ReviewDistribution reviews={facility.reviews} />
 
-                    <div className="flex items-center space-x-4 mt-3">
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000] mr-8">
-                            1★
-                        </span>
-                        <div className="relative w-[317.22px] h-[9.55px] bg-[#E5E7EB] rounded-full overflow-hidden">
-                            <div className="absolute top-0 left-0 h-full bg-[#FACC15] rounded-full" style={{ width: '6.54px' }}></div>
-                        </div>
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            1
-                        </span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
-     {/* 🔥 MODAL RENDER 🔥: Called at the end of the component's return */}
             <AllReviewsModal 
                 reviews={reviewsData} 
                 open={isModalOpen} 
@@ -1121,9 +1231,7 @@ useEffect(() => {
 
             
            <section className="w-[2134px] h-[1094px] bg-[#F5F5F5] opacity-100 p-2 mx-auto">
-                {/* Inner Container */}
                 <div className="w-[1527.8px] h-[1016.94px] ml-[220px] mt-5 bg-gray-100 rounded-lg flex flex-col gap-6 p-6">
-                    {/* Heading */}
                     <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827]">
                     CMS Performance Data
                     </h2>
@@ -1132,195 +1240,91 @@ useEffect(() => {
                         Official data from the Centers for Medicare & Medicaid Services
                     </p>
 
-                    {/* Cards Container */}
                     <div className="flex flex-wrap gap-6 mt-2">
-                    {/* First Row: 3 Cards */}
-                    <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
-                        {/* Card Heading */}
-                        <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mt-5 ml-3 mb-4">
-                            Overall Rating
-                        </h3>
-                        <div className="w-[407.41px] h-[229.17px] bg-white ml-3 mb-4">
-                            <img
-                            src="/Container (1).png"
-                            alt="Rating Chart"
-                            className="w-full h-full object-cover"
-                            />
+                        <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                                <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
+                                    Overall Rating
+                                </h3>
+                                <div className="w-full h-auto min-h-[300px]">
+                                    <FacilityRatingGauge facility={facility} />
+                                </div>
+                            </div>
+                        <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                            <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
+                                Staffing Levels
+                            </h3>
+                            <div className="w-full h-auto min-h-[300px]">
+                                <StaffingLevelsChart facility={facility} />
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            Health Inspections
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                             {parseRatingDisplay(facility.health_inspection_rating)}
-                            </span>
-                        </div>
-                         <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            Staffing
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                           {parseRatingDisplay(facility.staffing_rating)}
-                            </span>
-                        </div>
-                         <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            Quality Measures
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                             {parseRatingDisplay(facility.qm_rating)}
-                            </span>
-                        </div>
-                    </div>
-                   <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
-                        <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mt-5 ml-3 mb-4">
-                           Staffing Levels
-                        </h3>
-                        <div className="w-[407.41px] h-[229.17px] bg-white ml-3 mb-4">
-                            <img
-                            src="/Container (2).png"
-                            alt="Rating Chart"
-                            className="w-full h-full object-cover"
-                            />
-                        </div>
-                        <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                                RN Hours per Resident Day
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                             0.75
-                            </span>
-                        </div>
-                         <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            Total Nurse Hours
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                            3.2
-                            </span>
-                            
-                        </div>
-                         <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            Turnover Rate
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#000000]">
-                            65%
-                            </span>
-                            
-                        </div>
-                    </div>
-                   <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
-                        <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mt-5 ml-3 mb-4">
-                            Quality Measures
-                        </h3>
-                        <div className="w-[407.41px] h-[229.17px] bg-white  ml-3 mb-4">
-                            <img
-                            src="/Container (3).png"
-                            alt="Rating Chart"
-                            className="w-full h-full object-cover"
-                            />
-                        </div>
-                        <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            Antipsychotic Use
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#16A34A]">
-                            12.3%
-                            </span>
-                        </div>
-                         <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            Pressure Ulcers
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#16A34A]">
-                            2.1%
-                            </span>
-                        </div>
-                         <div className="flex justify-between items-center mt-2 ml-3 mr-3">
-                            <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                            Quality Measures
-                            </span>
-                            <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#CA8A04]">
-                            4.2%
-                            </span>
-                        </div>
-                    </div>
+                        <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                            <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
+                                Quality Measures
+                            </h3>
 
-                    {/* Second Row: 2 Cards */}
+                            <div className="w-full h-auto min-h-[300px]">
+                                <FacilityQualityMeasures facility={facility} />
+                            </div>
+                        </div>
+
+
                     <div className="w-[711.38px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6 flex flex-col gap-4">
-                        {/* Heading */}
                         <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
                             Recent Health Inspections
                         </h3>
 
-                            {/* Two rows */}
-                            {/* Dynamic Inspections List */}
-<div className="flex flex-col gap-4 mt-4">
-    {/* Map over the facility's actual inspections array (using facilityInspections placeholder) */}
-    {facilityInspections.map((inspection, index) => {
-        const props = getInspectionProps(inspection.status);
+                            <div className="flex flex-col gap-4 mt-4">
+                                {facilityInspections.map((inspection, index) => {
+                                    const props = getInspectionProps(inspection.status);
 
-        return (
-            <div 
-                key={index} 
-                // Apply dynamic border color based on status
-                className={`w-full bg-[#FFFFFF] border-l-[4.77px] ${props.borderColor} p-4 flex flex-col gap-2 shadow-sm rounded-sm`}
-            >
-                {/* Heading row */}
-                <div className="flex justify-between items-center">
-                    <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
-                        {/* Dynamic Inspection Type */}
-                        {inspection.type}
-                    </h4>
-                    <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                        {/* Dynamic Inspection Date */}
-                        {inspection.date}
-                    </span>
-                </div>
+                                    return (
+                                        <div 
+                                            key={index} 
+                                            className={`w-full bg-[#FFFFFF] border-l-[4.77px] ${props.borderColor} p-4 flex flex-col gap-2 shadow-sm rounded-sm`}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
+                                                    {inspection.type}
+                                                </h4>
+                                                <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                                                    {inspection.date}
+                                                </span>
+                                            </div>
 
-                {/* Description row */}
-                <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
-                    {/* Dynamic Deficiencies and Description */}
-                    {inspection.deficiencies} deficiencies found - {inspection.statusDescription}
-                </p>
+                                            <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                                                {inspection.deficiencies} deficiencies found - {inspection.statusDescription}
+                                            </p>
 
-                {/* Status row with icon (DYNAMIC) */}
-                <div className="flex items-center gap-2 mt-1">
-                    <img
-                        // Dynamic icon source
-                        src={props.iconSrc}
-                        alt={props.statusText}
-                        className="w-[19.09px] h-[19.09px]"
-                    />
-                    <span 
-                        // Dynamic status text color
-                        className={`font-inter font-normal text-[16.71px] leading-[23.87px] ${props.statusColor}`}
-                    >
-                        {/* Dynamic Status Text */}
-                        {props.statusText}
-                    </span>
-                </div>
-            </div>
-        );
-    })}
-</div>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Image
+                                                    src={props.iconSrc}
+                                                    alt={props.statusText}
+                                                    width={19}
+                                                    height={19}
+                                                    className="w-[19.09px] h-[19.09px]"
+                                                />
+                                                <span 
+                                                    className={`font-inter font-normal text-[16.71px] leading-[23.87px] ${props.statusColor}`}
+                                                >
+                                                    {props.statusText}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         <div className="w-[711.38px] h-[415.37px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col gap-4">
                             <div className="ml-4 mt-1">
-                                {/* Main Heading */}
                                 <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
                                 Ownership & Financial
                                 </h3>
 
-                                {/* Sub Heading */}
                                 <h4 className="font-inter mt-4 ml-1 font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
                                 Ownership Information
                                 </h4>
                             </div>
-
-                            {/* Row with Texts */}
                             
                             <div className="flex justify-between items-center mx-5">
                                 <span className="font-inter font-normal text-[19.1px] leading-[20px] text-[#4B5563]">
@@ -1343,7 +1347,7 @@ useEffect(() => {
                                 Administrator:
                                 </span>
                                 <span className="font-inter font-medium text-[19.1px] leading-[20px] text-[#000000]">
-                               {facility.administrator_name || 'N/A'} 
+                               {facility.administrator_name || ''} 
                                 </span>
                             </div>
 
@@ -1396,7 +1400,7 @@ useEffect(() => {
       flex 
       flex-col 
       lg:flex-row 
-      gap-2   /* reduce from gap-6 to gap-2 or gap-0 */
+      gap-2 
     "
   >
     <div className="flex flex-col w-2/3 ml-3">
@@ -1426,12 +1430,9 @@ useEffect(() => {
             p-4 
         "
     >
-        {/* INTERACTIVE GOOGLE MAP IFRAME */}
-        <iframe
+        {/* <iframe
             title={`Map for ${facility.provider_name}`}
-            // Use the dynamically generated URL
             src={getGoogleMapsIframeSrc(facility.latitude, facility.longitude, facility.provider_name)}
-            // Match the desired visual size/styling
             className="
                 w-full 
                 h-full
@@ -1442,9 +1443,16 @@ useEffect(() => {
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
         >
-            {/* Fallback content for browsers that don't support iframes */}
             <p>Map not available. Coordinates: {facility.latitude}, {facility.longitude}</p>
-        </iframe>
+        </iframe> */}
+         <MapView
+            facilities={facilityCoords}
+            centerCoords={mapCenter}
+            googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+            locationName={facility?.provider_name}
+            markerIconUrl="/icons/red_hospital_pin.png"
+            />
+
     </div>
     </div>
 
@@ -1466,9 +1474,11 @@ useEffect(() => {
         
                     {/* Row 1 */}
                     <div className="flex items-start mt-4 gap-3">
-                        <img
+                        <Image
                             src="/icons/location_icon (2).png"  
                             alt="Location Icon"
+                            width={14}
+                             height={19}
                             className="w-[14.32px] mt-2 h-[19.09px] object-contain"
                         />
                         {/* Text */}
@@ -1481,9 +1491,11 @@ useEffect(() => {
                     </div>
 
                     <div className="flex items-start gap-3 mt-2">
-                        <img
+                        <Image
                         src="/icons/phone_icon.png"
                         alt="Phone"
+                        width={19}
+                        height={19}
                         className="w-[19.09px] h-[19.09px] object-contain mt-3"
                         />
                         <p className="mt-2 font-inter font-medium text-[19.1px] leading-[22.65px] text-[#000000]">
@@ -1492,10 +1504,12 @@ useEffect(() => {
                     </div>
 
                     <div className="flex items-start gap-3 mt-3.5">
-                        <img
+                        <Image
                         src="/icons/message_icon.png"
                         alt="Email"
-                        className="w-[19.09px] h-[14.09px] object-contain mt-3"
+                        width={19}
+                        height={14}
+                        className="w-[19.09px] h-[14.09px]  object-contain mt-3"
                         />
                         <p className="mt-1 font-inter font-medium text-[19.1px] leading-[22.65px] text-[#000000]">
                         info@sunsetmanor.com
@@ -1510,9 +1524,11 @@ useEffect(() => {
                         Transportation
                     </h3>
                     <div className="flex items-center gap-3 mt-5">
-                        <img
+                        <Image
                         src="/icons/transpotation_icon.png"
                         alt="Bus Icon"
+                        width={19}
+                        height={19}
                         className="w-[19.09px] h-[19.09px]"
                         />
                         <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000]">
@@ -1520,9 +1536,11 @@ useEffect(() => {
                         </p>
                     </div>
                      <div className="flex items-center gap-3 mt-5">
-                        <img
+                        <Image
                         src="/icons/car_icon.png"
                         alt="Bus Icon"
+                        width={19}
+                        height={19}
                         className="w-[19.09px] h-[19.09px]"
                         />
                         <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000]">
@@ -1530,10 +1548,12 @@ useEffect(() => {
                         </p>
                     </div>
                      <div className="flex items-center gap-3 mt-5">
-                        <img
+                        <Image
                         src="/icons/wheel_chair_icon.png"
                         alt="Bus Icon"
-                        className="w-[19.09px] h-[19.09px]"
+                         width={19}
+                        height={19}
+                        className="w-[19.09px] h-[19.09px]"                       
                         />
                         <p className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#000000]">
                         Wheelchair accessible entrance

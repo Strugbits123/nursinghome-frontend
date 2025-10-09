@@ -1,5 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import Image from "next/image";
 
 export function AISummary() {
     return (
@@ -11,19 +10,22 @@ export function AISummary() {
                             Smarter Decisions with{' '}
                             <span className="text-[#C71F37]">AI Summaries</span>
                             {/* Flower icon */}
-                            <img
-                            src="/herbs-BCkTGihn.svg fill.png"
-                            alt="flower icon"
-                            className="absolute"
-                            style={{
-                                width: '40px',             
-                                height: '40px',              
-                                transform: 'rotate(-7deg)',  
-                                top: '2540.44px',              
-                                left: '1218.13px',            
-                                opacity: 1          
-                            }}
-                            />
+                            
+                            <Image
+                                src="/herbs-BCkTGihn.svg fill.png"
+                                alt="flower icon"
+                                width={40} // Extracted from style: width: '40px'
+                                height={40} // Extracted from style: height: '40px'
+                                className="absolute"
+                                style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    transform: 'rotate(-7deg)',
+                                    top: '2540.44px',
+                                    left: '1218.13px',
+                                    opacity: 1
+                                }}
+                                />
                         </h2>
                         <p
                             className="w-[864px] text-[18px] leading-[28px] font-inter font-normal text-gray-700 text-center"
@@ -35,11 +37,13 @@ export function AISummary() {
                     <div className="w-full flex flex-row justify-between space-x-8">
                         <div className="w-[632.96px] h-[505.49px] rounded-[13.19px] bg-gray-100 opacity-100 flex flex-col p-8 mt-20">
                             <div className="flex items-center px-4 py-2 rounded-md w-fit mb-4">
-                                <img
-                                    src="/coma.png" 
+                                <Image
+                                    src="/coma.png"
                                     alt="Icon"
+                                    width={24} // Rounded up from 23.08px
+                                    height={27} // Rounded up from 26.37px
                                     className="w-[23.08px] h-[26.37px] mr-3"
-                                />
+                                    />
                                 <p
                                     className="text-black font-bold"
                                     style={{
@@ -86,11 +90,13 @@ export function AISummary() {
 
                         <div className="w-[632.96px] h-[661.53px] rounded-[13.19px] bg-gradient-to-br from-[#EFF6FF] to-[#FAF5FF] opacity-100 flex flex-col items-start p-6 space-y-6">
                             <div className="flex items-center gap-3">
-                                <img
+                                <Image
                                     src="/brain.png"
                                     alt="AI Icon"
+                                    width={27} // Rounded up from 26.37px
+                                    height={27} // Rounded up from 26.37px
                                     className="w-[26.37px] h-[26.37px] opacity-100"
-                                />
+                                    />
                                 <h3 className="text-[#212121] font-inter font-bold text-[26.37px] leading-[35.16px]">
                                     AI-Powered Summary
                                 </h3>
@@ -98,11 +104,12 @@ export function AISummary() {
 
                             <div className="w-[558.23px] h-[245.16px] bg-[#F0FDF4] rounded-[8.79px] border border-[#BBF7D0] p-[16px_8px] flex flex-col space-y-4">
                                 <div className="flex items-center gap-2 w-[520.87px] h-[26.37px] pt-[18.68px] pl-[18.68px]">
-
-                                    <img
-                                        src="/like.png"
-                                        alt="Icon"
-                                        className="w-[17.58px] h-[17.58px]"
+                                   <Image
+                                    src="/like.png"
+                                    alt="Icon"
+                                    width={18} // Rounded up from 17.58px
+                                    height={18} // Rounded up from 17.58px
+                                    className="w-[17.58px] h-[17.58px]"
                                     />
                                     <h4
                                         className="font-inter font-bold text-[17.58px] leading-[26.37px] text-[#166534]"
@@ -115,10 +122,12 @@ export function AISummary() {
                                 <div className="w-[520.87px] h-[158.24px] bg-[#F0FDF4] rounded-md pt-[18.68px] pl-[18.68px] flex flex-col gap-2">
 
                                     <div className="flex items-start gap-2 w-full h-[52.75px]">
-                                        <img
-                                            src="/right.png"
-                                            alt="Check Icon"
-                                            className="w-[15.38px] h-[15.38px] mt-1"
+                                       <Image
+                                        src="/right.png"
+                                        alt="Check Icon"
+                                        width={16} // Rounded up from 15.38px
+                                        height={16} // Rounded up from 15.38px
+                                        className="w-[15.38px] h-[15.38px] mt-1"
                                         />
                                         <p
                                             className="text-[#15803D] font-inter font-normal text-[17.58px] leading-[26.37px]"
@@ -128,11 +137,13 @@ export function AISummary() {
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-2 w-full h-[26.37px]">
-                                        <img
+                                        <Image
                                             src="/right.png"
                                             alt="Check Icon"
+                                            width={16} // Rounded up from 15.38px
+                                            height={16} // Rounded up from 15.38px
                                             className="w-[15.38px] h-[15.38px] mt-1"
-                                        />
+                                            />
                                         <p
                                             className="text-[#15803D] font-inter font-normal text-[17.58px] leading-[26.37px]"
                                             style={{ width: '449.62px', height: '26.37px' }}
@@ -141,11 +152,13 @@ export function AISummary() {
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-2 w-full h-[26.37px]">
-                                        <img
+                                        <Image
                                             src="/right.png"
                                             alt="Check Icon"
+                                            width={16} // Rounded up from 15.38px
+                                            height={16} // Rounded up from 15.38px
                                             className="w-[15.38px] h-[15.38px] mt-1"
-                                        />
+                                            />
                                         <p
                                             className="text-[#15803D] font-inter font-normal text-[17.58px] leading-[26.37px]"
                                             style={{ width: '449.62px', height: '26.37px' }}
@@ -154,10 +167,12 @@ export function AISummary() {
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-2 w-full h-[26.37px]">
-                                        <img
-                                            src="/right.png"
-                                            alt="Check Icon"
-                                            className="w-[15.38px] h-[15.38px] mt-1"
+                                      <Image
+                                        src="/right.png"
+                                        alt="Check Icon"
+                                        width={16} // Rounded up from 15.38px
+                                        height={16} // Rounded up from 15.38px
+                                        className="w-[15.38px] h-[15.38px] mt-1"
                                         />
                                         <p
                                             className="text-[#15803D] font-inter font-normal text-[17.58px] leading-[26.37px]"
@@ -171,10 +186,12 @@ export function AISummary() {
                             </div>
                             <div className="w-[558.23px] h-[138.46px] bg-[#FFF7ED] rounded-[8.79px] border border-[#FED7AA] p-[16px_8px]">
                                 <div className="flex items-center gap-[8px] w-[520.87px] h-[26.37px] pt-[18.68px] pl-[18.68px]">
-                                    <img
-                                        src="/improvement.png"
-                                        alt="Improvement Icon"
-                                        className="w-[17.58px] h-[17.58px] opacity-100"
+                                    <Image
+                                    src="/improvement.png"
+                                    alt="Improvement Icon"
+                                    width={18} // Rounded up from 17.58px
+                                    height={18} // Rounded up from 17.58px
+                                    className="w-[17.58px] h-[17.58px] opacity-100"
                                     />
                                     <h4
                                         className="font-inter font-bold text-[17.58px] leading-[26.37px] text-[#9A3412]"
@@ -185,20 +202,24 @@ export function AISummary() {
                                 </div>
                                 <div className="w-[520.87px] pl-[18.68px] mt-[18.68px] flex flex-col gap-2">
                                     <div className="flex items-center gap-2 w-[520.87px] h-[26.37px]">
-                                        <img
-                                            src="/Vector.png"
-                                            alt="Item Icon"
-                                            className="w-[15.38px] h-[15.38px]"
+                                        <Image
+                                        src="/Vector.png"
+                                        alt="Item Icon"
+                                        width={16} // Rounded up from 15.38px
+                                        height={16} // Rounded up from 15.38px
+                                        className="w-[15.38px] h-[15.38px]"
                                         />
                                         <p className="font-inter text-[17.58px] leading-[26.37px] text-[#9A3412]">
                                             Older building infrastructure needs updating
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2 w-[520.87px] h-[26.37px]">
-                                        <img
-                                            src="/Vector.png"
-                                            alt="Item Icon"
-                                            className="w-[15.38px] h-[15.38px]"
+                                        <Image
+                                        src="/Vector.png"
+                                        alt="Item Icon"
+                                        width={16} // Rounded up from 15.38px
+                                        height={16} // Rounded up from 15.38px
+                                        className="w-[15.38px] h-[15.38px]"
                                         />
                                         <p className="font-inter text-[17.58px] leading-[26.37px] text-[#9A3412]">
                                             Dining options could be more varied and flavorful
@@ -237,23 +258,18 @@ export function AISummary() {
                     How Our AI Works
                 </h3>
 
-                {/* 3-row gap with icon + heading + text */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* Step */}
                     <div className="flex flex-col items-center text-center max-w-[300px]">
-                        {/* Icon wrapper */}
-                        <div
-                            className="w-[52.74px] h-[52.74px] rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: '#FAE8EB' }}
-                        >
-                            <img
-                            src="/ai_work1.png" // your image path
-                            alt="Data collection"
-                            className="w-[15.38px] h-[17.58px]"
-                            />
+                        <div className="w-[52.74px] h-[52.74px] rounded-full flex items-center justify-center" style={{ backgroundColor: '#FAE8EB' }}>
+                            <Image
+                        src="/ai_work1.png"
+                        alt="Data collection"
+                        width={16} // Rounded up from 15.38px
+                        height={18} // Rounded up from 17.58px
+                        className="w-[15.38px] h-[17.58px]"
+                        />
                         </div>
 
-                        {/* Heading */}
                         <h4
                             className="font-inter font-semibold text-[17.58px] leading-[26.37px] text-[#212121] mt-4"
                             style={{ width: '130.21px', height: '26.37px' }}
@@ -261,22 +277,23 @@ export function AISummary() {
                             Data Collection
                         </h4>
 
-                        {/* Text */}
-                        <p
-                            className="font-inter text-[15.38px] leading-[21.98px] text-[#707070] mt-2"
-                            style={{ width: '265.09px', height: '40.65px' }}
-                        >
+                        <p className="font-inter text-[15.38px] leading-[21.98px] text-[#707070] mt-2" style={{ width: '265.09px', height: '40.65px' }}>
                             Analyzes reviews from Google, CMS reports, and facility data
                         </p>
                         </div>
 
-                        {/* Repeat for Step 2 */}
                         <div className="flex flex-col items-center text-center max-w-[300px]">
                         <div
                             className="w-[52.74px] h-[52.74px] rounded-full flex items-center justify-center"
                             style={{ backgroundColor: '#FAE8EB' }}
                         >
-                            <img src="/ai_work2.png" alt="Analysis" className="w-[21.98px] h-[17.58px]" />
+                            <Image 
+                            src="/ai_work2.png" 
+                            alt="Analysis" 
+                            width={22} // Rounded up from 21.98px
+                            height={18} // Rounded up from 17.58px
+                            className="w-[21.98px] h-[17.58px]" 
+                            />
                         </div>
                         <h4 className="font-inter font-semibold text-[17.58px] leading-[26.37px] text-[#212121] mt-4">
                             Smart Analysis
@@ -292,7 +309,13 @@ export function AISummary() {
                             className="w-[52.74px] h-[52.74px] rounded-full flex items-center justify-center"
                             style={{ backgroundColor: '#FAE8EB' }}
                         >
-                            <img src="/ai_work3.png" alt="Summary" className="w-[13.19px] h-[17.58px]" />
+                            <Image 
+                            src="/ai_work3.png" 
+                            alt="Summary" 
+                            width={14} // Rounded up from 13.19px
+                            height={18} // Rounded up from 17.58px
+                            className="w-[13.19px] h-[17.58px]" 
+                            />
                         </div>
                         <h4 className="font-inter font-semibold text-[17.58px] leading-[26.37px] text-[#212121] mt-4">
                             Clear Insights
@@ -303,9 +326,6 @@ export function AISummary() {
                         </div>
                     </div>
                 </div>
-
-
-
 
                 </div>
             </div>

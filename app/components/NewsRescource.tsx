@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 export function NewRescource () {
   return (
@@ -17,9 +18,11 @@ export function NewRescource () {
               <div className="bg-white w-[416px] h-[606.22px] rounded-[16px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.07)] flex flex-col">
                 {/* Image */}
                 <div className="relative w-[416px] h-[277.22px] rounded-t-[16px] overflow-hidden">
-                  <img
+                  <Image
                     src="/modern_healthcare.png"
                     alt="Card image"
+                    width={500} // Placeholder width for w-full
+                    height={300} // Placeholder height for h-full
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-[rgba(255,255,255,0)]" />
@@ -41,9 +44,11 @@ export function NewRescource () {
 
                 <div className="mt-auto w-[416px] h-[54px] bg-white border-t border-[#EFEFEF] rounded-b-[16px] flex items-center px-8 justify-between">
                   <div className="flex items-center space-x-2">
-                    <img
+                    <Image
                       src="/icons/date.png" 
                       alt="Date icon"
+                      width={14}
+                      height={14}
                       className="w-[14px] h-[14px]"
                     />
                     <span className="font-jost font-medium text-[14px] leading-[21px] text-[#212529]">
@@ -52,9 +57,11 @@ export function NewRescource () {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <img
+                    <Image
                       src="/icons/eye.png"
                       alt="Eye icon"
+                      width={14}
+                      height={10} 
                       className="
                         w-[14px]      
                         h-[9.625px]   
@@ -73,11 +80,14 @@ export function NewRescource () {
                <div className="bg-white w-[416px] h-[606.22px] rounded-[16px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.07)] flex flex-col">
                 {/* Image */}
                 <div className="relative w-[416px] h-[277.22px] rounded-t-[16px] overflow-hidden">
-                  <img
+                  <Image
                     src="/elderly_residents.png"
                     alt="Card image"
+                    width={500} // Placeholder width for w-full
+                    height={300} // Placeholder height for h-full
                     className="w-full h-full object-cover"
                   />
+
                   <div className="absolute inset-0 bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-[rgba(255,255,255,0)]" />
                 </div>
 
@@ -98,9 +108,11 @@ export function NewRescource () {
 
                 <div className="mt-auto w-[416px] h-[54px] bg-white border-t border-[#EFEFEF] rounded-b-[16px] flex items-center px-8 justify-between">
                   <div className="flex items-center space-x-2">
-                    <img
+                    <Image
                       src="/icons/date.png" 
                       alt="Date icon"
+                      width={14}
+                      height={14}
                       className="w-[14px] h-[14px]"
                     />
                     <span className="font-jost font-medium text-[14px] leading-[21px] text-[#212529]">
@@ -109,9 +121,11 @@ export function NewRescource () {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <img
+                    <Image
                       src="/icons/eye.png"
                       alt="Eye icon"
+                      width={14}
+                      height={10}
                       className="
                         w-[14px]      
                         h-[9.625px]   
@@ -129,9 +143,11 @@ export function NewRescource () {
                <div className="bg-white w-[416px] h-[606.22px] rounded-[16px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.07)] flex flex-col">
                 {/* Image */}
                 <div className="relative w-[416px] h-[277.22px] rounded-t-[16px] overflow-hidden">
-                  <img
+                  <Image
                     src="/family members visiting elderly relative in bright modern nursing home room.png"
                     alt="Card image"
+                    width={500}
+                    height={300} 
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-[rgba(255,255,255,0.15)] to-[rgba(255,255,255,0)]" />
@@ -153,9 +169,11 @@ export function NewRescource () {
 
                 <div className="mt-auto w-[416px] h-[54px] bg-white border-t border-[#EFEFEF] rounded-b-[16px] flex items-center px-8 justify-between">
                   <div className="flex items-center space-x-2">
-                    <img
+                    <Image
                       src="/icons/date.png" 
                       alt="Date icon"
+                      width={14}
+                      height={14}
                       className="w-[14px] h-[14px]"
                     />
                     <span className="font-jost font-medium text-[14px] leading-[21px] text-[#212529]">
@@ -164,9 +182,11 @@ export function NewRescource () {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <img
+                    <Image
                       src="/icons/eye.png"
                       alt="Eye icon"
+                      width={14}
+                      height={10} 
                       className="
                         w-[14px]      
                         h-[9.625px]   

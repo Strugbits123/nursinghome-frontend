@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 
 export default function FacilityPage() {
   const params = useParams();
@@ -39,7 +40,7 @@ export default function FacilityPage() {
       {google?.photos?.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6">
           {google.photos.slice(0, 6).map((url: string, i: number) => (
-            <img
+            <Image
               key={i}
               src={url}
               alt={facility.name}

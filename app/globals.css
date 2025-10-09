@@ -149,6 +149,18 @@ html, body {
   }
 }
 
+/* tailwind.css or global.css */
+.filter-btn {
+  @apply flex items-center justify-center rounded-[9.3px] bg-white border border-[#D1D5DB] px-4 gap-x-3 h-[44.19px];
+}
+.icon {
+  @apply w-[18px] h-[18px];
+}
+.icon-small {
+  @apply w-[12px] h-[7px];
+}
+
+
 
 @keyframes placeHolderShimmer {
     0% {
@@ -170,4 +182,13 @@ html, body {
     background-size: 800px 104px;
     position: relative;
     /* Other properties will be handled by Tailwind classes */
+}
+
+/* Hide scrollbar for horizontal pagination overflow */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

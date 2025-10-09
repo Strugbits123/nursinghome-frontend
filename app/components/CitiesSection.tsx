@@ -1,16 +1,9 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 export function CitiesSection() {
-    const cities = [
-        { name: "Los Angeles, CA", image: "/la.jpg" },
-        { name: "New York, NY", image: "/ny.jpg" },
-        { name: "Chicago, IL", image: "/chicago.jpg" },
-        { name: "Houston, TX", image: "/houston.jpg" },
-        { name: "Miami, FL", image: "/miami.jpg" },
-        { name: "Seattle, WA", image: "/seattle.jpg" },
-    ];
 
     return (
         <section
@@ -66,9 +59,11 @@ export function CitiesSection() {
 
                     <div className="relative rounded-[16px] overflow-hidden shadow"
                         style={{ width: "636px", height: "300px" }}>
-                        <img
+                        <Image
                             src="/New York.png"
                             alt="New York, NY"
+                            width={500}
+                            height={300}
                             className="w-full h-full object-cover"
                         />
                         {/* overlay */}
@@ -209,9 +204,11 @@ export function CitiesSection() {
                         className="relative rounded-[16px] overflow-hidden shadow"
                         style={{ width: "306px", height: "300px" }}
                     >
-                        <img
+                        <Image
                             src="/Los Angeles.png"
                             alt="Los Angeles, CA"
+                            width={500} // Placeholder width
+                            height={300} // Placeholder height
                             className="w-full h-full object-cover"
                         />
 
@@ -353,9 +350,11 @@ export function CitiesSection() {
                         className="relative rounded-[16px] overflow-hidden shadow"
                         style={{ width: "306px", height: "300px" }}
                     >
-                        <img
+                        <Image
                             src="/Mexico City.png"
                             alt="Mexico City"
+                            width={500} // Placeholder width
+                            height={300} // Placeholder height
                             className="w-full h-full object-cover"
                         />
 
@@ -499,9 +498,11 @@ export function CitiesSection() {
                         className="relative rounded-[16px] overflow-hidden shadow"
                         style={{ width: "306px", height: "300px" }}
                     >
-                        <img
+                        <Image
                             src="/Toronto.jpg"
                             alt="Toronto, TO"
+                            width={500} // Placeholder width
+                            height={300} // Placeholder height
                             className="w-full h-full object-cover"
                         />
 
@@ -641,9 +642,11 @@ export function CitiesSection() {
                         className="relative rounded-[16px] overflow-hidden shadow"
                         style={{ width: "306px", height: "300px" }}
                     >
-                        <img
+                        <Image
                             src="/Montreal.png"
                             alt="Montreal, MO"
+                            width={500} // Placeholder width
+                            height={300} // Placeholder height
                             className="w-full h-full object-cover"
                         />
 
@@ -781,9 +784,11 @@ export function CitiesSection() {
                         className="relative rounded-[16px] overflow-hidden shadow"
                         style={{ width: "636px", height: "300px" }}
                     >
-                        <img
+                        <Image
                             src="/Chicago.png"
                             alt="Chicago, CG"
+                            width={500} // Placeholder width
+                            height={300} // Placeholder height
                             className="w-full h-full object-cover"
                         />
 
@@ -891,13 +896,7 @@ export function CitiesSection() {
                 </div>
                 {/* Button */}
                 <button
-                    className="
-    mx-auto mt-10 
-    flex items-center justify-center gap-3
-    rounded-[8px]
-    bg-[#C71F37]
-    shadow-[0_2px_4px_-2px_rgba(0,0,0,0.1),0_4px_6px_-1px_rgba(0,0,0,0.1)]
-  "
+                    className="mx-auto mt-10 flex items-center justify-center gap-3 rounded-[8px] bg-[#C71F37] shadow-[0_2px_4px_-2px_rgba(0,0,0,0.1),0_4px_6px_-1px_rgba(0,0,0,0.1)]"
                     style={{ width: '285px', height: '52px' }}
                 >
                     {/* Button Text */}
@@ -915,10 +914,12 @@ export function CitiesSection() {
                     </span>
 
                     {/* Icon on the right */}
-                    <img
-                        src="/arrow-btn.png"
+                    <Image
+                        src="/arrow_btn.png"
                         alt="Arrow Icon"
-                        className="w-[15.74px] h-[15.74px]" /* no absolute here */
+                         width={16}
+                        height={16}
+                        className="w-[15.74px] h-[15.74px]"
                     />
                 </button>
 

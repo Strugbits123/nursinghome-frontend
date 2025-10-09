@@ -10,7 +10,7 @@ import FacilityServices from "../components/facilityDetail/FacilityServices";
 import { Button } from "@/components/ui/button"
 import { SearchNursing } from '../components/SearchNursing';
 import { Footer } from '../components/Footer';
-
+import Image from "next/image";
 
 // interface FacilityDetailPageProps {
 //   params: { id: string; slug: string };
@@ -47,7 +47,7 @@ export default async function FacilityDetailPage() {
             <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
                 <div className="max-w-[1856px] h-[46px] mx-auto px-[32px] flex items-center justify-between">
                     {/* Logo */}
-                    <img
+                    <Image
                         src="/footer_icon.png"
                         alt="NursingHome Logo"
                         className="w-[176px] h-[47px] mt-7 ml-30"
@@ -88,8 +88,8 @@ export default async function FacilityDetailPage() {
                                 onClick={handleLogout}
                                 className="flex cursor-pointer items-center w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-4 py-6"
                             >
-                                <img
-                                    src="/arrow-btn.png"
+                                <Image
+                                    src="/arrow_btn.png"
                                     alt="Logout icon"
                                     className="w-[18.78px] h-[18.78px] mr-2"
                                 />
@@ -102,7 +102,7 @@ export default async function FacilityDetailPage() {
                                 onClick={() => setOpenAuth(true)}
                                 className="flex cursor-pointer items-center w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-4 py-6"
                             >
-                                <img
+                                <Image
                                     src="/icons/header_sign.png"
                                     alt="Sign in icon"
                                     className="w-[18.78px] h-[18.78px]  mr-2"
@@ -113,16 +113,16 @@ export default async function FacilityDetailPage() {
                             </div>
                         )}
 
-                        <button className="flex items-center justify-center w-[163.37px] h-[54px] bg-white hover:bg-[#a91a2e] rounded-[7.04px] px-4">
-                            {/* <img
+                        {/* <button className="flex items-center justify-center w-[163.37px] h-[54px] bg-white hover:bg-[#a91a2e] rounded-[7.04px] px-4"> */}
+                            {/* <Image
                 src="/icons/faciltiy_search_svg.png"
                 alt="Add icon"
                 className="w-[18.78px] h-[18.78px] fill-red-500  mr-2 invert"
                 /> */}
-                            <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
+                            {/* <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
                                 Add Listing
                             </span>
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
@@ -141,19 +141,19 @@ export default async function FacilityDetailPage() {
             <section className="w-full h-[60px] bg-[#F5F5F5] flex items-center justify-between px-22 ">
                 <div className="flex items-center gap-x-2 text-[#4B5563] mx-25 font-inter font-normal text-[16.28px] leading-[23.26px]">
                     <span className="align-middle">Home</span>
-                    <img
+                    <Image
                         src="/icons/search_fac_right_icon.png"
                         alt="Arrow"
                         className="w-[8.72px] h-[13.95px] align-middle"
                     />
                     <span className="align-middle">California</span>
-                    <img
+                    <Image
                         src="/icons/search_fac_right_icon.png"
                         alt="Arrow"
                         className="w-[8.72px] h-[13.95px] align-middle"
                     />
                     <span className="align-middle">Los Angeles</span>
-                    <img
+                    <Image
                         src="/icons/search_fac_right_icon.png"
                         alt="Arrow"
                         className="w-[8.72px] h-[13.95px] align-middle"
@@ -164,16 +164,16 @@ export default async function FacilityDetailPage() {
                 </div>
 
 
-                <button className="flex items-center gap-2 bg-[#F5F5F5] text-[#C71F37] px-4 mx-45 py-2 hover:bg-[#f5f5f5] transition">
-                    <img
+                {/* <button className="flex items-center gap-2 bg-[#F5F5F5] text-[#C71F37] px-4 mx-45 py-2 hover:bg-[#f5f5f5] transition"> */}
+                    {/* <Image
                         src="/icons/facility_search_heart_icon.png"
                         alt="Save icon"
                         className="w-[16.28px] h-[16.28px]"
-                    />
-                    <span className="font-inter font-normal text-[16.28px] leading-[23.26px] text-center">
+                    /> */}
+                    {/* <span className="font-inter font-normal text-[16.28px] leading-[23.26px] text-center">
                         Save Search
-                    </span>
-                </button>
+                    </span> */}
+                {/* </button> */}
             </section>
 
             <div className="w-full h-[572px] bg-white mt-[33px]">
@@ -188,7 +188,7 @@ export default async function FacilityDetailPage() {
                         </p>
                         <div className="flex items-center space-x-3 mt-4">
                             <button className="flex items-center px-4 h-[40.42px] w-[90px] rounded-[20px] bg-[#D02B38]">
-                                <img
+                                <Image
                                     src="/icons/Vector (3).png"
                                     alt="Star"
                                     className="w-[22.74px] h-[20.21px] mr-2"
@@ -202,7 +202,7 @@ export default async function FacilityDetailPage() {
                                     CMS Overall Rating
                                 </span>
                                 <div className="flex items-center space-x-2">
-                                    <img
+                                    <Image
                                         src="/icons/Bed_icon.png"
                                         alt="Beds"
                                         className="w-[22.1px] h-[17.68px]"
@@ -276,7 +276,7 @@ export default async function FacilityDetailPage() {
                         </div>
                         <div className="mt-6">
                             <button className="flex items-center justify-center w-[241.34px] h-[60.63px] bg-[#D02B38] rounded-[10.11px] hover:bg-red-700 transition gap-x-3">
-                                <img
+                                <Image
                                     src="/icons/Cell_phone_icon.png"
                                     alt="Contact Icon"
                                     className="w-[20.21px] h-[20.21px]"
@@ -291,7 +291,7 @@ export default async function FacilityDetailPage() {
                     <div className="w-1/4 flex flex-col space-y-4">
                         <div className="w-[458px] h-[323px] rounded-[10.11px] bg-[#F5F5F5] flex items-center justify-center">
                             <span className="font-inter font-medium text-[16px] text-[#111827]">
-                                <img
+                                <Image
                                     src="/modern nursing home exterior with beautiful landscaping and welcoming entrance.png"
                                     alt="Image 1"
                                     className="w-full h-full rounded-[10.11px] object-cover"
@@ -301,7 +301,7 @@ export default async function FacilityDetailPage() {
                         <div className="w-[458px] h-[23px] flex items-center  space-x-2 mt-12">
                             <div className="w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center">
                                 <span className="text-xs text-[#111827]">
-                                    <img
+                                    <Image
                                         src="/nursing home dining room with residents eating.png"
                                         alt="Image 1"
                                         className="w-full h-full rounded-[10.11px] object-cover"
@@ -309,14 +309,14 @@ export default async function FacilityDetailPage() {
                                 </span>
                             </div>
                             <div className="w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center">
-                                <span className="text-xs text-[#111827]"> <img
+                                <span className="text-xs text-[#111827]"> <Image
                                     src="/nursing home activity room with elderly residents.png"
                                     alt="Image 1"
                                     className="w-full h-full rounded-[10.11px] object-cover"
                                 /></span>
                             </div>
                             <div className="w-[146px] h-[101px] rounded-[5.05px] bg-gray-200 flex items-center justify-center">
-                                <span className="text-xs text-[#111827]"> <img
+                                <span className="text-xs text-[#111827]"> <Image
                                     src="/nursing home garden courtyard with benches.png"
                                     alt="Image 1"
                                     className="w-full h-full rounded-[10.11px] object-cover"
@@ -343,7 +343,7 @@ export default async function FacilityDetailPage() {
                             </h3>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img
+                                    <Image
                                         src="/icons/medical_icon1.png"
                                         alt="Nursing"
                                         className="w-[20.88px] h-[23.87px] mr-3 "
@@ -353,7 +353,7 @@ export default async function FacilityDetailPage() {
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img
+                                    <Image
                                         src="/icons/medical_icon2.png"
                                         alt=""
                                         className="w-[27px] h-[23.87px] mr-3 "
@@ -363,25 +363,25 @@ export default async function FacilityDetailPage() {
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon3.png" alt="" className="w-[23.88px] h-[23.87px] mr-3 " />
+                                    <Image src="/icons/medical_icon3.png" alt="" className="w-[23.88px] h-[23.87px] mr-3 " />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Skilled Doctors
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon4.png" alt="" className="w-[23.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon4.png" alt="" className="w-[23.88px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Emergency Response
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon5.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon5.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Pharmacy Support
                                     </span>
                                 </div>
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon6.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon6.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Rehab Programs
                                     </span>
@@ -396,7 +396,7 @@ export default async function FacilityDetailPage() {
 
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img
+                                    <Image
                                         src="/icons/medical_icon1.png"
                                         alt="Nursing"
                                         className="w-[20.88px] h-[23.87px] mr-3 "
@@ -407,7 +407,7 @@ export default async function FacilityDetailPage() {
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img
+                                    <Image
                                         src="/icons/medical_icon2.png"
                                         alt=""
                                         className="w-[27px] h-[23.87px] mr-3 "
@@ -418,28 +418,28 @@ export default async function FacilityDetailPage() {
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon3.png" alt="" className="w-[23.88px] h-[23.87px] mr-3 " />
+                                    <Image src="/icons/medical_icon3.png" alt="" className="w-[23.88px] h-[23.87px] mr-3 " />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Garden Courtyard
                                     </span>
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon4.png" alt="" className="w-[23.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon4.png" alt="" className="w-[23.88px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Activity Room
                                     </span>
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon5.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon5.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Library
                                     </span>
                                 </div>
 
                                 <div className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-4">
-                                    <img src="/icons/medical_icon6.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
+                                    <Image src="/icons/medical_icon6.png" alt="" className="w-[20.88px] h-[23.87px] mr-3" />
                                     <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-black">
                                         Entertainment Room
                                     </span>
@@ -498,7 +498,7 @@ export default async function FacilityDetailPage() {
                             </h3>
 
                             <div className="flex items-center mt-5 gap-3">
-                                <img
+                                <Image
                                     src="/icons/phone_icon.png"
                                     alt="Phone"
                                     className="w-[19.1px] h-[19.1px]"
@@ -509,7 +509,7 @@ export default async function FacilityDetailPage() {
                                 </span>
                             </div>
                             <div className="flex items-center mt-4 gap-3">
-                                <img
+                                <Image
                                     src="/icons/email_icon.png"
                                     alt="email"
                                     className="w-[19.1px] h-[15px]"
@@ -526,7 +526,7 @@ export default async function FacilityDetailPage() {
                                 </span>
                             </div>
                             <div className="flex items-center mt-4  gap-3">
-                                <img
+                                <Image
                                     src="/icons/location_icon (2).png"
                                     alt="Phone"
                                     className="w-[14.32px] h-[19.1px]"
@@ -536,7 +536,7 @@ export default async function FacilityDetailPage() {
                                 </span>
                             </div>
                             <div className="flex items-center  mt-4 gap-3">
-                                <img
+                                <Image
                                     src="/icons/earth_icon.png"
                                     alt="Phone"
                                     className="w-[19.1px] h-[19.1px]"
@@ -581,7 +581,7 @@ export default async function FacilityDetailPage() {
                                 </div>
                             </div>
                             <div className="flex items-center mt-10">
-                                <img
+                                <Image
                                     src="/icons/expectation_icon.png"
                                     alt="phone"
                                     className="w-[16.71px] h-[16.71px] mr-2"
@@ -614,7 +614,7 @@ export default async function FacilityDetailPage() {
                                 </h3>
 
                                 <div className="flex items-center gap-2">
-                                    <img
+                                    <Image
                                         src="/icons/star_icon.png"
                                         alt="star"
                                         className="w-[19.1px] h-[19.1px]"
@@ -629,7 +629,7 @@ export default async function FacilityDetailPage() {
                             </div>
 
                             <div className="w-[897.58px] h-[211.26px] border-b-[1.19px] mt-8 border-gray-300 flex items-start ">
-                                <img
+                                <Image
                                     src="/Reviewer1.png"
                                     alt="Sarah Johnson"
                                     className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4"
@@ -640,11 +640,11 @@ export default async function FacilityDetailPage() {
                                     </h4>
                                     <div className="flex items-center mt-1">
                                         <div className="flex mr-3">
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px]" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px]" />
                                         </div>
                                         <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
                                             2 weeks ago
@@ -660,7 +660,7 @@ export default async function FacilityDetailPage() {
                                 </div>
                             </div>
                             <div className="w-[897.58px] h-[211.26px] border-b-[1.19px] mt-8 border-gray-300 flex items-start ">
-                                <img
+                                <Image
                                     src="/Reviewer2.png"
                                     alt="Michael Chen"
                                     className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4"
@@ -671,11 +671,11 @@ export default async function FacilityDetailPage() {
                                     </h4>
                                     <div className="flex items-center mt-1">
                                         <div className="flex mr-3">
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px]" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px]" />
                                         </div>
                                         <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
                                             1 month ago
@@ -690,7 +690,7 @@ export default async function FacilityDetailPage() {
                                 </div>
                             </div>
                             <div className="w-[897.58px] h-[211.26px] border-b-[1.19px] mt-8 border-gray-300 flex items-start ">
-                                <img
+                                <Image
                                     src="/Reviewer3.png"
                                     alt="Linda Martinez"
                                     className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4"
@@ -701,11 +701,11 @@ export default async function FacilityDetailPage() {
                                     </h4>
                                     <div className="flex items-center mt-1">
                                         <div className="flex mr-3">
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px]" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px]" />
                                         </div>
                                         <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
                                             2 months ago
@@ -721,7 +721,7 @@ export default async function FacilityDetailPage() {
                                 </div>
                             </div>
                             <div className="w-[897.58px] h-[211.26px] mt-8 border-gray-300 flex items-start ">
-                                <img
+                                <Image
                                     src="/Reviewer4.png"
                                     alt="Robert Davis"
                                     className="w-[57.29px] h-[57.29px] rounded-full object-cover mr-4"
@@ -732,11 +732,11 @@ export default async function FacilityDetailPage() {
                                     </h4>
                                     <div className="flex items-center mt-1">
                                         <div className="flex mr-3">
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
-                                            <img src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px]" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/star_icon.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px] mr-1" />
+                                            <Image src="/icons/empty_star.png" alt="star" className="w-[19.09px] h-[19.09px]" />
                                         </div>
                                         <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
                                             3 months ago
@@ -761,7 +761,7 @@ export default async function FacilityDetailPage() {
                                         AI-Generated Summary
                                     </h3>
                                     <div className="flex items-center mt-2 space-x-2">
-                                        <img src="/icons/like_icon.png" alt="Pros" className="w-[19.09px] h-[19.09px]" />
+                                        <Image src="/icons/like_icon.png" alt="Pros" className="w-[19.09px] h-[19.09px]" />
                                         <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#16A34A]">
                                             Pros
                                         </span>
@@ -769,38 +769,38 @@ export default async function FacilityDetailPage() {
                                     {/* Pros List */}
                                     <div className="mt-2 w-[401.05px] h-[157.55px] flex flex-col gap-3">
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
+                                            <Image src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 Caring and attentive nursing staff
                                             </span>
                                         </div>
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
+                                            <Image src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 Clean and well-maintained facilities
                                             </span>
                                         </div>
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
+                                            <Image src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 Engaging activities program
                                             </span>
                                         </div>
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
+                                            <Image src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 Professional medical director
                                             </span>
                                         </div>
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
+                                            <Image src="/icons/check_icon.png" alt="icon" className="w-[12.53px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 Convenient location
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex items-center mt-7 space-x-2">
-                                        <img src="/icons/dislike_icon.png" alt="Cons" className="w-[19.09px] h-[19.09px]" />
+                                        <Image src="/icons/dislike_icon.png" alt="Cons" className="w-[19.09px] h-[19.09px]" />
                                         <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#DC2626]">
                                             Cons
                                         </span>
@@ -808,25 +808,25 @@ export default async function FacilityDetailPage() {
                                     {/* Cons List */}
                                     <div className="mt-2 w-[401.05px] h-[157.55px] flex flex-col gap-3">
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
+                                            <Image src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 Communication could be improved
                                             </span>
                                         </div>
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
+                                            <Image src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 Limited dining options
                                             </span>
                                         </div>
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
+                                            <Image src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 High staff turnover
                                             </span>
                                         </div>
                                         <div className="flex items-center h-[23.87px]">
-                                            <img src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
+                                            <Image src="/icons/cross_icon.png" alt="icon" className="w-[10.74px] h-[14.32px]" />
                                             <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
                                                 Common areas need updates
                                             </span>
@@ -922,7 +922,7 @@ export default async function FacilityDetailPage() {
                             Overall Rating
                         </h3>
                         <div className="w-[407.41px] h-[229.17px] bg-white ml-3 mb-4">
-                            <img
+                            <Image
                             src="/Container (1).png"
                             alt="Rating Chart"
                             className="w-full h-full object-cover"
@@ -958,7 +958,7 @@ export default async function FacilityDetailPage() {
                            Staffing Levels
                         </h3>
                         <div className="w-[407.41px] h-[229.17px] bg-white ml-3 mb-4">
-                            <img
+                            <Image
                             src="/Container (2).png"
                             alt="Rating Chart"
                             className="w-full h-full object-cover"
@@ -996,7 +996,7 @@ export default async function FacilityDetailPage() {
                             Quality Measures
                         </h3>
                         <div className="w-[407.41px] h-[229.17px] bg-white  ml-3 mb-4">
-                            <img
+                            <Image
                             src="/Container (3).png"
                             alt="Rating Chart"
                             className="w-full h-full object-cover"
@@ -1055,7 +1055,7 @@ export default async function FacilityDetailPage() {
 
                                         {/* Status row with icon */}
                                         <div className="flex items-center gap-2 mt-1">
-                                            <img
+                                            <Image
                                             src="/icons/right_icon (2).png"
                                             alt="Passed"
                                             className="w-[19.09px] h-[19.09px]"
@@ -1079,7 +1079,7 @@ export default async function FacilityDetailPage() {
                                             1 deficiency found - Under review
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <img
+                                            <Image
                                             src="/icons/timer_icon.png"
                                             alt="Passed"
                                             className="w-[19.09px] h-[19.09px]"
@@ -1211,7 +1211,7 @@ export default async function FacilityDetailPage() {
         "
       >
         {/* Map image */}
-        <img
+        <Image
           src="/map_location.png"
           alt="Map"
           className="
@@ -1243,7 +1243,7 @@ export default async function FacilityDetailPage() {
         
                     {/* Row 1 */}
                     <div className="flex items-start mt-4 gap-3">
-                        <img
+                        <Image
                             src="/icons/location_icon (2).png"  
                             alt="Location Icon"
                             className="w-[14.32px] mt-2 h-[19.09px] object-contain"
@@ -1258,7 +1258,7 @@ export default async function FacilityDetailPage() {
                     </div>
 
                     <div className="flex items-start gap-3 mt-2">
-                        <img
+                        <Image
                         src="/icons/phone_icon.png"
                         alt="Phone"
                         className="w-[19.09px] h-[19.09px] object-contain mt-3"
@@ -1269,7 +1269,7 @@ export default async function FacilityDetailPage() {
                     </div>
 
                     <div className="flex items-start gap-3 mt-3.5">
-                        <img
+                        <Image
                         src="/icons/message_icon.png"
                         alt="Email"
                         className="w-[19.09px] h-[14.09px] object-contain mt-3"
@@ -1287,7 +1287,7 @@ export default async function FacilityDetailPage() {
                         Transportation
                     </h3>
                     <div className="flex items-center gap-3 mt-5">
-                        <img
+                        <Image
                         src="/icons/transpotation_icon.png"
                         alt="Bus Icon"
                         className="w-[19.09px] h-[19.09px]"
@@ -1297,7 +1297,7 @@ export default async function FacilityDetailPage() {
                         </p>
                     </div>
                      <div className="flex items-center gap-3 mt-5">
-                        <img
+                        <Image
                         src="/icons/car_icon.png"
                         alt="Bus Icon"
                         className="w-[19.09px] h-[19.09px]"
@@ -1307,7 +1307,7 @@ export default async function FacilityDetailPage() {
                         </p>
                     </div>
                      <div className="flex items-center gap-3 mt-5">
-                        <img
+                        <Image
                         src="/icons/wheel_chair_icon.png"
                         alt="Bus Icon"
                         className="w-[19.09px] h-[19.09px]"

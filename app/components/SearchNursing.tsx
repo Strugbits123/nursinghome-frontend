@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 export function SearchNursing() {
     return (
@@ -74,9 +75,11 @@ export function SearchNursing() {
                             gap: "10px",
                         }}
                     >
-                        <img
+                       <Image
                             src="/vector_search_nursing.png"
                             alt="Search Icon"
+                            width={18} // Extracted from style
+                            height={18} // Extracted from style
                             style={{
                                 width: "18px",
                                 height: "18px",
@@ -110,9 +113,11 @@ export function SearchNursing() {
                             gap: "10px",
                         }}
                     >
-                        <img
+                       <Image
                             src="/phone_search_icon.png"
                             alt="Expert Icon"
+                            width={18} // Extracted from style
+                            height={18} // Extracted from style
                             style={{
                                 width: "18px",
                                 height: "18px",
@@ -143,11 +148,13 @@ export function SearchNursing() {
                     }}
                 >
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <img
+                        <Image
                             src="/nursing_sm_search.png"
                             alt="Free to use"
+                            width={16} // Extracted from style
+                            height={16} // Extracted from style
                             style={{ width: "16px", height: "16px" }}
-                        />
+                            />
                         <span
                             style={{
                                 fontFamily: "Inter",
@@ -162,11 +169,13 @@ export function SearchNursing() {
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <img
+                        <Image
                             src="/nursing_sm_search.png"
-                            alt="Trusted platform"
+                            alt="Free to use"
+                            width={16} // Extracted from style
+                            height={16} // Extracted from style
                             style={{ width: "16px", height: "16px" }}
-                        />
+                            />
                         <span
                             style={{
                                 fontFamily: "Inter",
@@ -181,9 +190,11 @@ export function SearchNursing() {
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <img
+                        <Image
                             src="/nursing_sm_search.png"
                             alt="Fast search"
+                            width={16} // Extracted from style
+                            height={16} // Extracted from style
                             style={{ width: "16px", height: "16px" }}
                         />
                         <span
@@ -280,9 +291,11 @@ export function SearchNursing() {
                             padding: "0 16px",
                         }}
                     >
-                        <img
+                        <Image
                             src="/svg.png"
                             alt="Subscribe Icon"
+                            width={20} 
+                            height={20}
                             style={{
                                 width: "20px",
                                 height: "20px",

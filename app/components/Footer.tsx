@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 export function Footer() {
     return (
@@ -10,10 +11,12 @@ export function Footer() {
                 <div style={{ display: "flex", gap: "40px" }}>
                     <div style={{ width: "250px", marginRight: "220px" }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginLeft: "20px", marginBottom: "16px" }}>
-                            <img
+                            <Image
                                 src="/footer_icon.png"
                                 alt="Logo Icon"
                                 style={{ width: "176px", height: "47px" }}
+                                 width={176} 
+                                height={47}
                             />
                         </div>
                         <p
@@ -43,9 +46,11 @@ export function Footer() {
                                     alignItems: "center",
                                 }}
                             >
-                                <img
+                                <Image
                                     src="/facebook.png"
                                     alt="Facebook"
+                                    width={176} 
+                                    height={47}
                                     style={{ width: "10px", height: "16px" }}
                                 />
                             </div>
@@ -60,9 +65,11 @@ export function Footer() {
                                     alignItems: "center",
                                 }}
                             >
-                                <img
+                                <Image
                                     src="/twitter.png"
                                     alt="Twitter"
+                                    width={16} 
+                                    height={16}
                                     style={{ width: "16px", height: "16px" }}
                                 />
                             </div>
@@ -77,9 +84,11 @@ export function Footer() {
                                     alignItems: "center",
                                 }}
                             >
-                                <img
+                                <Image
                                     src="/linkedin.png"
                                     alt="LinkedIn"
+                                    width={16} 
+                                    height={16}
                                     style={{ width: "16px", height: "16px" }}
                                 />
                             </div>
@@ -94,9 +103,11 @@ export function Footer() {
                                     alignItems: "center",
                                 }}
                             >
-                                <img
+                                <Image
                                     src="/instagram.png"
                                     alt="Instagram"
+                                    width={14} 
+                                    height={16}
                                     style={{ width: "14px", height: "16px" }}
                                 />
                             </div>

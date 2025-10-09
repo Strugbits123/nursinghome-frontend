@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import Image from "next/image";
 
 export function TopRatedFeatured() {
     return (
@@ -18,16 +19,18 @@ export function TopRatedFeatured() {
                         backgroundColor: "#C71F37",
                     }}
                 >
-                    <img
+                   <Image
                         src="/arrow.png"
                         alt="Left Arrow"
+                        width={12} // Rounded up from 11.86px
+                        height={21} // Rounded up from 20.56px
                         style={{
                             width: "11.86px",
                             height: "20.56px",
                             transform: "rotate(360deg)",
                             color: "#FFFFFF",
                         }}
-                    />
+                        />
                 </div>
 
                 <div className="mx-auto rounded-xl bg-white" style={{ width: "1280px", height: "650px" }}>
@@ -63,11 +66,14 @@ export function TopRatedFeatured() {
 
                     <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="relative rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden" style={{ width: '384px', height: '422px', boxShadow: '0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)', }}>
-                            <img
+                            <Image
                                 src="/cozy nursing home with warm interior, family-friendly senior care center.png"
                                 alt="Facility 1"
+                                width={382} 
+                                height={192} 
                                 className="w-[382px] h-[192px] object-cover rounded-t-2xl"
-                            />
+                                />
+
                             <div className="absolute flex items-center justify-center"
                                 style={{
                                     top: '18px',
@@ -79,14 +85,16 @@ export function TopRatedFeatured() {
                                     padding: '0 8px',
                                 }}
                             >
-                                <img
+                                <Image
                                     src="/crown.png"
                                     alt="Sponsored icon"
+                                    width={16} // Rounded up from 15.75px
+                                    height={14}
                                     style={{
                                         width: '15.75px',
                                         height: '14px',
                                     }}
-                                />
+                                    />
                                 <span
                                     style={{
                                         fontFamily: 'Inter',
@@ -102,11 +110,11 @@ export function TopRatedFeatured() {
                             </div>
                             <div className="flex items-center justify-center gap-2 mt-6 ml-2 px-4">
                                 <div className="flex items-center gap-1">
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
                                 </div>
                                 <span
                                     style={{
@@ -255,10 +263,12 @@ export function TopRatedFeatured() {
 
                             <div className="flex items-center justify-between mt-9 ml-2 px-6">
                                 <div className="flex items-center gap-2">
-                                    <img
-                                        src="/bed.png"
-                                        alt="Bed Icon"
-                                        className="w-[17.5px] h-[14px]"
+                                    <Image
+                                    src="/bed.png"
+                                    alt="Bed Icon"
+                                    width={18} // Rounded up from 17.5px
+                                    height={14} 
+                                    className="w-[17.5px] h-[14px]"
                                     />
                                     <span
                                         className="text-[#707070]"
@@ -299,18 +309,21 @@ export function TopRatedFeatured() {
                                     '0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)',
                             }}
                         >
-                            <img
+                           <Image
                                 src="/elegant nursing home with beautiful landscaping, luxury senior care facility.png"
                                 alt="Facility 1"
+                                width={382} 
+                                height={192} 
                                 className="w-[382px] h-[192px] object-cover rounded-t-2xl"
-                            />
+                                />
+
                             <div className="flex items-center gap-2 justify-center mt-6 ml-2 px-4">
                                 <div className="flex items-center gap-1">
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
                                 </div>
                                 <span
                                     style={{
@@ -458,9 +471,11 @@ export function TopRatedFeatured() {
                             </div>
                             <div className="flex items-center justify-between mt-9 ml-2 px-6">
                                 <div className="flex items-center gap-2">
-                                    <img
+                                    <Image
                                         src="/bed.png"
                                         alt="Bed Icon"
+                                        width={18}
+                                        height={14} 
                                         className="w-[17.5px] h-[14px]"
                                     />
                                     <span
@@ -502,18 +517,20 @@ export function TopRatedFeatured() {
                                     '0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)',
                             }}
                         >
-                            <img
+                            <Image
                                 src="/cozy nursing home with warm interior, family-friendly senior care center.png"
                                 alt="Facility 1"
+                                width={382} 
+                                height={192} 
                                 className="w-[382px] h-[192px] object-cover rounded-t-2xl"
                             />
                             <div className="flex items-center gap-2 mt-6 ml-2 px-4">
                                 <div className="flex items-center gap-1">
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                                    <img src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
+                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
                                 </div>
                                 <span
                                     style={{
@@ -661,10 +678,12 @@ export function TopRatedFeatured() {
                             </div>
                             <div className="flex items-center justify-between mt-9 ml-2 px-6">
                                 <div className="flex items-center gap-2">
-                                    <img
+                                    <Image
                                         src="/bed.png"
                                         alt="Bed Icon"
                                         className="w-[17.5px] h-[14px]"
+                                        width={18}
+                                        height={14} 
                                     />
                                     <span
                                         className="text-[#707070]"
@@ -722,9 +741,11 @@ export function TopRatedFeatured() {
                             View All Featured Facilities
                         </span>
 
-                        <img
-                            src="/arrow-btn.png"
+                        <Image
+                            src="/arrow_btn.png"
                             alt="Arrow Icon"
+                            width={16}
+                            height={16}
                             style={{
                                 width: "15.74px",
                                 height: "15.74px",
@@ -743,9 +764,11 @@ export function TopRatedFeatured() {
                         backgroundColor: "#C71F37",
                     }}
                 >
-                    <img
+                    <Image
                         src="/arrow.png"
-                        alt="Left Arrow"
+                        alt="Right Arrow"
+                         width={12}
+                        height={21}
                         style={{
                             width: "11.86px",
                             height: "20.56px",
