@@ -358,7 +358,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
         const fetchFacilityDetails = async () => {
             setIsLoading(true);
             const facilityName = slug.replace(/-/g, ' ');
-            const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api/facilities/details';
+            const API_URL = process.env.NEXT_PUBLIC_API_URL + '/facilities/details';
             const params = new URLSearchParams({ name: facilityName }); 
             const url = `${API_URL}?${params.toString()}`;
             
