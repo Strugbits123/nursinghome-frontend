@@ -26,7 +26,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   setError(""); // clear previous error
 
   try {
-    const endpoint = isLogin ? `${API_URL}/api/auth/login` : `${API_URL}/api/auth/register`;
+    const endpoint = isLogin ? `${API_URL}/auth/login` : `${API_URL}/auth/register`;
     const body = isLogin
       ? { email: email.trim().toLowerCase(), password: password.trim() }
       : {
