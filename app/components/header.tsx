@@ -40,7 +40,7 @@ export function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
-          <a href="#" className="font-inter font-black text-[14px] text-white capitalize">Homeawddw dw</a>
+          <a href="#" className="font-inter font-black text-[14px] text-white capitalize">Homeawasdwddw dw</a>
           <a href="#" className="font-inter font-medium text-[16px] text-white capitalize">What’s New!</a>
           <a href="#" className="font-inter font-medium text-[16px] text-white capitalize">News</a>
           <a href="#" className="font-inter font-medium text-[16px] text-white capitalize">Contact</a>
