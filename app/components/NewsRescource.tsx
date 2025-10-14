@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 export function NewRescource () {
   return (
@@ -9,6 +10,16 @@ export function NewRescource () {
             <h2 className="text-center font-jost font-bold text-[24px] sm:text-[32px] leading-[28.8px] sm:leading-[38.4px] w-auto sm:w-[382px] h-auto sm:h-[46px]">Latest News &
                 <span className="text-[#C71F37]"> Resources</span>
             </h2>
+             <Image
+                  src="/herbs-BCkTGihn.svg fill.png"
+                  alt="flower icon"
+                  className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
+                  width={40}
+                  height={40}
+                  style={{
+                      transform: 'rotate(-7deg)',  
+                  }}
+              />
             <p className="text-center font-inter font-normal text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] text-[#707070] w-full sm:w-[790px] h-auto sm:h-[28px] px-4 sm:px-0">
                 Stay informed with the latest healthcare news and helpful resources for senior care.
             </p>

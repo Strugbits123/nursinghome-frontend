@@ -82,14 +82,16 @@ export function ResultsSection() {
           See <span className="text-[#C71F37]">Results</span> Your Way
           <span className="absolute inset-0 -z-10 bg-[#C71F37]/10 rounded" />
         </h2>
-        <Image 
-          src="/herbs-BCkTGihn.svg fill.png" 
-          alt="flower icon" 
-          className="absolute hidden lg:block"
-          width={40}
-          height={40}
-          style={{ transform: 'rotate(-7deg)', top: '-12.44px', right: '-20px', opacity: 1 }} 
-        />
+        <Image
+              src="/herbs-BCkTGihn.svg fill.png"
+              alt="flower icon"
+              className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
+              width={40}
+              height={40}
+              style={{
+                  transform: 'rotate(-7deg)',  
+              }}
+          />
 
         <p className="max-w-xl text-gray-700 text-base sm:text-lg">
           Switch between map and list views to find the perfect nursing home location.
@@ -147,7 +149,7 @@ export function ResultsSection() {
           </div>
 
           {/* Map + List */}
-          <div className={`flex flex-col lg:flex-row gap-4 lg:gap-6 mt-2`}>
+          <div className={`flex flex-col  bg-[#F3F4F6] lg:flex-row gap-4 lg:gap-6 mt-2`}>
             {/* Map: only show in Map View */}
             {viewMode === "map" && (
               <div
@@ -156,16 +158,27 @@ export function ResultsSection() {
                 ${viewMode === "map" ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"}
               `}
               >
-                <div className="w-full h-[300px] sm:h-[344px] rounded-lg overflow-hidden">
+               {/* <div className="w-full h-[300px] sm:h-[344px] rounded-lg overflow-hidden flex justify-center items-center"> */}
+                 <Image
+                  src="/map_location.png"
+                  alt="Map Preview"
+                  width={601}
+                  height={344}
+                  className="rounded-[12.9px] object-cover opacity-100"
+                />
+
+                {/* </div> */}
+
+                {/* <div className="w-full h-[300px] sm:h-[344px] rounded-lg overflow-hidden">
 
 
-                </div>
+                </div> */}
               </div>
             )}
 
             {/* Facilities List */}
-            <div className={`${viewMode === "map" ? "w-full lg:w-1/2" : "w-full"} flex flex-col gap-4 max-h-[400px]  p-2 transition-all duration-500 ease-in-out`}>
-              <div className="bg-white rounded-xl border border-[#E5E7EB] flex flex-col justify-between px-3 sm:px-4 py-3 sm:py-4 min-h-[120px] sm:min-h-[126px] w-full">
+            <div className={`${viewMode === "map" ? "w-full lg:w-1/2" : "w-full"} flex flex-col bg-white gap-4 max-h-[400px] pb-2 px-2 pt-0 transition-all duration-500 ease-in-out`}>
+              <div className="rounded-xl border border-[#E5E7EB] flex flex-col justify-between px-3 sm:px-4 py-3 sm:py-4 min-h-[120px] sm:min-h-[126px] w-full">
                 <div className="flex justify-between items-start gap-2">
                   <div className="flex flex-col items-start flex-1 min-w-0">
                     <h4 className="font-inter font-semibold text-sm sm:text-base  lg:text-[17.2px] leading-tight text-[#212121] truncate w-full">

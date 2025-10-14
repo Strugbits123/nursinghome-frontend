@@ -269,7 +269,6 @@ export default function Home() {
         });
       }
 
-      // refresh after setup
       const refresh = () => locoScroll.update();
       ScrollTrigger.addEventListener("refresh", refresh);
       ScrollTrigger.refresh();
@@ -298,9 +297,7 @@ export default function Home() {
             backgroundImage: `url('/b20ba9d675afe9a11e0416efde3e22d2fb92f8a4.png')`,
           }}
         >
-          {/* overlay */}
           <div className="absolute inset-0 bg-[#020D16] opacity-60 z-0"></div>
-          {/* header + hero */}
           <div className="relative z-10">
 
             <Header />

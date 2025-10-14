@@ -1,6 +1,7 @@
 "use client"
 
 import React, { memo, Suspense, lazy } from "react"
+import Image from "next/image";
 
 // Lazy load Swiper components
 const Swiper = lazy(() => import('swiper/react').then(module => ({ default: module.Swiper })));
@@ -345,6 +346,16 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
                             Featured Top-Rated{" "}
                             <span style={{ color: "#C71F37" }}>Facilities</span>
                         </h2>
+                        <Image
+                                      src="/herbs-BCkTGihn.svg fill.png"
+                                      alt="flower icon"
+                                      className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
+                                      width={40}
+                                      height={40}
+                                      style={{
+                                          transform: 'rotate(-7deg)',  
+                                      }}
+                                  />
                     </div>
                     <p
                         className="mx-auto text-center"

@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Star, Brain, Building } from "lucide-react";
 import { useRef } from "react";
 import { useCountUp } from "../hooks/useCountUp";
+import Image from "next/image";
+
 type Feature = {
   icon: React.ElementType;
   title: string;
@@ -58,6 +60,16 @@ export function TrustedSection() {
           <p className="text-sm sm:text-lg max-w-2xl mx-auto text-[#212121]">
             Our comprehensive database includes verified information from CMS, real family reviews, and AI-powered insights.
           </p>
+          <Image
+              src="/herbs-BCkTGihn.svg fill.png"
+              alt="flower icon"
+              className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
+              width={40}
+              height={40}
+              style={{
+                  transform: 'rotate(-7deg)',  
+              }}
+          />
         </div>
 
         {/* Features grid */}

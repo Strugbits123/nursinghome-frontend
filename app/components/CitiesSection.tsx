@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 export function CitiesSection() {
     const cities = [
@@ -39,7 +40,16 @@ export function CitiesSection() {
                     Explore Listings By{" "}
                     <span style={{ color: "#C71F37" }}>Cities</span>
                 </h2>
-
+                <Image
+                    src="/herbs-BCkTGihn.svg fill.png"
+                    alt="flower icon"
+                    className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
+                    width={40}
+                    height={40}
+                    style={{
+                        transform: 'rotate(-7deg)',  
+                    }}
+                />
                 {/* description */}
                 <div className="flex justify-center mt-4 px-4">
                     <p

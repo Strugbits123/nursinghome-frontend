@@ -6,12 +6,10 @@ export function AISummary() {
         <section className="w-full flex justify-center py-4 sm:py-8">
             <div className="w-[90%] max-w-[1578px] min-h-fit bg-white flex justify-center items-start p-4 sm:p-8">
                 <div className="w-full max-w-[1406.57px] rounded-xl flex flex-col items-center p-4 sm:p-8 space-y-8 sm:space-y-12">
-                    {/* Header Section */}
                     <div className="flex flex-col items-center text-center gap-4 relative">
                         <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] leading-tight sm:leading-[38.4px] font-jost font-bold text-black text-center px-4">
                             Smarter Decisions with{' '}
                             <span className="text-[#C71F37]">AI Summaries</span>
-                            {/* Flower icon */}
                             <img
                                 src="/herbs-BCkTGihn.svg fill.png"
                                 alt="flower icon"
@@ -26,9 +24,7 @@ export function AISummary() {
                         </p>
                     </div>
 
-                    {/* Main Content Section */}
                     <div className="w-full flex flex-col lg:flex-row justify-between gap-8 lg:space-x-8">
-                        {/* Traditional Reviews Section */}
                         <div className="w-full lg:w-[632.96px] min-h-fit lg:h-[505.49px] rounded-[13.19px] bg-gray-100 opacity-100 flex flex-col p-4 sm:p-6 lg:p-8 mt-8 lg:mt-20">
                             <div className="flex items-center px-2 sm:px-4 py-2 rounded-md w-fit mb-4">
                                 <img
