@@ -1,42 +1,341 @@
 "use client"
 
-import React from "react"
-import Image from "next/image";
+import React, { memo, Suspense, lazy } from "react"
 
-export function TopRatedFeatured() {
+// Lazy load Swiper components
+const Swiper = lazy(() => import('swiper/react').then(module => ({ default: module.Swiper })));
+const SwiperSlide = lazy(() => import('swiper/react').then(module => ({ default: module.SwiperSlide })));
+
+// Import Swiper modules normally (not lazy loaded as they're not components)
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+
+// Lazy load Swiper styles
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
+
+// Facility data
+const facilities = [
+    {
+        id: 1,
+        name: "Heritage Manor",
+        location: "Los Angeles, CA • 2.3 miles away",
+        rating: 4.9,
+        reviewCount: 127,
+        cmsRating: "5-Star CMS",
+        cmsColor: "#DCFCE7",
+        cmsTextColor: "#166534",
+        image: "/cozy nursing home with warm interior, family-friendly senior care center.png",
+        services: [
+            { name: "Memory Care", bgColor: "#DBEAFE", textColor: "#1E40AF" },
+            { name: "Skilled Nursing", bgColor: "#F3E8FF", textColor: "#6B21A8" },
+            { name: "Rehabilitation", bgColor: "#FFEDD5", textColor: "#9A3412" }
+        ],
+        beds: 120,
+        sponsored: true
+    },
+    {
+        id: 2,
+        name: "Serenity Springs",
+        location: "Miami, FL • 1.8 miles away",
+        rating: 4.7,
+        reviewCount: 89,
+        cmsRating: "5-Star CMS",
+        cmsColor: "#DCFCE7",
+        cmsTextColor: "#166534",
+        image: "/elegant nursing home with beautiful landscaping, luxury senior care facility.png",
+        services: [
+            { name: "Assisted Living", bgColor: "#DBEAFE", textColor: "#1E40AF" },
+            { name: "Independent Living", bgColor: "#DCFCE7", textColor: "#166534" },
+            { name: "Respite Care", bgColor: "#FEF9C3", textColor: "#854D0E" }
+        ],
+        beds: 120,
+        sponsored: false
+    },
+    {
+        id: 3,
+        name: "Comfort Care Center",
+        location: "Chicago, IL • 3.1 miles away",
+        rating: 4.4,
+        reviewCount: 156,
+        cmsRating: "4-Star CMS",
+        cmsColor: "#DBEAFE",
+        cmsTextColor: "#1E40AF",
+        image: "/cozy nursing home with warm interior, family-friendly senior care center.png",
+        services: [
+            { name: "Long-term Care", bgColor: "#FEE2E2", textColor: "#991B1B" },
+            { name: "Hospice Care", bgColor: "#E0E7FF", textColor: "#3730A3" },
+            { name: "Palliative Care", bgColor: "#FCE7F3", textColor: "#9D174D" }
+        ],
+        beds: 120,
+        sponsored: false
+    }
+]
+
+// Facility Card Component
+const FacilityCard = ({ facility }: { facility: typeof facilities[0] }) => (
+    <div className="relative rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden mx-auto w-full max-w-[384px] h-[422px]" style={{ boxShadow: '0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)' }}>
+        <img
+            src={facility.image}
+            alt={facility.name}
+            className="w-full h-[192px] object-cover rounded-t-2xl"
+        />
+        {facility.sponsored && (
+            <div className="absolute flex items-center justify-center"
+                style={{
+                    top: '18px',
+                    left: '18px',
+                    width: '117.17px',
+                    height: '28px',
+                    backgroundColor: '#FEF9C3',
+                    borderRadius: '9999px',
+                    padding: '0 8px',
+                }}
+            >
+                <img
+                    src="/crown.png"
+                    alt="Sponsored icon"
+                    style={{
+                        width: '15.75px',
+                        height: '14px',
+                    }}
+                />
+                <span
+                    style={{
+                        fontFamily: 'Inter',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: '#212121',
+                        marginLeft: '6px',
+                        lineHeight: '17px',
+                    }}
+                >
+                    Sponsored
+                </span>
+            </div>
+        )}
+        <div className="flex items-center gap-2 justify-center mt-6 ml-2 px-4">
+            <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                    <img key={i} src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
+                ))}
+            </div>
+            <span
+                style={{
+                    fontFamily: 'Inter',
+                    fontWeight: 400,
+                    fontStyle: 'normal',
+                    fontSize: '14px',
+                    lineHeight: '20px',
+                    color: '#707070',
+                }}
+            >
+                {facility.rating} ({facility.reviewCount} reviews)
+            </span>
+            <div
+                className="flex items-center ml-12 justify-center"
+                style={{
+                    width: '82.84px',
+                    height: '24px',
+                    backgroundColor: facility.cmsColor,
+                    borderRadius: '9999px',
+                }}
+            >
+                <span
+                    style={{
+                        width: '67.14px',
+                        height: '15px',
+                        fontFamily: 'Inter',
+                        fontWeight: 500,
+                        fontStyle: 'medium',
+                        fontSize: '12px',
+                        lineHeight: '16px',
+                        textAlign: 'center',
+                        color: facility.cmsTextColor,
+                    }}
+                >
+                    {facility.cmsRating}
+                </span>
+            </div>
+        </div>
+        <div className="ml-3">
+            <h3
+                style={{
+                    fontFamily: 'Inter',
+                    fontWeight: 600,
+                    fontStyle: 'semi-bold',
+                    fontSize: '20px',
+                    lineHeight: '28px',
+                    color: '#212121',
+                    marginTop: '8px',
+                    marginLeft: '16px',
+                }}
+            >
+                {facility.name}
+            </h3>
+            <p
+                style={{
+                    fontFamily: 'Inter',
+                    fontWeight: 400,
+                    fontStyle: 'normal',
+                    fontSize: '14px',
+                    lineHeight: '20px',
+                    color: '#707070',
+                    marginTop: '4px',
+                    marginLeft: '16px',
+                }}
+            >
+                {facility.location}
+            </p>
+            <div className="flex gap-2 mt-2 ml-4 flex-wrap">
+                {facility.services.map((service, index) => (
+                    <div
+                        key={index}
+                        style={{
+                            height: '24px',
+                            backgroundColor: service.bgColor,
+                            borderRadius: '9999px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '0 8px',
+                            minWidth: 'fit-content',
+                        }}
+                    >
+                        <span
+                            style={{
+                                fontFamily: 'Inter',
+                                fontWeight: 400,
+                                fontSize: '12px',
+                                lineHeight: '16px',
+                                color: service.textColor,
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {service.name}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+        <div className="flex items-center justify-between mt-9 ml-2 px-6">
+            <div className="flex items-center gap-2">
+                <img
+                    src="/bed.png"
+                    alt="Bed Icon"
+                    className="w-[17.5px] h-[14px]"
+                />
+                <span
+                    className="text-[#707070]"
+                    style={{
+                        fontFamily: "Inter",
+                        fontWeight: 400,
+                        fontSize: "14px",
+                        lineHeight: "20px",
+                    }}
+                >
+                    {facility.beds} beds available
+                </span>
+            </div>
+            <button
+                className="rounded-lg"
+                style={{
+                    width: "114.5px",
+                    height: "36px",
+                    backgroundColor: "#C71F37",
+                    color: "#FFFFFF",
+                    fontFamily: "Inter",
+                    fontWeight: 500,
+                    fontSize: "16px",
+                    lineHeight: "20px",
+                    textAlign: "center",
+                }}
+            >
+                View Details
+            </button>
+        </div>
+    </div>
+)
+
+const TopRatedFeatured = memo(function TopRatedFeatured() {
     return (
-        <section
-            className="mx-auto bg-white rounded-2xl"
-            style={{ width: "1436px", height: "778px" }}
-        >
-
+        <>
+            <style jsx global>{`
+                .facility-swiper .swiper-pagination-bullet-custom {
+                    width: 12px;
+                    height: 12px;
+                    background-color: #E5E7EB;
+                    opacity: 1;
+                    margin: 0 6px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                .facility-swiper .swiper-pagination-bullet-active-custom {
+                    background-color: #C71F37;
+                    transform: scale(1.2);
+                }
+                .facility-swiper .swiper-pagination {
+                    bottom: -50px;
+                    position: relative;
+                }
+                .swiper-button-prev-custom,
+                .swiper-button-next-custom {
+                    opacity: 1;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                    user-select: none;
+                }
+                .swiper-button-prev-custom:hover,
+                .swiper-button-next-custom:hover {
+                    opacity: 0.8;
+                    transform: scale(1.05);
+                }
+                .swiper-button-prev-custom:active,
+                .swiper-button-next-custom:active {
+                    transform: scale(0.95);
+                }
+                .swiper-button-prev-custom.swiper-button-disabled,
+                .swiper-button-next-custom.swiper-button-disabled {
+                    opacity: 0.3;
+                    cursor: not-allowed;
+                }
+                .facility-swiper .swiper-slide {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+            `}</style>
+            <section
+                className="mx-auto bg-white rounded-2xl w-full max-w-[1436px] px-4 md:px-0"
+                style={{ minHeight: "778px" }}
+            >
             <div className="relative flex items-center justify-center">
+                {/* Desktop Navigation - Left Arrow */}
                 <div
-                    className="flex items-center justify-center rounded-full "
+                    className="hidden md:flex items-center justify-center rounded-full cursor-pointer swiper-button-prev-custom"
                     style={{
                         width: "42.7px",
                         height: "42.7px",
                         backgroundColor: "#C71F37",
                     }}
                 >
-                   <Image
+                    <img
                         src="/arrow.png"
                         alt="Left Arrow"
-                        width={12} // Rounded up from 11.86px
-                        height={21} // Rounded up from 20.56px
                         style={{
                             width: "11.86px",
                             height: "20.56px",
                             transform: "rotate(360deg)",
                             color: "#FFFFFF",
                         }}
-                        />
+                    />
                 </div>
 
-                <div className="mx-auto rounded-xl bg-white" style={{ width: "1280px", height: "650px" }}>
+                <div className="mx-auto rounded-xl bg-white w-full max-w-[1280px] px-4 md:px-0" style={{ minHeight: "650px" }}>
                     <div className="flex justify-center items-center gap-2">
                         <h2
-                            className="font-bold leading-[38.4px]"
+                            className="font-bold leading-[38.4px] text-center"
                             style={{
                                 fontFamily: "Jost",
                                 fontSize: "32px",
@@ -50,8 +349,7 @@ export function TopRatedFeatured() {
                     <p
                         className="mx-auto text-center"
                         style={{
-                            width: "640px",
-                            height: "28px",
+                            maxWidth: "640px",
                             marginTop: "12px",
                             fontFamily: "Inter",
                             fontWeight: 400,
@@ -64,663 +362,95 @@ export function TopRatedFeatured() {
                         Discover exceptional nursing homes with outstanding ratings and reviews.
                     </p>
 
-                    <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="relative rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden" style={{ width: '384px', height: '422px', boxShadow: '0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)', }}>
-                            <Image
-                                src="/cozy nursing home with warm interior, family-friendly senior care center.png"
-                                alt="Facility 1"
-                                width={382} 
-                                height={192} 
-                                className="w-[382px] h-[192px] object-cover rounded-t-2xl"
-                                />
+                    {/* Desktop Grid Layout */}
+                    <div className="hidden md:grid mt-12 grid-cols-3 gap-4 justify-center">
+                        {facilities.map((facility) => (
+                            <FacilityCard key={facility.id} facility={facility} />
+                        ))}
+                    </div>
 
-                            <div className="absolute flex items-center justify-center"
+                    {/* Mobile Swiper Layout */}
+                    <div className="md:hidden mt-12">
+                        <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg" />}>
+                            <Swiper
+                                modules={[Navigation, Pagination, Autoplay]}
+                                spaceBetween={20}
+                                slidesPerView={1}
+                                autoplay={{
+                                    delay: 3000,
+                                    disableOnInteraction: false,
+                                    pauseOnMouseEnter: true,
+                                }}
+                                loop={true}
+                                navigation={{
+                                    nextEl: '.swiper-button-next-custom',
+                                    prevEl: '.swiper-button-prev-custom',
+                                }}
+                                pagination={{
+                                    clickable: true,
+                                    bulletClass: 'swiper-pagination-bullet-custom',
+                                    bulletActiveClass: 'swiper-pagination-bullet-active-custom',
+                                }}
+                                className="facility-swiper"
                                 style={{
-                                    top: '18px',
-                                    left: '18px',
-                                    width: '117.17px',
-                                    height: '28px',
-                                    backgroundColor: '#FEF9C3',
-                                    borderRadius: '9999px',
-                                    padding: '0 8px',
+                                    '--swiper-navigation-color': '#C71F37',
+                                    '--swiper-pagination-color': '#C71F37',
+                                } as React.CSSProperties}
+                            >
+                                {facilities.map((facility) => (
+                                    <SwiperSlide key={facility.id}>
+                                        <FacilityCard facility={facility} />
+                                    </SwiperSlide>
+                                ))}
+                            </Swiper>
+                        </Suspense>
+                        
+                        {/* Mobile Navigation Arrows */}
+                        <div className="flex justify-center items-center gap-4 mt-8">
+                            <div
+                                className="flex items-center justify-center rounded-full cursor-pointer swiper-button-prev-custom"
+                                style={{
+                                    width: "42.7px",
+                                    height: "42.7px",
+                                    backgroundColor: "#C71F37",
                                 }}
                             >
-                                <Image
-                                    src="/crown.png"
-                                    alt="Sponsored icon"
-                                    width={16} // Rounded up from 15.75px
-                                    height={14}
+                                <img
+                                    src="/arrow.png"
+                                    alt="Previous Arrow"
                                     style={{
-                                        width: '15.75px',
-                                        height: '14px',
-                                    }}
-                                    />
-                                <span
-                                    style={{
-                                        fontFamily: 'Inter',
-                                        fontSize: '14px',
-                                        fontWeight: 500,
-                                        color: '#212121',
-                                        marginLeft: '6px',
-                                        lineHeight: '17px',
-                                    }}
-                                >
-                                    Sponsored
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-center gap-2 mt-6 ml-2 px-4">
-                                <div className="flex items-center gap-1">
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                </div>
-                                <span
-                                    style={{
-                                        fontFamily: 'Inter',
-                                        fontWeight: 400,
-                                        fontStyle: 'normal',
-                                        fontSize: '14px',
-                                        lineHeight: '20px',
-                                        color: '#707070',
-                                    }}
-                                >
-                                    4.9 (127 reviews)
-                                </span>
-                                <div
-                                    className="flex items-center ml-12 justify-center"
-                                    style={{
-                                        width: '82.84px',
-                                        height: '24px',
-                                        backgroundColor: '#DCFCE7',
-                                        borderRadius: '9999px',
-                                    }}
-                                >
-                                    <span
-                                        style={{
-                                            width: '67.14px',
-                                            height: '15px',
-                                            fontFamily: 'Inter',
-                                            fontWeight: 500,
-                                            fontStyle: 'medium',
-                                            fontSize: '12px',
-                                            lineHeight: '16px',
-                                            textAlign: 'center',
-                                            color: '#166534',
-                                        }}
-                                    >
-                                        5-Star CMS
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="ml-3">
-                                <h3
-                                    style={{
-                                        width: '150.66px',
-                                        height: '28px',
-                                        fontFamily: 'Inter',
-                                        fontWeight: 600,
-                                        fontStyle: 'semi-bold',
-                                        fontSize: '20px',
-                                        lineHeight: '28px',
-                                        color: '#212121',
-                                        marginTop: '8px',
-                                        marginLeft: '16px',
-                                    }}
-                                >
-                                    Heritage Manor
-                                </h3>
-                                <p
-                                    style={{
-                                        width: '223.12px',
-                                        height: '20px',
-                                        fontFamily: 'Inter',
-                                        fontWeight: 400,
-                                        fontStyle: 'normal',
-                                        fontSize: '14px',
-                                        lineHeight: '20px',
-                                        color: '#707070',
-                                        marginTop: '4px',
-                                        marginLeft: '16px',
-
-                                    }}
-                                >
-                                    Los Angeles, CA • 2.3 miles away
-                                </p>
-                                <div className="flex gap-2 mt-2 ml-4">
-                                    <div
-                                        style={{
-                                            width: '93.19px',
-                                            height: '24px',
-                                            backgroundColor: '#DBEAFE',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#1E40AF',
-                                            }}
-                                        >
-                                            Memory Care
-                                        </span>
-                                    </div>
-                                    <div
-                                        style={{
-                                            width: '101.08px',
-                                            height: '24px',
-                                            backgroundColor: '#F3E8FF',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#6B21A8',
-                                            }}
-                                        >
-                                            Skilled Nursing
-                                        </span>
-                                    </div>
-                                    <div
-                                        style={{
-                                            width: '93.19px',
-                                            height: '24px',
-                                            backgroundColor: '#FFEDD5',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#9A3412',
-                                            }}
-                                        >
-                                            Rehabilitation
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between mt-9 ml-2 px-6">
-                                <div className="flex items-center gap-2">
-                                    <Image
-                                    src="/bed.png"
-                                    alt="Bed Icon"
-                                    width={18} // Rounded up from 17.5px
-                                    height={14} 
-                                    className="w-[17.5px] h-[14px]"
-                                    />
-                                    <span
-                                        className="text-[#707070]"
-                                        style={{
-                                            fontFamily: "Inter",
-                                            fontWeight: 400,
-                                            fontSize: "14px",
-                                            lineHeight: "20px",
-                                        }}
-                                    >
-                                        120 beds available
-                                    </span>
-                                </div>
-                                <button
-                                    className="rounded-lg"
-                                    style={{
-                                        width: "114.5px",
-                                        height: "36px",
-                                        backgroundColor: "#C71F37",
+                                        width: "11.86px",
+                                        height: "20.56px",
+                                        transform: "rotate(360deg)",
                                         color: "#FFFFFF",
-                                        fontFamily: "Inter",
-                                        fontWeight: 500,
-                                        fontSize: "16px",
-                                        lineHeight: "20px",
-                                        textAlign: "center",
                                     }}
-                                >
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                        <div
-                            className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden"
-                            style={{
-                                width: '384px',
-                                height: '422px',
-                                boxShadow:
-                                    '0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)',
-                            }}
-                        >
-                           <Image
-                                src="/elegant nursing home with beautiful landscaping, luxury senior care facility.png"
-                                alt="Facility 1"
-                                width={382} 
-                                height={192} 
-                                className="w-[382px] h-[192px] object-cover rounded-t-2xl"
                                 />
-
-                            <div className="flex items-center gap-2 justify-center mt-6 ml-2 px-4">
-                                <div className="flex items-center gap-1">
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                </div>
-                                <span
-                                    style={{
-                                        fontFamily: 'Inter',
-                                        fontWeight: 400,
-                                        fontStyle: 'normal',
-                                        fontSize: '14px',
-                                        lineHeight: '20px',
-                                        color: '#707070',
-                                    }}
-                                >
-                                    4.7 (89 reviews)
-                                </span>
-                                <div
-                                    className="flex items-center ml-12 justify-center"
-                                    style={{
-                                        width: '82.84px',
-                                        height: '24px',
-                                        backgroundColor: '#DCFCE7',
-                                        borderRadius: '9999px',
-                                    }}
-                                >
-                                    <span
-                                        style={{
-                                            width: '67.14px',
-                                            height: '15px',
-                                            fontFamily: 'Inter',
-                                            fontWeight: 500,
-                                            fontStyle: 'medium',
-                                            fontSize: '12px',
-                                            lineHeight: '16px',
-                                            textAlign: 'center',
-                                            color: '#166534',
-                                        }}
-                                    >
-                                        5-Star CMS
-                                    </span>
-                                </div>
                             </div>
-                            <div className="ml-3">
-                                <h3
+                            <div
+                                className="flex items-center justify-center rounded-full cursor-pointer swiper-button-next-custom"
+                                style={{
+                                    width: "42.7px",
+                                    height: "42.7px",
+                                    backgroundColor: "#C71F37",
+                                }}
+                            >
+                                <img
+                                    src="/arrow.png"
+                                    alt="Next Arrow"
                                     style={{
-                                        width: '150.66px',
-                                        height: '28px',
-                                        fontFamily: 'Inter',
-                                        fontWeight: 600,
-                                        fontStyle: 'semi-bold',
-                                        fontSize: '20px',
-                                        lineHeight: '28px',
-                                        color: '#212121',
-                                        marginTop: '8px',
-                                        marginLeft: '16px',
-                                    }}
-                                >
-                                    Serenity Springs
-                                </h3>
-                                <p
-                                    style={{
-                                        width: '223.12px',
-                                        height: '20px',
-                                        fontFamily: 'Inter',
-                                        fontWeight: 400,
-                                        fontStyle: 'normal',
-                                        fontSize: '14px',
-                                        lineHeight: '20px',
-                                        color: '#707070',
-                                        marginTop: '4px',
-                                        marginLeft: '16px',
-
-                                    }}
-                                >
-                                    Miami, FL • 1.8 miles away
-                                </p>
-                                <div className="flex gap-2 mt-2 ml-4">
-                                    <div
-                                        style={{
-                                            width: '93.19px',
-                                            height: '24px',
-                                            backgroundColor: '#DBEAFE',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#1E40AF',
-                                            }}
-                                        >
-                                            Assisted Living
-                                        </span>
-                                    </div>
-                                    <div
-                                        style={{
-                                            width: '101.08px',
-                                            height: '24px',
-                                            backgroundColor: '#DCFCE7',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#166534',
-                                            }}
-                                        >
-                                            Independent Living
-                                        </span>
-                                    </div>
-                                    <div
-                                        style={{
-                                            width: '93.19px',
-                                            height: '24px',
-                                            backgroundColor: '#FEF9C3',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#854D0E',
-                                            }}
-                                        >
-                                            Respite Care
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between mt-9 ml-2 px-6">
-                                <div className="flex items-center gap-2">
-                                    <Image
-                                        src="/bed.png"
-                                        alt="Bed Icon"
-                                        width={18}
-                                        height={14} 
-                                        className="w-[17.5px] h-[14px]"
-                                    />
-                                    <span
-                                        className="text-[#707070]"
-                                        style={{
-                                            fontFamily: "Inter",
-                                            fontWeight: 400,
-                                            fontSize: "14px",
-                                            lineHeight: "20px",
-                                        }}
-                                    >
-                                        120 beds available
-                                    </span>
-                                </div>
-                                <button
-                                    className="rounded-lg"
-                                    style={{
-                                        width: "114.5px",
-                                        height: "36px",
-                                        backgroundColor: "#C71F37",
+                                        width: "11.86px",
+                                        height: "20.56px",
+                                        transform: "rotate(180deg)",
                                         color: "#FFFFFF",
-                                        fontFamily: "Inter",
-                                        fontWeight: 500,
-                                        fontSize: "16px",
-                                        lineHeight: "20px",
-                                        textAlign: "center",
                                     }}
-                                >
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                        <div
-                            className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden"
-                            style={{
-                                width: '384px',
-                                height: '422px',
-                                boxShadow:
-                                    '0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)',
-                            }}
-                        >
-                            <Image
-                                src="/cozy nursing home with warm interior, family-friendly senior care center.png"
-                                alt="Facility 1"
-                                width={382} 
-                                height={192} 
-                                className="w-[382px] h-[192px] object-cover rounded-t-2xl"
-                            />
-                            <div className="flex items-center gap-2 mt-6 ml-2 px-4">
-                                <div className="flex items-center gap-1">
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                    <Image src="/star.png" alt="star" width={16} height={14} className="w-[15.75px] h-[14px]" />
-                                </div>
-                                <span
-                                    style={{
-                                        fontFamily: 'Inter',
-                                        fontWeight: 400,
-                                        fontStyle: 'normal',
-                                        fontSize: '14px',
-                                        lineHeight: '20px',
-                                        color: '#707070',
-                                    }}
-                                >
-                                    4.4 (156 reviews)
-                                </span>
-                                <div
-                                    className="flex items-center ml-12 justify-center"
-                                    style={{
-                                        width: '82.84px',
-                                        height: '24px',
-                                        backgroundColor: '#DBEAFE',
-                                        borderRadius: '9999px',
-                                    }}
-                                >
-                                    <span
-                                        style={{
-                                            width: '67.14px',
-                                            height: '15px',
-                                            fontFamily: 'Inter',
-                                            fontWeight: 500,
-                                            fontStyle: 'medium',
-                                            fontSize: '12px',
-                                            lineHeight: '16px',
-                                            textAlign: 'center',
-                                            color: '#1E40AF',
-                                        }}
-                                    >
-                                        4-Star CMS
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="ml-3">
-                                <h3
-                                    style={{
-                                        width: '202.26px',
-                                        height: '28px',
-                                        fontFamily: 'Inter',
-                                        fontWeight: 600,
-                                        fontStyle: 'semi-bold',
-                                        fontSize: '20px',
-                                        lineHeight: '28px',
-                                        color: '#212121',
-                                        marginTop: '8px',
-                                        marginLeft: '16px',
-                                    }}
-                                >
-                                    Comfort Care Center
-                                </h3>
-                                <p
-                                    style={{
-                                        width: '223.12px',
-                                        height: '20px',
-                                        fontFamily: 'Inter',
-                                        fontWeight: 400,
-                                        fontStyle: 'normal',
-                                        fontSize: '14px',
-                                        lineHeight: '20px',
-                                        color: '#707070',
-                                        marginTop: '4px',
-                                        marginLeft: '16px',
-
-                                    }}
-                                >
-                                    Chicago, IL • 3.1 miles away
-                                </p>
-                                <div className="flex gap-2 mt-2 ml-4">
-                                    <div
-                                        style={{
-                                            width: '93.19px',
-                                            height: '24px',
-                                            backgroundColor: '#FEE2E2',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#991B1B',
-                                            }}
-                                        >
-                                            Long-term Care
-                                        </span>
-                                    </div>
-                                    <div
-                                        style={{
-                                            width: '101.08px',
-                                            height: '24px',
-                                            backgroundColor: '#E0E7FF',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#3730A3',
-                                            }}
-                                        >
-                                            Hospice Care
-                                        </span>
-                                    </div>
-                                    <div
-                                        style={{
-                                            width: '93.19px',
-                                            height: '24px',
-                                            backgroundColor: '#FCE7F3',
-                                            borderRadius: '9999px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontFamily: 'Inter',
-                                                fontWeight: 400,
-                                                fontSize: '12px',
-                                                lineHeight: '16px',
-                                                color: '#9D174D',
-                                            }}
-                                        >
-                                            Palliative Care
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between mt-9 ml-2 px-6">
-                                <div className="flex items-center gap-2">
-                                    <Image
-                                        src="/bed.png"
-                                        alt="Bed Icon"
-                                        className="w-[17.5px] h-[14px]"
-                                        width={18}
-                                        height={14} 
-                                    />
-                                    <span
-                                        className="text-[#707070]"
-                                        style={{
-                                            fontFamily: "Inter",
-                                            fontWeight: 400,
-                                            fontSize: "14px",
-                                            lineHeight: "20px",
-                                        }}
-                                    >
-                                        120 beds available
-                                    </span>
-                                </div>
-                                <button
-                                    className="rounded-lg"
-                                    style={{
-                                        width: "114.5px",
-                                        height: "36px",
-                                        backgroundColor: "#C71F37",
-                                        color: "#FFFFFF",
-                                        fontFamily: "Inter",
-                                        fontWeight: 500,
-                                        fontSize: "16px",
-                                        lineHeight: "20px",
-                                        textAlign: "center",
-                                    }}
-                                >
-                                    View Details
-                                </button>
+                                />
                             </div>
                         </div>
                     </div>
 
                     <button
-                        className="relative mx-auto flex items-center justify-center"
+                        className="relative mx-auto flex items-center justify-center w-full max-w-[326px]"
                         style={{
-                            width: "326px",
                             height: "52px",
                             borderRadius: "8px",
                             backgroundColor: "#C71F37",
@@ -741,11 +471,9 @@ export function TopRatedFeatured() {
                             View All Featured Facilities
                         </span>
 
-                        <Image
-                            src="/arrow_btn.png"
+                        <img
+                            src="/arrow-btn.png"
                             alt="Arrow Icon"
-                            width={16}
-                            height={16}
                             style={{
                                 width: "15.74px",
                                 height: "15.74px",
@@ -756,19 +484,19 @@ export function TopRatedFeatured() {
                     </button>
 
                 </div>
+                
+                {/* Desktop Navigation - Right Arrow */}
                 <div
-                    className="flex items-center justify-center rounded-full "
+                    className="hidden md:flex items-center justify-center rounded-full cursor-pointer swiper-button-next-custom"
                     style={{
                         width: "42.7px",
                         height: "42.7px",
                         backgroundColor: "#C71F37",
                     }}
                 >
-                    <Image
+                    <img
                         src="/arrow.png"
                         alt="Right Arrow"
-                         width={12}
-                        height={21}
                         style={{
                             width: "11.86px",
                             height: "20.56px",
@@ -776,11 +504,12 @@ export function TopRatedFeatured() {
                             color: "#FFFFFF",
                         }}
                     />
-
                 </div>
             </div>
         </section>
+        </>
     )
-}
+});
 
-export default TopRatedFeatured
+export { TopRatedFeatured };
+export default TopRatedFeatured;

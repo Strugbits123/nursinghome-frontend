@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Star, Brain, Building } from "lucide-react";
 import { useRef } from "react";
 import { useCountUp } from "../hooks/useCountUp";
-
 type Feature = {
   icon: React.ElementType;
   title: string;
@@ -35,7 +34,7 @@ export function TrustedSection() {
       title: "AI-Powered Summaries",
       description: "Smart insights that analyze reviews and data to highlight key points",
       value: 100,
-      suffix: "%", // percent sign
+      suffix: "%", 
     },
     {
       icon: Building,
@@ -49,41 +48,46 @@ export function TrustedSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   return (
-    <section className="py-16 px-4 bg-white" ref={sectionRef}>
+    <section className="py-12 sm:py-16 px-4 bg-white" ref={sectionRef}>
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#212121]">
+        {/* Section header */}
+        <div className="text-center mb-8 sm:mb-12 animate-child">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-[#212121]">
             Trusted by Families <span className="text-[#C71F37]">Nationwide</span>
           </h2>
-          <p className="text-lg max-w-2xl mx-auto text-[#212121]">
+          <p className="text-sm sm:text-lg max-w-2xl mx-auto text-[#212121]">
             Our comprehensive database includes verified information from CMS, real family reviews, and AI-powered insights.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Features grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
-            const numberRef = useCountUp(feature.value, sectionRef as React.RefObject<HTMLElement>);
+            // Add staggered delay for count-up animation
+            const countUpDelay = 0.6 + (index * 0.2); // Start after section animation + stagger
+            const numberRef = useCountUp(feature.value, sectionRef as React.RefObject<HTMLElement>, countUpDelay);
 
             return (
-              <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <div className="flex justify-center mb-4">
+              <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow hover-lift animate-child">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="flex justify-center mb-3 sm:mb-4">
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center"
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "#FAE8EB" }}
                     >
-                      <IconComponent className="w-6 h-6" style={{ color: "#C71F37" }} />
+                      <IconComponent className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "#C71F37" }} />
                     </div>
                   </div>
-                  <h3 className="font-semibold mb-2 text-[#212121]">{feature.title}</h3>
-                  <p className="text-sm mb-4 leading-relaxed text-[#212121] opacity-70">
+                  <h3 className="font-semibold mb-1 sm:mb-2 text-[#212121] text-sm sm:text-base">
+                    {feature.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed text-[#212121] opacity-70">
                     {feature.description}
                   </p>
                   {/* Animated number + suffix */}
-                  <div className="text-3xl font-bold text-[#C71F37]">
-                    <span ref={numberRef}>0</span>
-                    {feature.suffix}
+                  <div className="text-2xl sm:text-3xl font-bold text-[#C71F37]">
+                    <span ref={numberRef}>0</span>{feature.suffix}
                   </div>
                 </CardContent>
               </Card>

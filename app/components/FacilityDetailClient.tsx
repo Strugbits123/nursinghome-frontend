@@ -21,6 +21,8 @@ import FacilityRatingGauge from './FacilityRatingGauge';
 import StaffingLevelsChart from './StaffingLevelsChart';
 import FacilityQualityMeasures from "./FacilityQualityMeasures";
 import MapView from '../components/MapView';
+import { SearchNursing } from "./SearchNursing";
+import { Footer } from "./Footer";
 
 interface ReviewData {
     author_name: string;
@@ -113,6 +115,7 @@ interface Review {
     relative_time_description: string;
     text: string;
 }
+
 
 
 const ReviewItem = ({ review }: { review: Review }) => (
@@ -358,7 +361,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
         const fetchFacilityDetails = async () => {
             setIsLoading(true);
             const facilityName = slug.replace(/-/g, ' ');
-            const API_URL = process.env.NEXT_PUBLIC_API_URL + '/facilities/details';
+            const API_URL = 'http://localhost:5000/api/facilities/details';
             const params = new URLSearchParams({ name: facilityName }); 
             const url = `${API_URL}?${params.toString()}`;
             
@@ -413,110 +416,98 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
     return (
         <>
-            <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
-                <div className="max-w-[1856px] h-[46px] mx-auto px-[32px] flex items-center justify-between">
-                    {/* Logo */}
-                    <Image
-                        src="/footer_icon.png"
-                        alt="NursingHome Logo"
-                        width={176}
-                        height={47}
-                        className="w-[176px] h-[47px] mt-7 ml-30"
-                    />
-
-                    {/* Navigation */}
-                    <nav className="w-[357px] h-[65px] flex items-center space-x-8 mt-8 mr-50">
-                        <a
-                            href="#"
-                            className="font-inter font-black text-[14px] leading-[13px] tracking-[0.2px] capitalize text-white"
-                        >
-                            Home
-                        </a>
-                        <a
-                            href="#"
-                            className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
-                        >
-                            What’s New!
-                        </a>
-                        <a
-                            href="#"
-                            className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
-                        >
-                            News
-                        </a>
-                        <a
-                            href="#"
-                            className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
-                        >
-                            Contact
-                        </a>
-                    </nav>
-
-                    {/* Actions */}
-                    <div className="w-[406.5px] h-[54px] flex items-center justify-end mt-9 mr-50 space-x-6">
-                        {isAuthenticated ? (
-                            <div
-                                onClick={handleLogout}
-                                className="flex cursor-pointer items-center w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-4 py-6"
-                            >
-                                <Image
-                                    src="/arrow_btn.png" 
-                                    alt="Logout icon"
-                                    width={19}
-                                    height={19}
-                                    className="w-[18.78px] h-[18.78px] mr-2"
-                                />
-                                <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
-                                    Logout
-                                </span>
-                            </div>
-                        ) : (
-                            <div
-                                onClick={() => setOpenAuth(true)}
-                                className="flex cursor-pointer items-center w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-4 py-6"
-                            >
-                                <Image
-                                    src="/icons/header_sign.png"
-                                    alt="Sign in icon"
-                                    width={19}
-                                    height={19}
-                                    className="w-[18.78px] h-[18.78px] mr-2"
-                                />
-                                <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
-                                    Sign In
-                                </span>
-                            </div>
-                        )}
-
-                        <button className="flex items-center justify-center w-[163.37px] h-[54px] bg-white hover:bg-[#a91a2e] rounded-[7.04px] px-4">
-                            {/* <Image
-                            src="/icons/faciltiy_search_svg.png"
-                            alt="Add icon"
-                            width={19}
-                            height={19}
-                            className=" fill-red-500  mr-2 invert"
-                            /> */}
-                            {/* <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
-                                Add Listing
-                            </span> */}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Auth Modal */}
-                <AuthModal
-                    open={openAuth}
-                    onOpenChange={(open) => {
-                        setOpenAuth(open);
-                        if (!open) {
-                            setIsAuthenticated(!!localStorage.getItem("token"));
-                        }
-                    }}
+           <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
+            <div className="max-w-[1856px] h-[46px] mx-auto px-4 sm:px-[32px] flex items-center justify-between">
+                <img
+                src="/footer_icon.png"
+                alt="NursingHome Logo"
+                className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] mt-7 sm:ml-30"
                 />
+    
+                <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
+                <a
+                    href="#"
+                    className="font-inter font-black text-[14px] leading-[13px] tracking-[0.2px] capitalize text-white"
+                >
+                    Home
+                </a>
+                <a
+                    href="#"
+                    className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
+                >
+                    What's New!
+                </a>
+                <a
+                    href="#"
+                    className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
+                >
+                    News
+                </a>
+                <a
+                    href="#"
+                    className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
+                >
+                    Contact
+                </a>
+                </nav>
+    
+                <div className="w-auto sm:w-[406.5px] h-[54px] flex items-center justify-end mt-9 sm:mr-50 space-x-2 sm:space-x-6">
+                {isAuthenticated ? (
+                    <div
+                    onClick={handleLogout}
+                    className="flex cursor-pointer items-center w-[100px] sm:w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-2 sm:px-4 py-6"
+                    >
+                    <img
+                        src="/arrow_btn.png"
+                        alt="Logout icon"
+                        className="w-[16px] h-[16px] sm:w-[18.78px] sm:h-[18.78px] mr-1 sm:mr-2"
+                    />
+                    <span className="font-jost font-semibold text-[14px] sm:text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
+                        Logout
+                    </span>
+                    </div>
+                ) : (
+                    <div
+                    onClick={() => setOpenAuth(true)}
+                    className="flex cursor-pointer items-center w-[100px] sm:w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-2 sm:px-4 py-6"
+                    >
+                    <img
+                        src="/icons/header_sign.png"
+                        alt="Sign in icon"
+                        className="w-[16px] h-[16px] sm:w-[18.78px] sm:h-[18.78px] mr-1 sm:mr-2"
+                    />
+                    <span className="font-jost font-semibold text-[14px] sm:text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
+                        Sign In
+                    </span>
+                    </div>
+                )}
+    
+                {/* <button className="flex items-center justify-center w-[163.37px] h-[54px] bg-white hover:bg-[#a91a2e] rounded-[7.04px] px-4">
+                    <img
+                    src="/icons/faciltiy_search_svg.png"
+                    alt="Add icon"
+                    className="w-[18.78px] h-[18.78px] fill-red-500  mr-2 invert"
+                    />
+                    <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
+                    Add Listing
+                    </span>
+                </button> */}
+                </div>
+            </div>
+    
+            <AuthModal
+                open={openAuth}
+                onOpenChange={(open) => {
+                setOpenAuth(open);
+                if (!open) {
+                    setIsAuthenticated(!!localStorage.getItem("token"));
+                }
+                }}
+            />
             </header>
 
-            <section className="w-full h-[60px] bg-[#F5F5F5] flex items-center justify-between px-22 ">
-                <div className="flex items-center gap-x-2 text-[#4B5563] mx-25 font-inter font-normal text-[16.28px] leading-[23.26px]">
+            <section className="w-full h-auto md:h-[60px] bg-[#F5F5F5] flex items-center justify-between px-4 md:px-22 ">
+                <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-[#4B5563] mx-4 md:mx-25 font-inter font-normal text-[14px] md:text-[16.28px] leading-[20px] md:leading-[23.26px] py-3 md:py-0">
                     <span className="align-middle">Home</span>
                     <Image
                         src="/icons/search_fac_right_icon.png"
@@ -561,14 +552,14 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                 {/* </button> */}
             </section>
 
-            <div className="w-full h-[572px] bg-white mt-[33px]">
-                <div className="w-[1536px] h-[525px] mx-[192px] mt-[23px] bg-white p-6 flex space-x-6">
-                    <div className="w-2/3 flex flex-col space-y-4 px-7 pt-1">
-                        <h1 className="font-jost font-bold text-[45.47px] leading-[50.53px] text-[#111827]">
+            <div className="w-full h-auto md:h-[572px] bg-white mt-[33px]">
+                <div className="w-full max-w-[1536px] h-auto md:h-[525px] mx-auto mt-[23px] bg-white p-6 flex flex-col md:flex-row space-x-0 md:space-x-6">
+                    <div className="w-full md:w-2/3 flex flex-col space-y-4 px-7 pt-1">
+                        <h1 className="font-jost font-bold text-[28px] md:text-[45.47px] leading-[34px] md:leading-[50.53px] text-[#111827]">
                            {facility.provider_name}
                         </h1>
 
-                        <p className="font-inter font-normal text-[22.74px] leading-[35.37px] text-[#4B5563]">
+                        <p className="font-inter font-normal text-[16px] md:text-[22.74px] leading-[24px] md:leading-[35.37px] text-[#4B5563]">
                             {fullAddress}
                         </p>
                         <div className="flex items-center space-x-3 mt-4">
@@ -580,12 +571,12 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                     alt="Star"
                                     className="w-[22.74px] h-[20.21px] mr-2"
                                 />
-                                <span className="font-inter font-bold text-[20.21px] leading-[30.32px] text-white">
+                                <span className="font-inter font-bold text-[16px] md:text-[20.21px] leading-[22px] md:leading-[30.32px] text-white">
                                     {facility.rating?.toFixed(1) ?? ''}
                                 </span>
                             </button>
                             <div className="flex items-center space-x-6">
-                                <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#4B5563]">
+                                <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#4B5563]">
                                     CMS Overall Rating
                                 </span>
                                 <div className="flex items-center space-x-2">
@@ -596,7 +587,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                         alt="Beds"
                                         className="w-[22.1px] h-[17.68px]"
                                     />
-                                    <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#4B5563]">
+                                    <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#4B5563]">
                                         {facility.number_of_certified_beds} Beds
                                     </span>
                                 </div>
@@ -605,60 +596,60 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
                         <div className="flex space-x-4 mt-4">
                             <div className="flex space-x-2 items-center w-[200px] h-[21px]">
-                                <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827]">
+                                <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#111827]">
                                     Ownership:
                                 </span>
-                                <span className="font-inter font-medium text-[17.68px] leading-[25.26px] text-[#000000]">
+                                <span className="font-inter font-medium text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#000000]">
                                     {cleanOwnership}
                                 </span>
                             </div>
                             <div className="flex space-x-2 items-center w-[200px] h-[21px]">
-                                <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827]">
+                                <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#111827]">
                                     License:
                                 </span>
-                                <span className="font-inter font-medium text-[17.68px] leading-[25.26px] text-[#000000]">
+                                <span className="font-inter font-medium text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#000000]">
                                     #{facility.cms_certification_number_ccn || 'N/A'} 
                                 </span>
                             </div>
                             <div className="flex space-x-2 items-center w-[220px] h-[21px]">
-                                <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827]">
+                                <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#111827]">
                                     Accepting:
                                 </span>
-                                <span className="font-inter font-medium text-[17.68px] leading-[25.26px] text-[#16A34A]">
+                                <span className="font-inter font-medium text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#16A34A]">
                                     New Residents
                                 </span>
                             </div>
                         </div>
                         <div className="flex flex-row space-x-6 mt-10">
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
-                                <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
+                                <span className="font-inter font-bold text-[22px] md:text-[30.32px] leading-[28px] md:leading-[40.42px] text-[#D02B38] text-center">
                                     {parseCmsRating(facility?.overall_rating)}
                                 </span>
-                                <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
+                                <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#111827] text-center mt-2">
                                     Overall Rating
                                 </span>
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
-                                <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
+                                <span className="font-inter font-bold text-[22px] md:text-[30.32px] leading-[28px] md:leading-[40.42px] text-[#D02B38] text-center">
                                     {parseCmsRating(facility?.health_inspection_rating)}
                                 </span>
-                                <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
+                                <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#111827] text-center mt-2">
                                     Health Inspections
                                 </span>
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
-                                <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
+                                <span className="font-inter font-bold text-[22px] md:text-[30.32px] leading-[28px] md:leading-[40.42px] text-[#D02B38] text-center">
                                     {parseCmsRating(facility?.staffing_rating)}
                                 </span>
-                                <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
+                                <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#111827] text-center mt-2">
                                     Staffing
                                 </span>
                             </div>
                             <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
-                                <span className="font-inter font-bold text-[30.32px] leading-[40.42px] text-[#D02B38] text-center">
+                                <span className="font-inter font-bold text-[22px] md:text-[30.32px] leading-[28px] md:leading-[40.42px] text-[#D02B38] text-center">
                                     {parseCmsRating(facility?.qm_rating)}
                                 </span>
-                                <span className="font-inter font-normal text-[17.68px] leading-[25.26px] text-[#111827] text-center mt-2">
+                                <span className="font-inter font-normal text-[14px] md:text-[17.68px] leading-[20px] md:leading-[25.26px] text-[#111827] text-center mt-2">
                                     Quality Measures
                                 </span>
                             </div>
@@ -675,7 +666,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                 height={20}
                                 className="w-[20.21px] h-[20.21px]"
                                 />
-                                <span className="font-inter font-medium text-[20.21px] leading-[30.32px] text-white">
+                                <span className="font-inter font-medium text-[16px] md:text-[20.21px] leading-[22px] md:leading-[30.32px] text-white">
                                 Contact Facility
                                 </span>
                             </button>
@@ -707,9 +698,9 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         </div>
                     </div>
 
-                    <div className="w-1/4 flex flex-col space-y-4">
+                    <div className="w-full md:w-1/4 flex flex-col space-y-4">
                         {/* Cover Image */}
-                        <div className="w-[458px] h-[323px] rounded-[10.11px] flex items-center justify-center overflow-hidden">
+                        <div className="w-full md:w-[458px] h-[200px] md:h-[323px] rounded-[10.11px] flex items-center justify-center overflow-hidden">
                             <Image
                             src={coverImage}
                             alt={`${facility.provider_name} exterior`}
@@ -723,7 +714,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         <Swiper
                             spaceBetween={8}
                             slidesPerView={3}
-                            className="w-[458px] h-[101px]"
+                            className="w-full md:w-[458px] h-[101px]"
                         >
                             {facility.photos.slice(1, 4).map((photoUrl, index) => (
                             <SwiperSlide key={index}>
@@ -749,8 +740,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                 </div>
             </div>
 
-            <div className="w-full h-[854px] bg-[#F5F5F5] mt-[33px]">
-                <div className="w-[1527px] h-[778px] mx-[192px] mt-[23px] bg-[#F5F5F5] p-6 flex flex-col space-y-6">
+            <div className="w-full h-auto md:h-[854px] bg-[#F5F5F5] mt-[33px]">
+                <div className="w-full max-w-[1527px] h-auto md:h-[778px] mx-auto mt-[23px] bg-[#F5F5F5] p-6 flex flex-col space-y-6">
                     <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827] ml-10">
                         Services & Facility Details
                     </h2>
@@ -758,8 +749,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         Comprehensive care services and amenities available
                     </p>
 
-                    <div className="flex flex-row ml-10 space-x-6 mt-6">
-                        <div className="w-[706.6px] h-[334.2px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
+                    <div className="flex flex-col md:flex-row ml-0 md:ml-10 space-y-6 md:space-y-0 md:space-x-6 mt-6">
+                        <div className="w-full md:w-[706.6px] h-auto md:h-[334.2px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-4">
                                 Medical Services
                             </h3>
@@ -827,7 +818,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                             </div>
                         </div>
 
-                        <div className="w-[706.6px] h-[334.2px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
+                        <div className="w-full md:w-[706.6px] h-auto md:h-[334.2px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-4">
                                 Amenities & Activities
                             </h3>
@@ -903,8 +894,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-6 ml-10">
-                        <div className="w-[464.7px] h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ml-0 md:ml-10">
+                        <div className="w-full md:w-[464.7px] h-auto md:h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-black mb-4">
                                 Capacity & Rooms
                             </h3>
@@ -947,7 +938,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                             </div>
                         </div>
 
-                        <div className="w-[464.7px] h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
+                        <div className="w-full md:w-[464.7px] h-auto md:h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-black mb-4">
                                 Contact Information
                             </h3>
@@ -1007,7 +998,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
                         </div>
 
-                        <div className="w-[464.7px] h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
+                        <div className="w-full md:w-[464.7px] h-auto md:h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-black mb-4">
                                 Visiting Hours
                             </h3>
@@ -1057,18 +1048,18 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                 </div>
             </div>
 
-            <section className="max-w-[1714px] h-[1314px] mx-auto bg-white p-8">
-    <div className="w-[1527.8px] h-full mx-auto p-6 flex flex-col"> {/* h-full and flex-col added */}
-        <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827] mb-4 ml-[50px]">
+            <section className="w-full bg-white">
+    <div className="w-full max-w-[1528px] h-full mx-auto px-4 md:px-8 py-8 flex flex-col">
+                    <h2 className="font-jost font-bold text-[22px] md:text-[32px] leading-[28px] md:leading-[38.4px] text-[#111827] mb-4 ml-0 md:ml-[50px]">
             Google Reviews & AI Analysis
         </h2>
-        <p className="font-inter font-normal text-[18px] leading-[28px] text-[#707070] ml-[50px] mb-8">
+                    <p className="font-inter font-normal text-[14px] md:text-[18px] leading-[22px] md:leading-[28px] text-[#707070] ml-0 md:ml-[50px] mb-8">
             Real reviews from families and our AI-powered insights
         </p>
-        <div className="flex gap-6 flex-grow"> {/* flex-grow added to make content fill remaining space */}
-            <div className="flex-1 w-[954.87px] h-[1097.81px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] ml-10 p-6 flex flex-col"> {/* Added flex-col */}
+        <div className="flex flex-col md:flex-row gap-6 flex-grow"> {/* flex-grow added to make content fill remaining space */}
+            <div className="flex-1 w-full md:w-[954.87px] h-auto md:h-[1097.81px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] md:ml-10 p-6 flex flex-col">
                 <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                    <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
+                    <h3 className="font-inter font-bold text-[18px] md:text-[23.87px] leading-[24px] md:leading-[33.42px] text-[#111827]">
                         Recent Reviews
                     </h3>
 
@@ -1079,11 +1070,11 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                             width={19}
                             height={19}
                         />
-                        <span className="font-inter font-bold text-[19.1px] leading-[28.65px] text-[#111827]">
+                        <span className="font-inter font-bold text-[16px] md:text-[19.1px] leading-[22px] md:leading-[28.65px] text-[#111827]">
                             {/* NOTE: 'facility' variable assumed from outside context */}
                             {facility.rating ? facility.rating.toFixed(1) : 'N/A'} 
                         </span>
-                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                        <span className="font-inter font-normal text-[14px] md:text-[16.71px] leading-[20px] md:leading-[23.87px] text-[#4B5563]">
                             {/* NOTE: 'facility' variable assumed from outside context */}
                             ({facility.reviews.length} reviews)
                         </span>
@@ -1091,7 +1082,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                 </div>
 
                 {/* Scrollable Container for 5 Reviews */}
-                <div className="flex-grow overflow-y-auto pr-4"> 
+                <div className="flex-grow overflow-y-auto pr-0 md:pr-4"> 
                     {reviewsData.length > 0 ? (
                         reviewsToShow.map((review, index) => (
                             <div 
@@ -1108,18 +1099,18 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                 />
                                 
                                 <div className="flex flex-col ml-[20px] flex-grow">
-                                    <h4 className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#111827]">
+                                    <h4 className="font-inter font-medium text-[16px] md:text-[19.1px] leading-[22px] md:leading-[28.65px] text-[#111827]">
                                         {review.author_name}
                                     </h4>
                                     
                                     <div className="flex items-center mt-1">
                                         <StarRating rating={review.rating} /> 
-                                        <span className="font-inter font-normal text-[16.71px] leading-[23.87px] text-[#4B5563]">
+                                        <span className="font-inter font-normal text-[14px] md:text-[16.71px] leading-[20px] md:leading-[23.87px] text-[#4B5563]">
                                             {review.relative_time_description}
                                         </span>
                                     </div>
                                     
-                                    <p className="font-inter font-normal text-[19.1px] leading-[28.65px] text-[#374151] mt-3">
+                                    <p className="font-inter font-normal text-[16px] md:text-[19.1px] leading-[24px] md:leading-[28.65px] text-[#374151] mt-3">
                                         {review.text || "(No text provided with this review)"}
                                     </p>
                                 </div>
@@ -1143,17 +1134,17 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
             </div>
             <div className="flex flex-col gap-6">
                 <div 
-                    className="w-[458.34px] h-[486.98px] bg-[#F5F5F5] rounded-[9.55px] p-4 
+                    className="w-full md:w-[458.34px] h-auto md:h-[486.98px] bg-[#F5F5F5] rounded-[9.55px] p-4 
                              overflow-y-auto 
                              flex flex-col gap-4"
                 >
                     <div className="ml-4">
-                        <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mt-5 mb-4">
+                        <h3 className="font-inter font-bold text-[18px] md:text-[23.87px] leading-[24px] md:leading-[33.42px] text-[#111827] mt-5 mb-4">
                             AI-Generated Summary
                         </h3>
                         {/* Dynamic Summary Paragraph */}
                         {facility.aiSummary?.summary && (
-                            <p className="font-inter font-normal text-[18px] leading-[28px] text-[#374151] mb-6 pr-4">
+                            <p className="font-inter font-normal text-[14px] md:text-[18px] leading-[22px] md:leading-[28px] text-[#374151] mb-6 pr-0 md:pr-4">
                                 {facility.aiSummary.summary}
                             </p>
                         )}
@@ -1166,7 +1157,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                         width={19}
                                         height={19}
                                          />
-                                    <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#16A34A]">
+                                    <span className="font-inter font-medium text-[16px] md:text-[19.1px] leading-[22px] md:leading-[28.65px] text-[#16A34A]">
                                         Pros
                                     </span>
                                 </div>
@@ -1178,7 +1169,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                              width={13}
                                              height={14}
                                              className="mt-1 flex-shrink-0" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
+                                            <span className="ml-2 font-inter font-normal text-[14px] md:text-[16.71px] leading-[20px] md:leading-[23.87px] text-[#374151]">
                                                 {pro}
                                             </span>
                                         </div>
@@ -1195,7 +1186,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                         width={19}
                                         height={19}
                                         />
-                                    <span className="font-inter font-medium text-[19.1px] leading-[28.65px] text-[#DC2626]">
+                                    <span className="font-inter font-medium text-[16px] md:text-[19.1px] leading-[22px] md:leading-[28.65px] text-[#DC2626]">
                                         Cons
                                     </span>
                                 </div>
@@ -1207,7 +1198,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                                 width={11}
                                                 height={14} 
                                                 className=" mt-1 flex-shrink-0" />
-                                            <span className="ml-2 font-inter font-normal text-[16.71px] leading-[23.87px] text-[#374151]">
+                                            <span className="ml-2 font-inter font-normal text-[14px] md:text-[16.71px] leading-[20px] md:leading-[23.87px] text-[#374151]">
                                                 {con}
                                             </span>
                                         </div>
@@ -1230,8 +1221,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 </section>
 
             
-           <section className="w-[2134px] h-[1094px] bg-[#F5F5F5] opacity-100 p-2 mx-auto">
-                <div className="w-[1527.8px] h-[1016.94px] ml-[220px] mt-5 bg-gray-100 rounded-lg flex flex-col gap-6 p-6">
+           <section className="w-full bg-[#F5F5F5] opacity-100 py-6">
+                <div className="w-full max-w-[1528px] min-h-[1016.94px] mx-auto mt-5 bg-gray-100 rounded-lg flex flex-col gap-6 p-6">
                     <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827]">
                     CMS Performance Data
                     </h2>
@@ -1241,7 +1232,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                     </p>
 
                     <div className="flex flex-wrap gap-6 mt-2">
-                        <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                        <div className="w-full md:w-[464.7px] h-auto md:h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
                                 <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
                                     Overall Rating
                                 </h3>
@@ -1249,7 +1240,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                     <FacilityRatingGauge facility={facility} />
                                 </div>
                             </div>
-                        <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                        <div className="w-full md:w-[464.7px] h-auto md:h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
                             <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
                                 Staffing Levels
                             </h3>
@@ -1257,7 +1248,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                 <StaffingLevelsChart facility={facility} />
                             </div>
                         </div>
-                        <div className="w-[464.7px] h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                        <div className="w-full md:w-[464.7px] h-auto md:h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
                             <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
                                 Quality Measures
                             </h3>
@@ -1268,7 +1259,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         </div>
 
 
-                    <div className="w-[711.38px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6 flex flex-col gap-4">
+                    <div className="w-full md:w-[711.38px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6 flex flex-col gap-4">
                         <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
                             Recent Health Inspections
                         </h3>
@@ -1315,7 +1306,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                             </div>
                         </div>
 
-                        <div className="w-[711.38px] h-[415.37px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col gap-4">
+                        <div className="w-full md:w-[711.38px] h-auto md:h-[415.37px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col gap-4">
                             <div className="ml-4 mt-1">
                                 <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
                                 Ownership & Financial
@@ -1389,12 +1380,12 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
             </section>
 
 {/* Section */}
-<div className="w-[1990px] h-[992px] bg-[#F5F5F5] flex items-center justify-center mx-auto">
+<div className="w-full bg-[#F5F5F5] flex items-center justify-center mx-auto py-8">
   {/* Inner container */}
   <div
     className="
-      w-[1527.8px]
-      h-[878.48px]
+      w-full
+      max-w-[1528px]
       bg-[#F5F5F5]
       p-6
       flex 
@@ -1403,7 +1394,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
       gap-2 
     "
   >
-    <div className="flex flex-col w-2/3 ml-3">
+    <div className="flex flex-col w-full lg:w-2/3 lg:ml-3">
       <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827]">
         Location & Directions
       </h2>
@@ -1418,7 +1409,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
      {/* Map container card */}
     <div
         className="
-            w-[954.87px]
+            w-full
+            md:w-[954.87px]
             h-[515.63px]
             bg-white
             rounded-[9.55px]
@@ -1450,15 +1442,14 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
             centerCoords={mapCenter}
             googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
             locationName={facility?.provider_name}
-            markerIconUrl="/icons/red_hospital_pin.png"
             />
 
     </div>
     </div>
 
     {/* RIGHT COLUMN – 3 boxes */}
-    <div className="flex flex-col w-1/3 gap-2 mt-24">  {/* reduce gap from 4 to 2 */}
-        <div className="w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
+    <div className="flex flex-col w-full lg:w-1/3 gap-2 mt-12 lg:mt-24">  {/* reduce gap from 4 to 2 */}
+        <div className="w-full md:w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
             <h3
                 className="
                 font-inter 
@@ -1519,7 +1510,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                     
                 </div>
 
-                <div className="w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
+                <div className="w-full md:w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
                     <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-4">
                         Transportation
                     </h3>
@@ -1560,7 +1551,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         </p>
                     </div>
                 </div>
-                <div className="w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
+                <div className="w-full md:w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
                     <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-4">
                         Nearby Services
                     </h3>
@@ -1616,8 +1607,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
 
 
-        {/* <SearchNursing />
-        <Footer /> */}
+       <SearchNursing />
+        <Footer /> 
 
         </>
 

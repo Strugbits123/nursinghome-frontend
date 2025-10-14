@@ -8,25 +8,40 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function useCountUp(
   endValue: number,
-  triggerRef: React.RefObject<HTMLElement>
+  triggerRef: React.RefObject<HTMLElement>,
+  delay: number = 0
 ) {
   const numberRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!numberRef.current || !triggerRef.current) return; // ✅ guard
+    if (!numberRef.current || !triggerRef.current) return;
 
     const target = numberRef.current;
+    
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      // For reduced motion, just set the final value
+      if (numberRef.current) {
+        numberRef.current.innerText = endValue.toLocaleString();
+      }
+      return;
+    }
 
     gsap.fromTo(
       target,
       { innerText: 0 },
       {
         innerText: endValue,
-        duration: 2,
-        ease: "power1.out",
+        duration: 2.5,
+        ease: "power2.out",
+        delay: delay,
         scrollTrigger: {
           trigger: triggerRef.current,
-          start: "top 80%",
+          start: "top 85%",
+          end: "bottom 15%",
+          toggleActions: "play none none reverse"
         },
         snap: { innerText: 1 },
         onUpdate: function () {
@@ -42,7 +57,7 @@ export function useCountUp(
     return () => {
       ScrollTrigger.getAll().forEach((st) => st.kill());
     };
-  }, [endValue, triggerRef]);
+  }, [endValue, triggerRef, delay]);
 
   return numberRef;
 }

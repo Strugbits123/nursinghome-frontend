@@ -1,21 +1,23 @@
 "use client";
 // pages/index.js
 import Head from 'next/head';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { Header } from "./components/header"
 import { HeroSection } from "./components/hero-section"
-import { TrustedSection } from "./components/trusted-section"
-import { ResultsSection } from "./components/results-section"
-import { AISummary } from './components/ai-summary';
-import { TopRatedFeatured } from './components/top-rated-featured';
-import { CitiesSection } from './components/CitiesSection';
-import { SearchNursing } from './components/SearchNursing';
-import { Footer } from './components/Footer';
-import { NewRescource } from './components/NewsRescource';
 
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-gsap.registerPlugin(ScrollTrigger);
+// Lazy load heavy components
+const TrustedSection = lazy(() => import("./components/trusted-section").then(module => ({ default: module.TrustedSection })));
+const ResultsSection = lazy(() => import("./components/results-section").then(module => ({ default: module.ResultsSection })));
+const AISummary = lazy(() => import('./components/ai-summary').then(module => ({ default: module.AISummary })));
+const TopRatedFeatured = lazy(() => import('./components/top-rated-featured').then(module => ({ default: module.TopRatedFeatured })));
+const CitiesSection = lazy(() => import('./components/CitiesSection').then(module => ({ default: module.CitiesSection })));
+const SearchNursing = lazy(() => import('./components/SearchNursing').then(module => ({ default: module.SearchNursing })));
+const Footer = lazy(() => import('./components/Footer').then(module => ({ default: module.Footer })));
+const NewRescource = lazy(() => import('./components/NewsRescource').then(module => ({ default: module.NewRescource })));
+
+// Dynamic imports for GSAP
+let gsap: any;
+let ScrollTrigger: any;
 
 
 export default function Home() {
@@ -44,21 +46,33 @@ export default function Home() {
     if (!ready || !containerRef.current) return;
 
     let locoScroll: any;
-     
-    // Dynamic import of locomotive-scroll
-    import("locomotive-scroll").then((mod) => {
-      const LocomotiveScroll = mod.default;
+    
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    // Dynamic imports for both GSAP and locomotive-scroll
+    Promise.all([
+      import("gsap"),
+      import("gsap/ScrollTrigger"),
+      import("locomotive-scroll")
+    ]).then(([gsapModule, scrollTriggerModule, locomotiveModule]) => {
+      gsap = gsapModule.gsap;
+      ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+      gsap.registerPlugin(ScrollTrigger);
+      
+      const LocomotiveScroll = locomotiveModule.default;
 
       locoScroll = new LocomotiveScroll({
         el: containerRef.current!,
-        smooth: true,
-        multiplier: 1,
+        smooth: !prefersReducedMotion,
+        multiplier: prefersReducedMotion ? 0 : 1,
+        lerp: prefersReducedMotion ? 1 : 0.1,
       });
 
       locoScroll.on("scroll", ScrollTrigger.update);
 
       ScrollTrigger.scrollerProxy(containerRef.current!, {
-        scrollTop(value) {
+        scrollTop(value: any) {
           return arguments.length
             ? locoScroll.scrollTo(value, 0, 0)
             : locoScroll.scroll.instance.scroll.y;
@@ -74,60 +88,184 @@ export default function Home() {
         pinType: containerRef.current!.style.transform ? "transform" : "fixed",
       });
 
-      // GSAP animations
-      if (resultsRef.current) {
-        gsap.from(resultsRef.current, {
-          scrollTrigger: {
-            trigger: resultsRef.current,
-            scroller: containerRef.current,
-            start: "top 80%",
-          },
-          y: 50,
-          opacity: 0,
-          duration: 1,
-          ease: "power3.out",
-        });
-      }
+      // Enhanced GSAP animations with realistic timing and easing
+      // Skip animations if user prefers reduced motion
+      if (!prefersReducedMotion) {
+        // Create a master timeline for coordinated animations
+        const masterTimeline = gsap.timeline();
+        
+        // Results section - subtle upward slide with fade
+        if (resultsRef.current) {
+          gsap.from(resultsRef.current, {
+            scrollTrigger: {
+              trigger: resultsRef.current,
+              scroller: containerRef.current,
+              start: "top 85%",
+              end: "bottom 15%",
+              toggleActions: "play none none reverse"
+            },
+            y: 30,
+            opacity: 0,
+            duration: 1.2,
+            ease: "power2.out",
+            delay: 0.1
+          });
+          
+          // Add subtle parallax effect to child elements
+          gsap.from(resultsRef.current.querySelectorAll('.animate-child'), {
+            scrollTrigger: {
+              trigger: resultsRef.current,
+              scroller: containerRef.current,
+              start: "top 90%",
+              end: "bottom 10%",
+              toggleActions: "play none none reverse"
+            },
+            y: 20,
+            opacity: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            stagger: 0.1,
+            delay: 0.3
+          });
+        }
 
-      if (trustedRef.current) {
-        gsap.from(trustedRef.current, {
-          scrollTrigger: {
-            trigger: trustedRef.current,
-            scroller: containerRef.current,
-            start: "top 80%",
-          },
-          x: -100,
-          opacity: 0,
-          duration: 1,
-          ease: "power3.out",
-        });
-      }
+        // Trusted section - left slide with subtle bounce
+        if (trustedRef.current) {
+          gsap.from(trustedRef.current, {
+            scrollTrigger: {
+              trigger: trustedRef.current,
+              scroller: containerRef.current,
+              start: "top 85%",
+              end: "bottom 15%",
+              toggleActions: "play none none reverse"
+            },
+            x: -60,
+            opacity: 0,
+            duration: 1.1,
+            ease: "power3.out",
+            delay: 0.2
+          });
+          
+          // Animate child elements with stagger
+          gsap.from(trustedRef.current.querySelectorAll('.animate-child'), {
+            scrollTrigger: {
+              trigger: trustedRef.current,
+              scroller: containerRef.current,
+              start: "top 90%",
+              end: "bottom 10%",
+              toggleActions: "play none none reverse"
+            },
+            x: -30,
+            opacity: 0,
+            duration: 0.9,
+            ease: "power2.out",
+            stagger: 0.15,
+            delay: 0.4
+          });
+        }
 
-      if (aiRef.current) {
-        gsap.from(aiRef.current, {
-          scrollTrigger: {
-            trigger: aiRef.current,
-            scroller: containerRef.current,
-            start: "top 80%",
-          },
-          x: 100,
-          opacity: 0,
-          duration: 1,
-          ease: "power3.out",
-        });
-      }
+        // AI section - right slide with smooth entrance
+        if (aiRef.current) {
+          gsap.from(aiRef.current, {
+            scrollTrigger: {
+              trigger: aiRef.current,
+              scroller: containerRef.current,
+              start: "top 85%",
+              end: "bottom 15%",
+              toggleActions: "play none none reverse"
+            },
+            x: 60,
+            opacity: 0,
+            duration: 1.1,
+            ease: "power3.out",
+            delay: 0.3
+          });
+          
+          // Add floating animation to AI elements
+          gsap.from(aiRef.current.querySelectorAll('.animate-child'), {
+            scrollTrigger: {
+              trigger: aiRef.current,
+              scroller: containerRef.current,
+              start: "top 90%",
+              end: "bottom 10%",
+              toggleActions: "play none none reverse"
+            },
+            y: 40,
+            opacity: 0,
+            duration: 1.0,
+            ease: "power2.out",
+            stagger: 0.12,
+            delay: 0.5
+          });
+        }
 
-      if (topRatedRef.current) {
-        gsap.from(topRatedRef.current, {
-          scrollTrigger: {
-            trigger: topRatedRef.current,
-            scroller: containerRef.current,
-            start: "top 80%",
-          },
-          scale: 0.8,
-          opacity: 0,
-          duration: 1,
-          ease: "back.out(1.7)",
+        // Top rated section - scale with gentle bounce
+        if (topRatedRef.current) {
+          gsap.from(topRatedRef.current, {
+            scrollTrigger: {
+              trigger: topRatedRef.current,
+              scroller: containerRef.current,
+              start: "top 85%",
+              end: "bottom 15%",
+              toggleActions: "play none none reverse"
+            },
+            scale: 0.9,
+            opacity: 0,
+            duration: 1.3,
+            ease: "back.out(1.2)",
+            delay: 0.4
+          });
+          
+          // Add rotation and scale to child elements
+          gsap.from(topRatedRef.current.querySelectorAll('.animate-child'), {
+            scrollTrigger: {
+              trigger: topRatedRef.current,
+              scroller: containerRef.current,
+              start: "top 90%",
+              end: "bottom 10%",
+              toggleActions: "play none none reverse"
+            },
+            scale: 0.8,
+            rotation: 5,
+            opacity: 0,
+            duration: 1.1,
+            ease: "back.out(1.4)",
+            stagger: 0.2,
+            delay: 0.6
+          });
+        }
+        
+        // Add smooth hover effects for interactive elements
+        gsap.utils.toArray('.hover-lift').forEach((element: any) => {
+          element.addEventListener('mouseenter', () => {
+            gsap.to(element, {
+              y: -5,
+              scale: 1.02,
+              duration: 0.3,
+              ease: "power2.out"
+            });
+          });
+          
+          element.addEventListener('mouseleave', () => {
+            gsap.to(element, {
+              y: 0,
+              scale: 1,
+              duration: 0.3,
+              ease: "power2.out"
+            });
+          });
+        });
+      } else {
+        // For users who prefer reduced motion, just fade in elements
+        const elements = [resultsRef.current, trustedRef.current, aiRef.current, topRatedRef.current];
+        elements.forEach((element, index) => {
+          if (element) {
+            gsap.from(element, {
+              opacity: 0,
+              duration: 0.5,
+              delay: index * 0.1
+            });
+          }
         });
       }
 
@@ -138,7 +276,7 @@ export default function Home() {
     });
 
     return () => {
-      ScrollTrigger.getAll().forEach((st) => st.kill());
+      ScrollTrigger.getAll().forEach((st: any) => st.kill());
       if (locoScroll) locoScroll.destroy();
     };
   }, [ready]);
@@ -171,27 +309,45 @@ export default function Home() {
         </div>
 
         <div ref={trustedRef}>
-          <TrustedSection />
+          <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg" />}>
+            <TrustedSection />
+          </Suspense>
         </div>
 
         <div ref={resultsRef}>
-          <ResultsSection />
+          <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg" />}>
+            <ResultsSection />
+          </Suspense>
         </div>
 
-
         <div ref={aiRef}>
-          <AISummary />
+          <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg" />}>
+            <AISummary />
+          </Suspense>
         </div>
 
         <div ref={topRatedRef}>
-          <TopRatedFeatured />
+          <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg" />}>
+            <TopRatedFeatured />
+          </Suspense>
         </div>
 
-        <CitiesSection />
-        <NewRescource />
-        <SearchNursing />
-        <Footer />
-      {/* </section> */}
+        <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
+          <CitiesSection />
+        </Suspense>
+        
+        <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
+          <NewRescource />
+        </Suspense>
+        
+        <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
+          <SearchNursing />
+        </Suspense>
+        
+        <Suspense fallback={<div className="h-32 bg-gray-100 animate-pulse rounded-lg" />}>
+          <Footer />
+        </Suspense>
+      </div>
 
       {/* <section
         data-scroll-section
@@ -202,7 +358,6 @@ export default function Home() {
         </h2>
       </section> */}
 
-    </div>
     </div>
   );
 }

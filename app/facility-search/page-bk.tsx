@@ -10,8 +10,6 @@ import MapView from '../components/MapView';
 import FacilityReviewSkeleton from '../components/ReviewSkeleton';
 import { FilterButton } from '../components/FilterButton';
 import { motion } from "framer-motion";
-import { SearchNursing } from '../components/SearchNursing';
-import { Footer } from '../components/Footer';
 
 
 
@@ -165,7 +163,7 @@ export default function FacilitySearchPage() {
         }
       }
 
-      const apiUrl = `http://13.61.57.246:5000/api/facilities/filter-with-reviews?${params.toString()}`;
+      const apiUrl = `http://localhost:5000/api/facilities/filter-with-reviews?${params.toString()}`;
       const res = await fetch(apiUrl);
       const data = await res.json();
 
@@ -358,357 +356,356 @@ export default function FacilitySearchPage() {
   return (
     <>
 
-    <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
-            <div className="max-w-[1856px] h-[46px] mx-auto px-4 sm:px-[32px] flex items-center justify-between">
-              <img
-                src="/footer_icon.png"
-                alt="NursingHome Logo"
-                className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] mt-7 sm:ml-30"
-              />
-    
-              <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
-                <a
-                  href="#"
-                  className="font-inter font-black text-[14px] leading-[13px] tracking-[0.2px] capitalize text-white"
-                >
-                  Home
-                </a>
-                <a
-                  href="#"
-                  className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
-                >
-                  What's New!
-                </a>
-                <a
-                  href="#"
-                  className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
-                >
-                  News
-                </a>
-                <a
-                  href="#"
-                  className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
-                >
-                  Contact
-                </a>
-              </nav>
-    
-              <div className="w-auto sm:w-[406.5px] h-[54px] flex items-center justify-end mt-9 sm:mr-50 space-x-2 sm:space-x-6">
-                {isAuthenticated ? (
-                  <div
-                    onClick={handleLogout}
-                    className="flex cursor-pointer items-center w-[100px] sm:w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-2 sm:px-4 py-6"
-                  >
-                    <img
-                      src="/arrow_btn.png"
-                      alt="Logout icon"
-                      className="w-[16px] h-[16px] sm:w-[18.78px] sm:h-[18.78px] mr-1 sm:mr-2"
-                    />
-                    <span className="font-jost font-semibold text-[14px] sm:text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
-                      Logout
-                    </span>
-                  </div>
-                ) : (
-                  <div
-                    onClick={() => setOpenAuth(true)}
-                    className="flex cursor-pointer items-center w-[100px] sm:w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-2 sm:px-4 py-6"
-                  >
-                    <img
-                      src="/icons/header_sign.png"
-                      alt="Sign in icon"
-                      className="w-[16px] h-[16px] sm:w-[18.78px] sm:h-[18.78px] mr-1 sm:mr-2"
-                    />
-                    <span className="font-jost font-semibold text-[14px] sm:text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
-                      Sign In
-                    </span>
-                  </div>
-                )}
-    
-                {/* <button className="flex items-center justify-center w-[163.37px] h-[54px] bg-white hover:bg-[#a91a2e] rounded-[7.04px] px-4">
-                  <img
-                    src="/icons/faciltiy_search_svg.png"
-                    alt="Add icon"
-                    className="w-[18.78px] h-[18.78px] fill-red-500  mr-2 invert"
-                  />
-                  <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
-                    Add Listing
-                  </span>
-                </button> */}
+      <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
+        <div className="max-w-[1856px] h-[46px] mx-auto px-4 sm:px-[32px] flex items-center justify-between">
+          <img
+            src="/footer_icon.png"
+            alt="NursingHome Logo"
+            className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] mt-7 sm:ml-30"
+          />
+
+          <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
+            <a
+              href="#"
+              className="font-inter font-black text-[14px] leading-[13px] tracking-[0.2px] capitalize text-white"
+            >
+              Home
+            </a>
+            <a
+              href="#"
+              className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
+            >
+              What's New!
+            </a>
+            <a
+              href="#"
+              className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
+            >
+              News
+            </a>
+            <a
+              href="#"
+              className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
+            >
+              Contact
+            </a>
+          </nav>
+
+          <div className="w-auto sm:w-[406.5px] h-[54px] flex items-center justify-end mt-9 sm:mr-50 space-x-2 sm:space-x-6">
+            {isAuthenticated ? (
+              <div
+                onClick={handleLogout}
+                className="flex cursor-pointer items-center w-[100px] sm:w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-2 sm:px-4 py-6"
+              >
+                <img
+                  src="/arrow_btn.png"
+                  alt="Logout icon"
+                  className="w-[16px] h-[16px] sm:w-[18.78px] sm:h-[18.78px] mr-1 sm:mr-2"
+                />
+                <span className="font-jost font-semibold text-[14px] sm:text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
+                  Logout
+                </span>
               </div>
-            </div>
-    
-            <AuthModal
-              open={openAuth}
-              onOpenChange={(open) => {
-                setOpenAuth(open);
-                if (!open) {
-                  setIsAuthenticated(!!localStorage.getItem("token"));
-                }
-              }}
-            />
-          </header>
-    
-    
-          <section className="w-full min-h-[60px] bg-[#F5F5F5] flex items-center justify-between px-4 sm:px-22">
-            <div className="flex items-center gap-x-1 sm:gap-x-2 text-[#4B5563] mx-2 sm:mx-25 font-inter font-normal text-[14px] sm:text-[16.28px] leading-[20px] sm:leading-[23.26px]">
-              <span className="align-middle">Home</span>
+            ) : (
+              <div
+                onClick={() => setOpenAuth(true)}
+                className="flex cursor-pointer items-center w-[100px] sm:w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-2 sm:px-4 py-6"
+              >
+                <img
+                  src="/icons/header_sign.png"
+                  alt="Sign in icon"
+                  className="w-[16px] h-[16px] sm:w-[18.78px] sm:h-[18.78px] mr-1 sm:mr-2"
+                />
+                <span className="font-jost font-semibold text-[14px] sm:text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
+                  Sign In
+                </span>
+              </div>
+            )}
+
+            {/* <button className="flex items-center justify-center w-[163.37px] h-[54px] bg-white hover:bg-[#a91a2e] rounded-[7.04px] px-4">
               <img
-                src="/icons/search_fac_right_icon.png"
-                alt="Arrow"
-                className="w-[6px] h-[10px] sm:w-[8.72px] sm:h-[13.95px] align-middle"
+                src="/icons/faciltiy_search_svg.png"
+                alt="Add icon"
+                className="w-[18.78px] h-[18.78px] fill-red-500  mr-2 invert"
               />
-              <span className="align-middle">Search Results</span>
-              <img
-                src="/icons/search_fac_right_icon.png"
-                alt="Arrow"
-                className="w-[6px] h-[10px] sm:w-[8.72px] sm:h-[13.95px] align-middle"
-              />
-              <span className="font-inter font-medium text-[14px] sm:text-[16.71px] leading-[20px] sm:leading-[23.87px] text-[#111827] align-middle truncate max-w-[200px] sm:max-w-none">
-                {locationName
-                ?.toLowerCase()
-                .replace(/\b\w/g, (char) => char.toUpperCase())}
-              </span>
-            </div>
-    
-    
-            {/* <button className="flex items-center gap-2 bg-[#F5F5F5] text-[#C71F37] px-4 mx-45 py-2 hover:bg-[#f5f5f5] transition">
-              <img
-                src="/icons/facility_search_heart_icon.png"
-                alt="Save icon"
-                className="w-[16.28px] h-[16.28px]"
-              />
-              <span className="font-inter font-normal text-[16.28px] leading-[23.26px] text-center">
-                Save Search
+              <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
+                Add Listing
               </span>
             </button> */}
-          </section>
-    
-          <section className="w-full min-h-[148px] mx-auto bg-white flex flex-col justify-center px-4 sm:px-6 py-4">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between w-full mb-4 gap-4">
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                <span
-                  className="font-inter font-medium text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28.67px] text-[#111827]"
-                >
-                  {facilities.length} Facilities Found in {locationName
-                  ?.toLowerCase()
-                  .replace(/\b\w/g, (char) => char.toUpperCase())}
-                </span>
-                <div className="flex items-center gap-2">
-                  <img
-                    src="/icons/location_icon_new.png"
-                    alt="Location Icon"
-                    className="w-[12px] h-[16px] sm:w-[14.33px] sm:h-[19.11px]"
-                  />
-    
-                  {/* Text */}
-                  <span className="font-inter font-normal text-[14px] sm:text-[16px] leading-[20px] sm:leading-[23.26px] text-[#6B7280]">
-                    Within 25 miles
-                  </span>
-                </div>
-    
-              </div>
-    
-              <div className="relative flex items-center space-x-4">
-                {/* <button
-                  className="w-[233px] h-[48px] bg-[#EFEFEF] rounded-[9.56px] border border-[#E5E7EB] text-[#212121] font-inter font-medium hover:bg-gray-50 transition"
-                >
-                  Sort by: Best Match
-                </button> */}
-                {/* List icon */}
-                <button
-                  type="button"
-                  className="relative flex items-center w-[80px] sm:w-[97.68px] h-[40px] sm:h-[48.84px] border border-[#D1D5DB] rounded-[9.3px] overflow-hidden font-inter bg-white"
-                >
-                  {/* Animated active background */}
-                  <motion.div
-                    className="absolute top-0 bottom-0 w-[40px] sm:w-[46.51px] bg-[#D02B38] rounded-[9.3px]"
-                    animate={{
-                      x: viewMode === "both" ? 0 : 40, // Move right when switching
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 25,
-                    }}
-                  />
-    
-                  {/* Left icon (List View) */}
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setViewMode("both")}
-                    className="flex items-center justify-center w-[40px] sm:w-[46.51px] h-[40px] sm:h-[46.51px] z-10 cursor-pointer"
-                  >
-                    <img
-                        src="/icons/list_icon.png"
-                        alt="List Icon"
-                        className={`w-[14px] h-[14px] sm:w-[16px] sm:h-[16px] transition-all duration-200 ${
-                          viewMode === "both"
-                            ? "brightness-200"
-                            : "brightness-0 opacity-80"
-                        }`}
-                      />
-                  </div>
-    
-                  {/* Right icon (Map View) */}
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setViewMode("mapOnly")}
-                    className="flex items-center justify-center flex-1 z-10 cursor-pointer"
-                  >
-                    <img
-                      src="/icons/map_icon.png"
-                      alt="Map Icon"
-                      className={`w-[18px] h-[14px] sm:w-[20.93px] sm:h-[16px] ${
-                        viewMode === "mapOnly" ? "brightness-200" : "brightness-0 opacity-80"
-                      }`}
-                    />
-                  </div>
-                </button>
-              </div>
+          </div>
+        </div>
+
+        <AuthModal
+          open={openAuth}
+          onOpenChange={(open) => {
+            setOpenAuth(open);
+            if (!open) {
+              setIsAuthenticated(!!localStorage.getItem("token"));
+            }
+          }}
+        />
+      </header>
+
+
+      <section className="w-full min-h-[60px] bg-[#F5F5F5] flex items-center justify-between px-4 sm:px-22">
+        <div className="flex items-center gap-x-1 sm:gap-x-2 text-[#4B5563] mx-2 sm:mx-25 font-inter font-normal text-[14px] sm:text-[16.28px] leading-[20px] sm:leading-[23.26px]">
+          <span className="align-middle">Home</span>
+          <img
+            src="/icons/search_fac_right_icon.png"
+            alt="Arrow"
+            className="w-[6px] h-[10px] sm:w-[8.72px] sm:h-[13.95px] align-middle"
+          />
+          <span className="align-middle">Search Results</span>
+          <img
+            src="/icons/search_fac_right_icon.png"
+            alt="Arrow"
+            className="w-[6px] h-[10px] sm:w-[8.72px] sm:h-[13.95px] align-middle"
+          />
+          <span className="font-inter font-medium text-[14px] sm:text-[16.71px] leading-[20px] sm:leading-[23.87px] text-[#111827] align-middle truncate max-w-[200px] sm:max-w-none">
+            {locationName
+            ?.toLowerCase()
+            .replace(/\b\w/g, (char) => char.toUpperCase())}
+          </span>
+        </div>
+
+
+        {/* <button className="flex items-center gap-2 bg-[#F5F5F5] text-[#C71F37] px-4 mx-45 py-2 hover:bg-[#f5f5f5] transition">
+          <img
+            src="/icons/facility_search_heart_icon.png"
+            alt="Save icon"
+            className="w-[16.28px] h-[16.28px]"
+          />
+          <span className="font-inter font-normal text-[16.28px] leading-[23.26px] text-center">
+            Save Search
+          </span>
+        </button> */}
+      </section>
+
+      <section className="w-full min-h-[148px] mx-auto bg-white flex flex-col justify-center px-4 sm:px-6 py-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between w-full mb-4 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+           <span
+              className="font-inter font-medium text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28.67px] text-[#111827]"
+            >
+              {facilities.length} Facilities Found in {locationName
+              ?.toLowerCase()
+              .replace(/\b\w/g, (char) => char.toUpperCase())}
+            </span>
+            <div className="flex items-center gap-2">
+              <img
+                src="/icons/location_icon_new.png"
+                alt="Location Icon"
+                className="w-[12px] h-[16px] sm:w-[14.33px] sm:h-[19.11px]"
+              />
+
+              {/* Text */}
+              <span className="font-inter font-normal text-[14px] sm:text-[16px] leading-[20px] sm:leading-[23.26px] text-[#6B7280]">
+                Within 25 miles
+              </span>
             </div>
-    
-            <div className="w-full flex items-center justify-start">
-              <div className="w-full flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 sm:gap-3 md:gap-4 gap-y-2 sm:gap-y-3 ml-0 sm:ml-1 mt-3 sm:mt-5 lg:overflow-x-auto pb-2">
-                <FilterButton
-                  iconLeft="/icons/stars_icon.png"
-                  label={filters.ratingMin ? `${filters.ratingMin}+ Stars` : "Stars"}
-                  options={[5, 4, 3, 2, 1]}
-                  value={filters.ratingMin}
-                  onSelect={(val) => {
-                    const newFilters = { ...filters, ratingMin: val.toString() };
-                    setFilters(newFilters);
-                    fetchFilteredFacilities(newFilters);
-                  }}
-                  onClear={() => {
-                    const newFilters = { ...filters, ratingMin: "" };
-                    setFilters(newFilters);
-                    fetchFilteredFacilities(newFilters);
-                  }}
-                  className="flex items-center justify-center gap-2 w-[110px] sm:w-[130px] h-[40px] sm:h-[43px] rounded-[9.56px] bg-[#D02B38] px-2 sm:px-3 font-inter font-medium text-[14px] sm:text-[16.72px] leading-[20px] sm:leading-[23.89px] flex-shrink-0"
-                  textWhite
-                  iconLeftWidth="16px"
-                  iconLeftHeight="14px"
+
+          </div>
+
+          <div className="relative flex items-center space-x-4">
+            {/* <button
+              className="w-[233px] h-[48px] bg-[#EFEFEF] rounded-[9.56px] border border-[#E5E7EB] text-[#212121] font-inter font-medium hover:bg-gray-50 transition"
+            >
+              Sort by: Best Match
+            </button> */}
+           {/* List icon */}
+            <button
+              type="button"
+              className="relative flex items-center w-[80px] sm:w-[97.68px] h-[40px] sm:h-[48.84px] border border-[#D1D5DB] rounded-[9.3px] overflow-hidden font-inter bg-white"
+            >
+              {/* Animated active background */}
+              <motion.div
+                className="absolute top-0 bottom-0 w-[40px] sm:w-[46.51px] bg-[#D02B38] rounded-[9.3px]"
+                animate={{
+                  x: viewMode === "both" ? 0 : 40, // Move right when switching
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 25,
+                }}
+              />
+
+              {/* Left icon (List View) */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setViewMode("both")}
+                className="flex items-center justify-center w-[40px] sm:w-[46.51px] h-[40px] sm:h-[46.51px] z-10 cursor-pointer"
+              >
+                <img
+                    src="/icons/list_icon.png"
+                    alt="List Icon"
+                    className={`w-[14px] h-[14px] sm:w-[16px] sm:h-[16px] transition-all duration-200 ${
+                      viewMode === "both"
+                        ? "brightness-200"
+                        : "brightness-0 opacity-80"
+                    }`}
+                  />
+              </div>
+
+              {/* Right icon (Map View) */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setViewMode("mapOnly")}
+                className="flex items-center justify-center flex-1 z-10 cursor-pointer"
+              >
+                <img
+                  src="/icons/map_icon.png"
+                  alt="Map Icon"
+                  className={`w-[18px] h-[14px] sm:w-[20.93px] sm:h-[16px] ${
+                    viewMode === "mapOnly" ? "brightness-200" : "brightness-0 opacity-80"
+                  }`}
                 />
-    
-                <FilterButton
-                  iconLeft="/icons/location_icon_new.png"
-                  iconRight="/icons/down_icon.png"
-                  label="Distance Km"
-                  options={["1", "5", "10", "20", "50"]}
-                  value={filters.distance}
-                  onSelect={(val) => {
-                    const newFilters = { ...filters, distance: val.toString() };
-                    setFilters(newFilters);
-                    fetchFilteredFacilities(newFilters);
-                  }}
-                  onClear={() => {
-                    const newFilters = { ...filters, distance: "" };
-                    setFilters(newFilters);
-                    fetchFilteredFacilities(newFilters);
-                  }}
-                  iconLeftWidth="12px"
-                  iconLeftHeight="16px"
-                  iconRightWidth="10px"
-                  iconRightHeight="8px"
-                  className="flex-shrink-0"
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div className="w-full flex items-center justify-start">
+          <div className="w-full flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 sm:gap-3 md:gap-4 gap-y-2 sm:gap-y-3 ml-0 sm:ml-1 mt-3 sm:mt-5 lg:overflow-x-auto pb-2">
+            <FilterButton
+              iconLeft="/icons/stars_icon.png"
+              label={filters.ratingMin ? `${filters.ratingMin}+ Stars` : "Stars"}
+              options={[5, 4, 3, 2, 1]}
+              value={filters.ratingMin}
+              onSelect={(val) => {
+                const newFilters = { ...filters, ratingMin: val.toString() };
+                setFilters(newFilters);
+                fetchFilteredFacilities(newFilters);
+              }}
+              onClear={() => {
+                const newFilters = { ...filters, ratingMin: "" };
+                setFilters(newFilters);
+                fetchFilteredFacilities(newFilters);
+              }}
+              className="flex items-center justify-center gap-2 w-[110px] sm:w-[130px] h-[40px] sm:h-[43px] rounded-[9.56px] bg-[#D02B38] px-2 sm:px-3 font-inter font-medium text-[14px] sm:text-[16.72px] leading-[20px] sm:leading-[23.89px] flex-shrink-0"
+              textWhite
+              iconLeftWidth="16px"
+              iconLeftHeight="14px"
+            />
+
+            <FilterButton
+              iconLeft="/icons/location_icon_new.png"
+              iconRight="/icons/down_icon.png"
+              label="Distance Km"
+              options={["1", "5", "10", "20", "50"]}
+              value={filters.distance}
+              onSelect={(val) => {
+                const newFilters = { ...filters, distance: val.toString() };
+                setFilters(newFilters);
+                fetchFilteredFacilities(newFilters);
+              }}
+              onClear={() => {
+                const newFilters = { ...filters, distance: "" };
+                setFilters(newFilters);
+                fetchFilteredFacilities(newFilters);
+              }}
+              iconLeftWidth="12px"
+              iconLeftHeight="16px"
+              iconRightWidth="10px"
+              iconRightHeight="8px"
+              className="flex-shrink-0"
+            />
+
+            <FilterButton
+              iconLeft="/icons/Bed_icon.png"
+              iconRight="/icons/down_icon.png"
+              label="Bed Capacity"
+              options={["<20", "20-50", "50-100", "100+"]}
+              value={filters.beds}
+              onSelect={(val) => {
+                const newFilters = { ...filters, beds: val.toString() };
+                setFilters(newFilters);
+                fetchFilteredFacilities(newFilters);
+              }}
+              onClear={() => {
+                const newFilters = { ...filters, beds: "" };
+                setFilters(newFilters);
+                fetchFilteredFacilities(newFilters);
+              }}
+              iconLeftWidth="20px"
+              iconLeftHeight="16px"
+              iconRightWidth="10px"
+              iconRightHeight="8px"
+              className="flex-shrink-0"
+            />
+
+            <FilterButton
+              iconLeft="/icons/building_icon.png"
+              iconRight="/icons/down_icon.png"
+              label="Ownership"
+              options={["Non-Profit", "Private", "Government"]}
+              value={filters.ownership}
+              onSelect={(val) => {
+                const newFilters = { ...filters, ownership: val.toString() };
+                setFilters(newFilters);
+                fetchFilteredFacilities(newFilters);
+              }}
+              onClear={() => {
+                const newFilters = { ...filters, ownership: "" };
+                setFilters(newFilters);
+                fetchFilteredFacilities(newFilters);
+              }}
+              iconLeftWidth="12px"
+              iconLeftHeight="16px"
+              iconRightWidth="10px"
+              iconRightHeight="8px"
+              className="flex-shrink-0"
+            />
+
+            <FilterButton
+              label="More Filters"
+              iconLeft="/icons/filter_icon.png"
+              iconRight="/icons/down_icon.png"
+              iconRightWidth="10px"
+              iconRightHeight="8px"
+              onClear={() => {
+                setFilters(f => ({ ...f, city: "", state: "" }));
+                fetchFilteredFacilities();
+              }}
+              value={filters.city || filters.state}
+              className="flex-shrink-0"
+            >
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  placeholder="City"
+                  className="border p-2 rounded-lg"
+                  value={filters.city}
+                  onChange={(e) => setFilters(f => ({ ...f, city: e.target.value }))}
+                  onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilities()}
                 />
-    
-                <FilterButton
-                  iconLeft="/icons/Bed_icon.png"
-                  iconRight="/icons/down_icon.png"
-                  label="Bed Capacity"
-                  options={["<20", "20-50", "50-100", "100+"]}
-                  value={filters.beds}
-                  onSelect={(val) => {
-                    const newFilters = { ...filters, beds: val.toString() };
-                    setFilters(newFilters);
-                    fetchFilteredFacilities(newFilters);
-                  }}
-                  onClear={() => {
-                    const newFilters = { ...filters, beds: "" };
-                    setFilters(newFilters);
-                    fetchFilteredFacilities(newFilters);
-                  }}
-                  iconLeftWidth="20px"
-                  iconLeftHeight="16px"
-                  iconRightWidth="10px"
-                  iconRightHeight="8px"
-                  className="flex-shrink-0"
+                <input
+                  type="text"
+                  placeholder="State"
+                  className="border p-2 rounded-lg"
+                  value={filters.state}
+                  onChange={(e) => setFilters(f => ({ ...f, state: e.target.value }))}
+                  onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilities()}
                 />
-    
-                <FilterButton
-                  iconLeft="/icons/building_icon.png"
-                  iconRight="/icons/down_icon.png"
-                  label="Ownership"
-                  options={["Non-Profit", "Private", "Government"]}
-                  value={filters.ownership}
-                  onSelect={(val) => {
-                    const newFilters = { ...filters, ownership: val.toString() };
-                    setFilters(newFilters);
-                    fetchFilteredFacilities(newFilters);
-                  }}
-                  onClear={() => {
-                    const newFilters = { ...filters, ownership: "" };
-                    setFilters(newFilters);
-                    fetchFilteredFacilities(newFilters);
-                  }}
-                  iconLeftWidth="12px"
-                  iconLeftHeight="16px"
-                  iconRightWidth="10px"
-                  iconRightHeight="8px"
-                  className="flex-shrink-0"
-                />
-    
-                <FilterButton
-                  label="More Filters"
-                  iconLeft="/icons/filter_icon.png"
-                  iconRight="/icons/down_icon.png"
-                  iconRightWidth="10px"
-                  iconRightHeight="8px"
-                  onClear={() => {
-                    setFilters(f => ({ ...f, city: "", state: "" }));
+                <Button
+                  onClick={() => {
                     fetchFilteredFacilities();
+                    toast.success("Filters applied!");
                   }}
-                  value={filters.city || filters.state}
-                  className="flex-shrink-0"
+                  className="bg-blue-600 text-grey mt-2"
                 >
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="text"
-                      placeholder="City"
-                      className="border p-2 rounded-lg"
-                      value={filters.city}
-                      onChange={(e) => setFilters(f => ({ ...f, city: e.target.value }))}
-                      onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilities()}
-                    />
-                    <input
-                      type="text"
-                      placeholder="State"
-                      className="border p-2 rounded-lg"
-                      value={filters.state}
-                      onChange={(e) => setFilters(f => ({ ...f, state: e.target.value }))}
-                      onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilities()}
-                    />
-                    <Button
-                      onClick={() => {
-                        fetchFilteredFacilities();
-                        toast.success("Filters applied!");
-                      }}
-                      className="bg-blue-600 text-grey mt-2"
-                    >
-                      Apply
-                    </Button>
-                  </div>
-                </FilterButton>
+                  Apply
+                </Button>
               </div>
-            </div>
-          </section>
-      
+            </FilterButton>
+          </div>
+        </div>
+      </section>
 
       {/* <section className="w-[1736.7px] min-h-[2368px] flex gap-6 ml-5 mt-[40px] px-48"> */}
-      <section className={`flex flex-col lg:flex-row gap-6 ml-0 lg:ml-5 mt-[20px] lg:mt-[40px] px-4 md:px-12 lg:px-48 ${viewMode === "mapOnly" ? "h-[677px]" : "min-h-[2368px]"}`}>
+      <section className={`flex flex-col lg:flex-row gap-6 mx-4 sm:ml-5 mt-[40px] px-4 sm:px-48 ${viewMode === "mapOnly" ? "h-[677px]" : "min-h-[2368px]"}`}>
         {isFiltering || showSkeletonTimer ? (
           <FacilityReviewSkeleton />
         ) : filteredFacilities.length === 0 ? (
@@ -726,7 +723,7 @@ export default function FacilitySearchPage() {
                     <div
                       key={facility.id || i}
                       onClick={() => handleCardClick(facility)}
-                      className={`w-full lg:w-[707.13px] h-auto p-4 bg-[#F9F9F9] rounded-[9.56px] shadow transition-all duration-200 cursor-pointer 
+                      className={`w-full h-auto p-3 sm:p-4 bg-[#F9F9F9] rounded-[9.56px] shadow transition-all duration-200 cursor-pointer 
                                   ${selectedFacilityId?.toString() === facility.id
                           ? "border-l-[4.78px] border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
                           : "border-none"
@@ -735,110 +732,87 @@ export default function FacilitySearchPage() {
                     >
                       <div className="flex flex-col sm:flex-row">
                       
-                        <div className="w-full sm:w-1/4 relative md:mt-5">
-
-    
-                          
-                            <div className="
-                                absolute 
-                                top-0 left-7 w-[66.89px] h-[33.45px] rounded-[4.78px] /* Default sizing based on exact specs */
-                                bg-[#D02B38] flex items-center justify-center space-x-1 p-1
-                                
-                                sm:top-0 sm:left-5 sm:w-[60px] sm:h-[30px] sm:rounded-md
-                            ">
-                                
-                                {/* SVG Star Icon */}
-                                <svg className="w-4 h-4 text-white sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.817 2.046a1 1 0 00-.363 1.118l1.07 3.292c.3.921-.755 1.688-1.539 1.118l-2.817-2.046a1 1 0 00-1.175 0l-2.817 2.046c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.363-1.118l-2.817-2.046c-.783-.57-.381-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
-                                </svg>
-
-                                {/* Rating Text 4.2 */}
-                                <span className="text-white font-bold text-[16.72px] leading-tight select-none sm:text-sm">
-                                    4.2
-                                </span>
-                            </div>
-
-                            {/* The existing image container */}
-                            <div
-                                className=" w-[114.67px] h-[114.67px]  flex items-center justify-center mt-15 ml-5"> 
-                                <img
-                                    src={facility.imageUrl || "/default_facility_image.png"}
-                                    alt={facility.name}
-                                    className="max-w-full max-h-full rounded-[9.56px]"
-                                />
-                            </div>
+                        <div className="w-full sm:w-1/4 flex justify-center sm:justify-start">
+                          <div
+                            className="w-[100px] h-[100px] sm:w-[114.67px] sm:h-[114.67px] flex items-center justify-center mt-2 sm:mt-15 ml-0 sm:ml-5"> 
+                            <img
+                              src={facility.imageUrl || "/default_facility_image.png"}
+                              alt={facility.name}
+                              className="max-w-full max-h-full rounded-[9.56px]"
+                            />
+                          </div>
                         </div>
 
-                        <div className="flex-1 mt-3 sm:mt-11 ml-0 sm:ml-1 p-3 sm:p-5">
-                          <h3 className="font-inter font-bold text-[23.89px] leading-[33.45px] text-[#111827]">
+                        <div className="flex-1 mt-4 sm:mt-11 ml-0 sm:ml-1 p-2 sm:p-5">
+                          <h3 className="font-inter font-bold text-[20px] sm:text-[23.89px] leading-[28px] sm:leading-[33.45px] text-[#111827]">
                             {facility.name}
                           </h3>
                           <div className="flex items-center gap-2 mt-2">
-                            <img src="/icons/location_icon_new.png" alt="Location Icon" className="w-[12.54px] h-[16.72px] self-start mt-1" />
-                            <span className="font-inter font-normal text-[16.72px] leading-[23.89px] text-[#4B5563]">
+                            <img src="/icons/location_icon_new.png" alt="Location Icon" className="w-[10px] h-[14px] sm:w-[12.54px] sm:h-[16.72px] self-start mt-1" />
+                            <span className="font-inter font-normal text-[14px] sm:text-[16.72px] leading-[20px] sm:leading-[23.89px] text-[#4B5563]">
                               {facility.distance != null ? `${facility.distance.toFixed(1)} miles` : ''}
                               {facility.address ? ` • ${facility.address}` : ''}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-6 mt-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3">
                             <div className="flex items-center gap-2">
-                              <img src="/icons/bed_icon (2).png" alt="Beds Icon" className="w-[20.9px] h-[14.63px]" />
-                              <span className="font-inter font-normal text-[16.72px] leading-[23.89px] text-[#4B5563]">
+                              <img src="/icons/bed_icon (2).png" alt="Beds Icon" className="w-[18px] h-[12px] sm:w-[20.9px] sm:h-[14.63px]" />
+                              <span className="font-inter font-normal text-[14px] sm:text-[16.72px] leading-[20px] sm:leading-[23.89px] text-[#4B5563]">
                                 {facility.beds} beds
                               </span>
                             </div>
 
-                            <span className="font-inter font-normal text-[16.72px] leading-[23.89px] text-[#4B5563]">
+                            <span className="font-inter font-normal text-[14px] sm:text-[16.72px] leading-[20px] sm:leading-[23.89px] text-[#4B5563]">
                               {facility.isNonProfit ? 'Non-Profit' : 'For-Profit'}
                             </span>
-                            <span className={`font-inter font-medium text-[16.72px] leading-[23.89px] ${getStatusColor(facility.status)}`}>
+                            <span className={`font-inter font-medium text-[14px] sm:text-[16.72px] leading-[20px] sm:leading-[23.89px] ${getStatusColor(facility.status)}`}>
                               {facility.status}
                             </span>
                           </div>
 
-                          <div className="w-full md:w-[478.01px] h-auto min-h-[55.89px] px-3 py-2 rounded-[4.78px] mt-4 md:mt-6 bg-[#F5F5F5] grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="w-full sm:w-[478.01px] h-auto min-h-[55.89px] px-3 py-2 rounded-[4.78px] mt-4 sm:mt-6 bg-[#F5F5F5] grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="flex items-start gap-2">
-                               <span className="text-[#16A34A] text-[14.33px] leading-[19.11px] font-medium">✓</span>
+                               <span className="text-[#16A34A] text-[12px] sm:text-[14.33px] leading-[16px] sm:leading-[19.11px] font-medium">✓</span>
                                 <p
-                                  className="font-inter font-normal text-[14.33px] leading-[19.11px] text-[#16A34A] line-clamp-2"
-                                  title={(facility as any).pros}
+                                  className="font-inter font-normal text-[12px] sm:text-[14.33px] leading-[16px] sm:leading-[19.11px] text-[#16A34A] line-clamp-2"
+                                  title={facility.aiSummary?.pros?.join(", ") || "No specific pros listed"} // Optional: show full text on hover
                                 >
-                                  Pros: {(facility as any).pros}
+                                  Pros: {facility.aiSummary?.pros?.join(", ") || "No specific pros listed"}
                                 </p>
                               </div>
 
                               <div className="flex items-start gap-2">
-                                <span className="text-[#DC2626] text-[14.33px] leading-[19.11px] font-medium">✗</span>
+                                <span className="text-[#DC2626] text-[12px] sm:text-[14.33px] leading-[16px] sm:leading-[19.11px] font-medium">✗</span>
                                 <p
-                                  className="font-inter font-normal text-[14.33px] leading-[19.11px] text-[#DC2626] line-clamp-2"
-                                  title={(facility as any).cons}
+                                  className="font-inter font-normal text-[12px] sm:text-[14.33px] leading-[16px] sm:leading-[19.11px] text-[#DC2626] line-clamp-2"
+                                  title={facility.aiSummary?.cons?.join(", ") || "No specific cons listed"} // Optional: show full text on hover
                                 >
-                                  Cons: {(facility as any).cons}
+                                  Cons: {facility.aiSummary?.cons?.join(", ") || "No specific cons listed"}
                                 </p>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between mt-3 flex-wrap gap-3">
-                            <div className="flex items-center gap-4 md:gap-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 gap-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                               {/* 📞 Phone */}
                               <div className="flex items-center gap-2">
-                                <img src="/icons/phone_icon.png" alt="Phone Icon" className="w-[12.33px] h-[12.33px]" />
-                                <span className="font-inter font-normal text-[14.33px] leading-[19.11px] text-[#4B5563]">
+                                <img src="/icons/phone_icon.png" alt="Phone Icon" className="w-[10px] h-[10px] sm:w-[12.33px] sm:h-[12.33px]" />
+                                <span className="font-inter font-normal text-[12px] sm:text-[14.33px] leading-[16px] sm:leading-[19.11px] text-[#4B5563]">
                                   {facility.phone}
                                 </span>
                               </div>
 
                               {/* ⏰ Open hours */}
                               <div className="flex items-center gap-2">
-                                <img src="/icons/clock_icon.png" alt="Clock Icon" className="w-[14.33px] h-[14.33px]" />
-                                <span className="font-inter font-normal text-[14.33px] leading-[19.11px] text-[#4B5563]">
-                                  {(facility as any).hours}
+                                <img src="/icons/clock_icon.png" alt="Clock Icon" className="w-[12px] h-[12px] sm:w-[14.33px] sm:h-[14.33px]" />
+                                <span className="font-inter font-normal text-[12px] sm:text-[14.33px] leading-[16px] sm:leading-[19.11px] text-[#4B5563]">
+                                  {(facility as any).hours || "N/A"}
                                 </span>
                               </div>
                             </div>
 
-                            <button className="w-full sm:w-[136.76px] h-[43px] bg-[#D02B38] rounded-[4.78px] text-white font-inter font-medium text-[16.72px] leading-[23.89px]
+                            <button className="w-full sm:w-[136.76px] h-[40px] sm:h-[43px] bg-[#D02B38] rounded-[4.78px] text-white font-inter font-medium text-[14px] sm:text-[16.72px] leading-[20px] sm:leading-[23.89px]
                                           flex items-center justify-center text-center disabled:opacity-70"
                               onClick={() => handleViewDetails(facility)}
                               disabled={loadingFacilityId === facility.id}
@@ -933,7 +907,7 @@ export default function FacilitySearchPage() {
                     )}
                 </div>
 
-                <div className="w-full lg:w-[778.7px] h-[400px] lg:h-[677px] bg-white rounded-[9.56px] shadow-[0px_1.19px_2.39px_0px_#0000000D] overflow-hidden sticky top-6 flex items-center justify-center">
+                <div className="w-full lg:w-[778.7px] h-[400px] lg:h-[677px] bg-white rounded-[9.56px] shadow-[0px_1.19px_2.39px_0px_#0000000D] overflow-hidden lg:sticky lg:top-6 flex items-center justify-center">
                   {/* map */}
                   {GOOGLE_MAPS_API_KEY ? (
                     <MapView
@@ -941,7 +915,6 @@ export default function FacilitySearchPage() {
                       centerCoords={mapCenter}
                       googleMapsApiKey={GOOGLE_MAPS_API_KEY}
                       locationName={locationName}
-                      
                     />
 
                   ) : (
@@ -951,14 +924,13 @@ export default function FacilitySearchPage() {
               </>
             )}
             {viewMode === "mapOnly" && (
-              <div className="w-full h-[500px] md:h-[677px] bg-white rounded-[9.56px] shadow overflow-hidden flex items-center justify-center">
+              <div className="w-full h-[400px] sm:h-[677px] bg-white rounded-[9.56px] shadow overflow-hidden flex items-center justify-center">
                 {GOOGLE_MAPS_API_KEY ? (
                   <MapView
                     facilities={facilityCoords}
                     centerCoords={mapCenter}
                     googleMapsApiKey={GOOGLE_MAPS_API_KEY}
                     locationName={locationName}
-                    
                   />
                 ) : (
                   <div>…your fallback…</div>
@@ -1140,10 +1112,6 @@ export default function FacilitySearchPage() {
           </div>
         </div>
       </section>
-
-      
-      <SearchNursing />
-      <Footer />
     </>
   )
 }
