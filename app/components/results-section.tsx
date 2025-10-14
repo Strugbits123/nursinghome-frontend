@@ -142,12 +142,12 @@ export function ResultsSection() {
                   height={15}
                   className="w-4 h-3 sm:w-[19px] sm:h-[15px]"
                 />
-                <span className="hidden sm:inline">List View</span>
+                <span className="hidden sm:inline">List awdddddddddView</span>
                 <span className="sm:hidden">List</span>
               </button>
             </div>
           </div>
-
+ 
           {/* Map + List */}
           <div className={`flex flex-col  bg-[#F3F4F6] lg:flex-row gap-4 lg:gap-6 mt-2`}>
             {/* Map: only show in Map View */}
