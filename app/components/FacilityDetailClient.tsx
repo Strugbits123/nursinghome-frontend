@@ -417,14 +417,14 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
     return (
         <>
            <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
-            <div className="max-w-[1856px] h-[46px] mx-auto px-4 sm:px-[32px] flex items-center justify-between">
+            <div className="max-w-screen-2xl h-[46px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                 <img
                 src="/footer_icon.png"
                 alt="NursingHome Logo"
-                className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] mt-7 sm:ml-30"
+                className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] mt-7"
                 />
     
-                <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
+                <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8">
                 <a
                     href="#"
                     className="font-inter font-black text-[14px] leading-[13px] tracking-[0.2px] capitalize text-white"
@@ -451,7 +451,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                 </a>
                 </nav>
     
-                <div className="w-auto sm:w-[406.5px] h-[54px] flex items-center justify-end mt-9 sm:mr-50 space-x-2 sm:space-x-6">
+                <div className="w-auto sm:w-[406.5px] h-[54px] flex items-center justify-end mt-9 space-x-2 sm:space-x-6">
                 {isAuthenticated ? (
                     <div
                     onClick={handleLogout}
@@ -552,8 +552,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                 {/* </button> */}
             </section>
 
-            <div className="w-full h-auto md:h-[572px] bg-white mt-[33px]">
-                <div className="w-full max-w-[1536px] h-auto md:h-[525px] mx-auto mt-[23px] bg-white p-6 flex flex-col md:flex-row space-x-0 md:space-x-6">
+            <div className="w-full bg-white mt-[33px]">
+                <div className="w-full max-w-screen-2xl mx-auto mt-[23px] bg-white p-6 md:p-8 flex flex-col md:flex-row space-x-0 md:space-x-6">
                     <div className="w-full md:w-2/3 flex flex-col space-y-4 px-7 pt-1">
                         <h1 className="font-jost font-bold text-[28px] md:text-[45.47px] leading-[34px] md:leading-[50.53px] text-[#111827]">
                            {facility.provider_name}
@@ -620,8 +620,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                 </span>
                             </div>
                         </div>
-                        <div className="flex flex-row space-x-6 mt-10">
-                            <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
+                            <div className="w-full bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[22px] md:text-[30.32px] leading-[28px] md:leading-[40.42px] text-[#D02B38] text-center">
                                     {parseCmsRating(facility?.overall_rating)}
                                 </span>
@@ -629,7 +629,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                     Overall Rating
                                 </span>
                             </div>
-                            <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
+                            <div className="w-full bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[22px] md:text-[30.32px] leading-[28px] md:leading-[40.42px] text-[#D02B38] text-center">
                                     {parseCmsRating(facility?.health_inspection_rating)}
                                 </span>
@@ -637,7 +637,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                     Health Inspections
                                 </span>
                             </div>
-                            <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
+                            <div className="w-full bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[22px] md:text-[30.32px] leading-[28px] md:leading-[40.42px] text-[#D02B38] text-center">
                                     {parseCmsRating(facility?.staffing_rating)}
                                 </span>
@@ -645,7 +645,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                     Staffing
                                 </span>
                             </div>
-                            <div className="w-[224px] h-[106px] bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
+                            <div className="w-full bg-[#F5F5F5] rounded-[10.11px] flex flex-col items-center justify-center p-4">
                                 <span className="font-inter font-bold text-[22px] md:text-[30.32px] leading-[28px] md:leading-[40.42px] text-[#D02B38] text-center">
                                     {parseCmsRating(facility?.qm_rating)}
                                 </span>
@@ -700,13 +700,13 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
                     <div className="w-full md:w-1/4 flex flex-col space-y-4">
                         {/* Cover Image */}
-                        <div className="w-full md:w-[458px] h-[200px] md:h-[323px] rounded-[10.11px] flex items-center justify-center overflow-hidden">
+                        <div className="w-full rounded-[10.11px] overflow-hidden">
                             <Image
                             src={coverImage}
                             alt={`${facility.provider_name} exterior`}
-                            width={458}
-                            height={323}
-                            className="w-full h-full rounded-[10.11px] object-cover transition-all duration-500 ease-in-out"
+                            width={800}
+                            height={500}
+                            className="w-full h-auto rounded-[10.11px] object-cover transition-all duration-500 ease-in-out"
                             />
                         </div>
 
@@ -714,7 +714,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         <Swiper
                             spaceBetween={8}
                             slidesPerView={3}
-                            className="w-full md:w-[458px] h-[101px]"
+                            className="w-full h-[96px] sm:h-[110px]"
                         >
                             {facility.photos.slice(1, 4).map((photoUrl, index) => (
                             <SwiperSlide key={index}>
@@ -740,8 +740,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                 </div>
             </div>
 
-            <div className="w-full h-auto md:h-[854px] bg-[#F5F5F5] mt-[33px]">
-                <div className="w-full max-w-[1527px] h-auto md:h-[778px] mx-auto mt-[23px] bg-[#F5F5F5] p-6 flex flex-col space-y-6">
+            <div className="w-full bg-[#F5F5F5] mt-[33px]">
+                <div className="w-full max-w-screen-2xl mx-auto mt-[23px] bg-[#F5F5F5] p-6 md:p-8 flex flex-col space-y-6">
                     <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827] ml-10">
                         Services & Facility Details
                     </h2>
@@ -750,7 +750,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                     </p>
 
                     <div className="flex flex-col md:flex-row ml-0 md:ml-10 space-y-6 md:space-y-0 md:space-x-6 mt-6">
-                        <div className="w-full md:w-[706.6px] h-auto md:h-[334.2px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
+                        <div className="w-full md:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-4">
                                 Medical Services
                             </h3>
@@ -818,7 +818,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                             </div>
                         </div>
 
-                        <div className="w-full md:w-[706.6px] h-auto md:h-[334.2px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
+                        <div className="w-full md:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-4">
                                 Amenities & Activities
                             </h3>
@@ -895,7 +895,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ml-0 md:ml-10">
-                        <div className="w-full md:w-[464.7px] h-auto md:h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
+                        <div className="w-full bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-black mb-4">
                                 Capacity & Rooms
                             </h3>
@@ -938,7 +938,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                             </div>
                         </div>
 
-                        <div className="w-full md:w-[464.7px] h-auto md:h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
+                        <div className="w-full bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-black mb-4">
                                 Contact Information
                             </h3>
@@ -998,7 +998,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
                         </div>
 
-                        <div className="w-full md:w-[464.7px] h-auto md:h-[296px] bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
+                        <div className="w-full bg-white rounded-[9.55px] [box-shadow:0px_1.19px_2.39px_0px_#0000000D] p-6">
                             <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-black mb-4">
                                 Visiting Hours
                             </h3>
@@ -1049,15 +1049,15 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
             </div>
 
             <section className="w-full bg-white">
-    <div className="w-full max-w-[1528px] h-full mx-auto px-4 md:px-8 py-8 flex flex-col">
+    <div className="w-full max-w-screen-2xl h-full mx-auto px-4 md:px-8 py-8 flex flex-col">
                     <h2 className="font-jost font-bold text-[22px] md:text-[32px] leading-[28px] md:leading-[38.4px] text-[#111827] mb-4 ml-0 md:ml-[50px]">
             Google Reviews & AI Analysis
         </h2>
                     <p className="font-inter font-normal text-[14px] md:text-[18px] leading-[22px] md:leading-[28px] text-[#707070] ml-0 md:ml-[50px] mb-8">
             Real reviews from families and our AI-powered insights
         </p>
-        <div className="flex flex-col md:flex-row gap-6 flex-grow"> {/* flex-grow added to make content fill remaining space */}
-            <div className="flex-1 w-full md:w-[954.87px] h-auto md:h-[1097.81px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] md:ml-10 p-6 flex flex-col">
+            <div className="flex flex-col md:flex-row gap-6 flex-grow">
+            <div className="flex-1 w-full bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] md:ml-10 p-6 flex flex-col max-h-[70vh] md:max-h-none">
                 <div className="flex justify-between items-center mb-4 flex-shrink-0">
                     <h3 className="font-inter font-bold text-[18px] md:text-[23.87px] leading-[24px] md:leading-[33.42px] text-[#111827]">
                         Recent Reviews
@@ -1134,7 +1134,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
             </div>
             <div className="flex flex-col gap-6">
                 <div 
-                    className="w-full md:w-[458.34px] h-auto md:h-[486.98px] bg-[#F5F5F5] rounded-[9.55px] p-4 
+                    className="w-full md:w-[458.34px] bg-[#F5F5F5] rounded-[9.55px] p-4 
                              overflow-y-auto 
                              flex flex-col gap-4"
                 >
@@ -1222,7 +1222,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
             
            <section className="w-full bg-[#F5F5F5] opacity-100 py-6">
-                <div className="w-full max-w-[1528px] min-h-[1016.94px] mx-auto mt-5 bg-gray-100 rounded-lg flex flex-col gap-6 p-6">
+                <div className="w-full max-w-screen-2xl mx-auto mt-5 bg-gray-100 rounded-lg flex flex-col gap-6 p-6">
                     <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827]">
                     CMS Performance Data
                     </h2>
@@ -1231,8 +1231,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         Official data from the Centers for Medicare & Medicaid Services
                     </p>
 
-                    <div className="flex flex-wrap gap-6 mt-2">
-                        <div className="w-full md:w-[464.7px] h-auto md:h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">
+                        <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
                                 <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
                                     Overall Rating
                                 </h3>
@@ -1240,7 +1240,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                     <FacilityRatingGauge facility={facility} />
                                 </div>
                             </div>
-                        <div className="w-full md:w-[464.7px] h-auto md:h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                        <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
                             <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
                                 Staffing Levels
                             </h3>
@@ -1248,7 +1248,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                                 <StaffingLevelsChart facility={facility} />
                             </div>
                         </div>
-                        <div className="w-full md:w-[464.7px] h-auto md:h-[463.11px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
+                        <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col">
                             <h3 className="font-jost font-bold text-2xl text-[#111827] mb-6">
                                 Quality Measures
                             </h3>
@@ -1259,7 +1259,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         </div>
 
 
-                    <div className="w-full md:w-[711.38px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6 flex flex-col gap-4">
+                    <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6 flex flex-col gap-4">
                         <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
                             Recent Health Inspections
                         </h3>
@@ -1306,7 +1306,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                             </div>
                         </div>
 
-                        <div className="w-full md:w-[711.38px] h-auto md:h-[415.37px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col gap-4">
+                        <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 flex flex-col gap-4">
                             <div className="ml-4 mt-1">
                                 <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827]">
                                 Ownership & Financial
@@ -1385,13 +1385,13 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
   <div
     className="
       w-full
-      max-w-[1528px]
+      max-w-screen-2xl
       bg-[#F5F5F5]
-      p-6
+      p-6 md:p-8
       flex 
       flex-col 
       lg:flex-row 
-      gap-2 
+      gap-4 
     "
   >
     <div className="flex flex-col w-full lg:w-2/3 lg:ml-3">
@@ -1410,8 +1410,6 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
     <div
         className="
             w-full
-            md:w-[954.87px]
-            h-[515.63px]
             bg-white
             rounded-[9.55px]
             shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)]
@@ -1448,8 +1446,8 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
     </div>
 
     {/* RIGHT COLUMN – 3 boxes */}
-    <div className="flex flex-col w-full lg:w-1/3 gap-2 mt-12 lg:mt-24">  {/* reduce gap from 4 to 2 */}
-        <div className="w-full md:w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
+    <div className="flex flex-col w-full lg:w-1/3 gap-4 mt-12 lg:mt-24">
+        <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
             <h3
                 className="
                 font-inter 
@@ -1510,7 +1508,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                     
                 </div>
 
-                <div className="w-full md:w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
+                <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
                     <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-4">
                         Transportation
                     </h3>
@@ -1551,7 +1549,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                         </p>
                     </div>
                 </div>
-                <div className="w-full md:w-[458.34px] h-[253.04px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
+                <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-6">
                     <h3 className="font-inter font-bold text-[23.87px] leading-[33.42px] text-[#111827] mb-4">
                         Nearby Services
                     </h3>

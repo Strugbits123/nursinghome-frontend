@@ -69,6 +69,10 @@ export function HeroSection() {
               params.append("lat", currentCoords.lat.toString());
               params.append("lng", currentCoords.lng.toString());
             }
+            // Enable enrichment and control result size
+            params.append("google", "1");
+            params.append("ai", "1");
+            // params.append("limit", "50");
 
             const url = `${API_URL}?${params.toString()}`;
             console.log("Fetching from URL:", url);

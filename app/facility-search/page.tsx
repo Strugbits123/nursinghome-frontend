@@ -109,12 +109,14 @@ export default function FacilitySearchPage() {
     locationName: "",
     distance: "",
     beds: "",
+    priceRange: "",
   });
 
   const [usingFilters, setUsingFilters] = useState(false);
   const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>(facilities);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [sortBy, setSortBy] = useState<"best" | "rating" | "distance" | "beds">("best");
 
   const handleViewDetails = async (facility: any) => {
     setLoadingFacilityId(facility.id);
@@ -196,6 +198,7 @@ export default function FacilitySearchPage() {
         status: f.status  || "Unknown",
         hours: f.operating_hours || "N/A",
         rating: f.rating || f.overall_rating || 0,
+        distance: f.distance,
       }));
 
       setFilteredFacilities(mappedFacilities);
@@ -232,6 +235,7 @@ export default function FacilitySearchPage() {
       locationName: "",
       distance: "",
       beds: "",
+      priceRange: "",
     });
     setUsingFilters(false);
     setFilteredFacilities(facilities);
@@ -243,10 +247,22 @@ export default function FacilitySearchPage() {
   const totalFacilities = filteredFacilities.length;
   const totalPages = Math.ceil(totalFacilities / ITEMS_PER_PAGE);
 
+  const sortedFacilities = useMemo(() => {
+    const list = [...filteredFacilities];
+    if (sortBy === "rating") {
+      list.sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0));
+    } else if (sortBy === "distance") {
+      list.sort((a: any, b: any) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+    } else if (sortBy === "beds") {
+      list.sort((a: any, b: any) => (b.beds || 0) - (a.beds || 0));
+    }
+    return list;
+  }, [filteredFacilities, sortBy]);
+
   const paginatedFacilities = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredFacilities.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredFacilities, currentPage]);
+    return sortedFacilities.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedFacilities, currentPage]);
 
   console.log("paginatedFacilities for Pagination:", paginatedFacilities);
 
@@ -363,10 +379,10 @@ export default function FacilitySearchPage() {
               <img
                 src="/footer_icon.png"
                 alt="NursingHome Logo"
-                className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] mt-7 sm:ml-30"
+                className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] mt-7 sm:ml-[30px]"
               />
     
-              <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
+              <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-[50px]">
                 <a
                   href="#"
                   className="font-inter font-black text-[14px] leading-[13px] tracking-[0.2px] capitalize text-white"
@@ -393,7 +409,7 @@ export default function FacilitySearchPage() {
                 </a>
               </nav>
     
-              <div className="w-auto sm:w-[406.5px] h-[54px] flex items-center justify-end mt-9 sm:mr-50 space-x-2 sm:space-x-6">
+              <div className="w-auto sm:w-[406.5px] h-[54px] flex items-center justify-end mt-9 sm:mr-[50px] space-x-2 sm:space-x-6">
                 {isAuthenticated ? (
                   <div
                     onClick={handleLogout}
@@ -449,8 +465,8 @@ export default function FacilitySearchPage() {
           </header>
     
     
-          <section className="w-full min-h-[60px] bg-[#F5F5F5] flex items-center justify-between px-4 sm:px-22">
-            <div className="flex items-center gap-x-1 sm:gap-x-2 text-[#4B5563] mx-2 sm:mx-25 font-inter font-normal text-[14px] sm:text-[16.28px] leading-[20px] sm:leading-[23.26px]">
+          <section className="w-full min-h-[60px] bg-[#F5F5F5] flex items-center justify-between px-4 sm:px-[22px]">
+            <div className="flex items-center gap-x-1 sm:gap-x-2 text-[#4B5563] mx-2 sm:mx-[25px] font-inter font-normal text-[14px] sm:text-[16.28px] leading-[20px] sm:leading-[23.26px]">
               <span className="align-middle">Home</span>
               <img
                 src="/icons/search_fac_right_icon.png"
@@ -484,10 +500,10 @@ export default function FacilitySearchPage() {
           </section>
     
           <section className="w-full min-h-[148px] mx-auto bg-white flex flex-col justify-center px-4 sm:px-6 py-4">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between w-full mb-4 gap-4">
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between w-full mb-4 gap-4 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 min-w-0">
                 <span
-                  className="font-inter font-medium text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28.67px] text-[#111827]"
+                  className="font-inter font-medium text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28.67px] text-[#111827] truncate max-w-[70vw] sm:max-w-none"
                 >
                   {facilities.length} Facilities Found in {locationName
                   ?.toLowerCase()
@@ -508,12 +524,17 @@ export default function FacilitySearchPage() {
     
               </div>
     
-              <div className="relative flex items-center space-x-4">
-                {/* <button
-                  className="w-[233px] h-[48px] bg-[#EFEFEF] rounded-[9.56px] border border-[#E5E7EB] text-[#212121] font-inter font-medium hover:bg-gray-50 transition"
+              <div className="relative flex items-center space-x-4 shrink-0">
+                <button
+                  className="hidden sm:flex items-center justify-center w-[180px] h-[40px] sm:h-[48px] bg-[#EFEFEF] rounded-[9.56px] border border-[#E5E7EB] text-[#212121] font-inter font-medium hover:bg-gray-50 transition"
+                  onClick={() => {
+                    const order = sortBy === "best" ? "rating" : sortBy === "rating" ? "distance" : sortBy === "distance" ? "beds" : "best";
+                    setSortBy(order as any);
+                  }}
+                  title="Change sort"
                 >
-                  Sort by: Best Match
-                </button> */}
+                  {`Sort by: ${sortBy === "best" ? "Best Match" : sortBy === "rating" ? "Rating" : sortBy === "distance" ? "Distance" : "Beds"}`}
+                </button>
                 {/* List icon */}
                 <button
                   type="button"
@@ -569,8 +590,8 @@ export default function FacilitySearchPage() {
               </div>
             </div>
     
-            <div className="w-full flex items-center justify-start">
-              <div className="w-full flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 sm:gap-3 md:gap-4 gap-y-2 sm:gap-y-3 ml-0 sm:ml-1 mt-3 sm:mt-5 lg:overflow-x-auto pb-2">
+            <div className="w-full flex items-center justify-start overflow-x-auto">
+              <div className="w-full flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 sm:gap-3 md:gap-4 gap-y-2 sm:gap-y-3 ml-0 sm:ml-1 mt-3 sm:mt-5 overflow-x-auto pb-2">
                 <FilterButton
                   iconLeft="/icons/stars_icon.png"
                   label={filters.ratingMin ? `${filters.ratingMin}+ Stars` : "Stars"}
@@ -662,6 +683,25 @@ export default function FacilitySearchPage() {
                 />
     
                 <FilterButton
+                  iconLeft="/icons/price_tag_icon.png"
+                  iconRight="/icons/down_icon.png"
+                  label="Price Range"
+                  options={["$", "$$", "$$$", "$$$$"]}
+                  value={filters.priceRange}
+                  onSelect={(val) => {
+                    const newFilters = { ...filters, priceRange: String(val) };
+                    setFilters(newFilters);
+                    fetchFilteredFacilities(newFilters);
+                  }}
+                  onClear={() => {
+                    const newFilters = { ...filters, priceRange: "" };
+                    setFilters(newFilters);
+                    fetchFilteredFacilities(newFilters);
+                  }}
+                  className="flex-shrink-0"
+                />
+
+                <FilterButton
                   label="More Filters"
                   iconLeft="/icons/filter_icon.png"
                   iconRight="/icons/down_icon.png"
@@ -708,7 +748,7 @@ export default function FacilitySearchPage() {
       
 
       {/* <section className="w-[1736.7px] min-h-[2368px] flex gap-6 ml-5 mt-[40px] px-48"> */}
-      <section className={`flex flex-col lg:flex-row gap-6 ml-0 lg:ml-5 mt-[20px] lg:mt-[40px] px-4 md:px-12 lg:px-48 ${viewMode === "mapOnly" ? "h-[677px]" : "min-h-[2368px]"}`}>
+      <section className={`flex flex-col lg:flex-row gap-6 ml-0 lg:ml-5 mt-[20px] lg:mt-[40px] px-4 md:px-12 lg:px-48 ${viewMode === "mapOnly" ? "h-[677px]" : "lg:min-h-[2368px]"}`}>
         {isFiltering || showSkeletonTimer ? (
           <FacilityReviewSkeleton />
         ) : filteredFacilities.length === 0 ? (
@@ -760,7 +800,7 @@ export default function FacilitySearchPage() {
 
                             {/* The existing image container */}
                             <div
-                                className=" w-[114.67px] h-[114.67px]  flex items-center justify-center mt-15 ml-5"> 
+                                className=" w-[114.67px] h-[114.67px] flex items-center justify-center mt-[15px] ml-5"> 
                                 <img
                                     src={facility.imageUrl || "/default_facility_image.png"}
                                     alt={facility.name}
@@ -969,8 +1009,8 @@ export default function FacilitySearchPage() {
         )}
       </section>
 
-      <section className="w-full min-h-[566px] mx-4 sm:mx-50 mt-[40px] sm:mt-[80px]">
-        <div className="w-full max-w-[1548.03px] min-h-[488.59px]">
+      <section className="w-full min-h-[566px] px-4 sm:px-6 lg:px-8 mt-[40px] sm:mt-[80px]">
+        <div className="w-full max-w-[1548.03px] min-h-[488.59px] mx-auto">
           <h2 className="font-jost font-bold text-[24px] sm:text-[32px] leading-[28px] sm:leading-[38.4px] text-[#111827]">
             Search Tips &amp; Resources
           </h2>

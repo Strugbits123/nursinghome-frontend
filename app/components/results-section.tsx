@@ -142,7 +142,7 @@ export function ResultsSection() {
                   height={15}
                   className="w-4 h-3 sm:w-[19px] sm:h-[15px]"
                 />
-                <span className="hidden sm:inline">List awdddddddddView</span>
+                <span className="hidden sm:inline">List View</span>
                 <span className="sm:hidden">List</span>
               </button>
             </div>

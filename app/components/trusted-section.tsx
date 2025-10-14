@@ -77,7 +77,7 @@ export function TrustedSection() {
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
             // Add staggered delay for count-up animation
-            const countUpDelay = 0.6 + (index * 0.2); // Start after section animation + stagger
+            const countUpDelay = 0.6 + (index * 0.2);
             const numberRef = useCountUp(feature.value, sectionRef as React.RefObject<HTMLElement>, countUpDelay);
 
             return (
@@ -97,7 +97,6 @@ export function TrustedSection() {
                   <p className="text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed text-[#212121] opacity-70">
                     {feature.description}
                   </p>
-                  {/* Animated number + suffix */}
                   <div className="text-2xl sm:text-3xl font-bold text-[#C71F37]">
                     <span ref={numberRef}>0</span>{feature.suffix}
                   </div>
