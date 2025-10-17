@@ -73,18 +73,29 @@ const handleSubmit = async (e: React.FormEvent) => {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#f3f4f6] bg-white p-6 shadow-xl animate-in fade-in-90 zoom-in-95">
-          <div className="flex items-center justify-between mb-4">
-            <Dialog.Title className="text-xl font-semibold text-[#c71f37]">
-              {isLogin ? "Login" : "Create Account"}
-            </Dialog.Title>
-            <Dialog.Close asChild>
-              <button className="p-1 rounded-full hover:bg-gray-100">
-                <X className="h-5 w-5 text-gray-500" />
-              </button>
-            </Dialog.Close>
-          </div>
+        {/* Overlay */}
+        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in z-[9998]" />
+
+        {/* Content */}
+        <Dialog.Content
+          className="fixed top-1/2 left-1/2 w-full max-w-md 
+          -translate-x-1/2 -translate-y-1/2 
+          rounded-2xl border border-[#f3f4f6] bg-white p-6 
+          shadow-xl animate-in fade-in-90 zoom-in-95 
+          z-[9999]"
+        >
+        <div className="relative mb-4 flex items-center justify-center">
+          <Dialog.Title className="text-xl font-semibold text-[#c71f37] text-center">
+            {isLogin ? "Login" : "Create Account"}
+          </Dialog.Title>
+
+          <Dialog.Close asChild>
+            <button className="absolute right-0 top-0 p-1 rounded-full hover:bg-gray-100">
+              <X className="h-5 w-5 text-gray-500" />
+            </button>
+          </Dialog.Close>
+        </div>
+
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             {!isLogin && (

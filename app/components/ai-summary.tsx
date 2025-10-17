@@ -1,23 +1,25 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, AlertCircle } from "lucide-react";
+import Image from "next/image";
 
 export function AISummary() {
     return (
         <section className="w-full flex justify-center py-4 sm:py-8">
-            <div className="w-[90%] max-w-[1578px] min-h-fit bg-white flex justify-center items-start p-4 sm:p-8">
-                <div className="w-full max-w-[1406.57px] rounded-xl flex flex-col items-center p-4 sm:p-8 space-y-8 sm:space-y-12">
+            <div className="w-[calc(100%-64px)] sm:w-[calc(100%-128px)] min-h-fit bg-white flex justify-center items-start p-4 sm:p-8 mx-auto">
+                <div className="w-[calc(100%-80px)] sm:w-[calc(100%-160px)] rounded-xl flex flex-col items-center p-4 sm:p-8 space-y-8 sm:space-y-12 mx-auto">
                     <div className="flex flex-col items-center text-center gap-4 relative">
-                        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] leading-tight sm:leading-[38.4px] font-jost font-bold text-black text-center px-4">
-                            Smarter Decisions with{' '}
-                            <span className="text-[#C71F37]">AI Summaries</span>
-                            <img
+                        <h2 className="relative text-xl sm:text-2xl md:text-3xl lg:text-[32px] leading-tight sm:leading-[38.4px] font-jost font-bold text-black text-center px-4">
+                            Smarter Decisions with{" "}
+                            <span className="relative text-[#C71F37] relative inline-block">
+                            AI Summaries
+                            <Image
                                 src="/herbs-BCkTGihn.svg fill.png"
-                                alt="flower icon"
-                                className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
-                                style={{
-                                    transform: 'rotate(-7deg)',  
-                                }}
+                                alt="herb icon"
+                                width={40}
+                                height={40}
+                                className="absolute -top-3 -right-5 sm:-top-1 sm:-right-5 md:-top-3 md:-right-6 lg:-top-3 lg:-right-6 w-8 h-8 md:w-10 md:h-10 opacity-90 rotate-[-7deg]"
                             />
+                            </span>
                         </h2>
                         <p className="w-full max-w-[864px] text-sm sm:text-base md:text-lg lg:text-[18px] leading-relaxed sm:leading-[28px] font-inter font-normal text-gray-700 text-center px-4">
                             Our advanced AI analyzes thousands of reviews to provide clear, concise summaries that highlight what matters most to families

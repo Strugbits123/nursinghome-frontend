@@ -483,7 +483,7 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
                         </span>
 
                         <img
-                            src="/arrow-btn.png"
+                            src="/icons/arrow_btn.png"
                             alt="Arrow Icon"
                             style={{
                                 width: "15.74px",

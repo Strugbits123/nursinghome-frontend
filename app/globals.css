@@ -45,8 +45,13 @@ html, body {
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+@media (min-width: 655px) and (max-width: 670px) {
+  .custom-ml-sm {
+    margin-left: 40px;
+  }
+}
+
 @media (max-width: 639px) {
- /* Center the last item in the middle (horizontally and vertically) */
   .filter-grid {
     display: flex;
     flex-wrap: wrap;

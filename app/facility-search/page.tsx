@@ -672,7 +672,6 @@ export default function FacilitySearchPage() {
       </div>
     </section>
 
-      {/* <section className="w-[1736.7px] min-h-[2368px] flex gap-6 ml-5 mt-[40px] px-48"> */}
       <section
           className={`flex flex-col md:mx-46 lg:flex-row gap-6 mx-4 sm:mx-6 lg:mx-44 mt-10 px-4 sm:px-6 lg:px-8 min-h-screen ${
             viewMode === "mapOnly" ? "lg:h-[677px]" : "min-h-[2368px]"

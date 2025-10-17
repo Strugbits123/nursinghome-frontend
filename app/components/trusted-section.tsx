@@ -51,26 +51,31 @@ export function TrustedSection() {
 
   return (
     <section className="py-12 sm:py-16 px-4 bg-white" ref={sectionRef}>
-      <div className="max-w-6xl mx-auto">
-        {/* Section header */}
-        <div className="text-center mb-8 sm:mb-12 animate-child">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-[#212121]">
-            Trusted by Families <span className="text-[#C71F37]">Nationwide</span>
-          </h2>
-          <p className="text-sm sm:text-lg max-w-2xl mx-auto text-[#212121]">
-            Our comprehensive database includes verified information from CMS, real family reviews, and AI-powered insights.
-          </p>
-          <Image
+     <div className="relative max-w-6xl mx-auto">
+      {/* Section header */}
+      <div className="text-center mb-8 sm:mb-12 animate-child relative">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-[#212121] relative inline-block">
+          Trusted by Families{" "}
+          <span className="text-[#C71F37] relative">
+            Nationwide
+            <Image
               src="/herbs-BCkTGihn.svg fill.png"
               alt="flower icon"
-              className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
+              className="absolute -top-1 -right-4 sm:-top-1 sm:-right-6 md:-top-1 md:-right-6.5 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
               width={40}
               height={40}
               style={{
-                  transform: 'rotate(-7deg)',  
+                transform: "rotate(-7deg)",
               }}
-          />
-        </div>
+            />
+          </span>
+        </h2>
+
+        <p className="text-sm sm:text-lg max-w-2xl mx-auto text-[#212121]">
+          Our comprehensive database includes verified information from CMS, real
+          family reviews, and AI-powered insights.
+        </p>
+      </div>
 
         {/* Features grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

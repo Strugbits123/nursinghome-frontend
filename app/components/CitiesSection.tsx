@@ -1388,7 +1388,7 @@ export function CitiesSection() {
 
                     {/* Icon on the right */}
                     <img
-                        src="/arrow-btn.png"
+                        src="/icons/arrow_btn.png"
                         alt="Arrow Icon"
                         className="w-[15.74px] h-[15.74px]" /* no absolute here */
                     />

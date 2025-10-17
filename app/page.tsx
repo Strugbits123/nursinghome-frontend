@@ -345,16 +345,6 @@ export default function Home() {
           <Footer />
         </Suspense>
       </div>
-
-      {/* <section
-        data-scroll-section
-        className="h-screen flex items-center justify-center bg-blue-200"
-      >
-        <h2 data-scroll data-scroll-speed="2" className="text-4xl font-bold">
-          Smooth scroll & parallax
-        </h2>
-      </section> */}
-
     </div>
   );
 }
