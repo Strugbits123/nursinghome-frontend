@@ -45,6 +45,37 @@ html, body {
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+@media (min-width: 1025px) and (max-width: 1160px) 
+{ 
+  aside { 
+    width: 110px !important; height: 550px !important; 
+  } 
+} 
+
+@media (min-width: 1280px) and (max-width: 1500px) 
+{ 
+  .left-ad { 
+    width: 110px !important; height: 550px !important; 
+  } 
+} 
+
+@media (min-width: 1280px) and (max-width: 1500px) 
+{ 
+  .right-ad { 
+    width: 110px !important; height: 550px !important; 
+  } 
+} 
+@media (min-width: 1024px) { .left-ad { left: 40px !important; } } 
+@media (min-width: 1280px) { .left-ad { left: 30px !important; } } 
+@media (min-width: 1536px) { .left-ad { left: 70px !important; } }
+
+
+/* === RIGHT AD POSITION ADJUSTMENTS === */
+@media (min-width: 1024px) { .right-ad { right: 40px !important; } }
+@media (min-width: 1280px) { .right-ad { right: 30px !important; } }
+@media (min-width: 1536px) { .right-ad { right: 70px !important; } }
+
+
 @media (min-width: 655px) and (max-width: 670px) {
   .custom-ml-sm {
     margin-left: 40px;

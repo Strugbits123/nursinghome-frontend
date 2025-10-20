@@ -8,7 +8,7 @@ export function SearchNursing() {
         //     className="w-full bg-[#D02B38] flex flex-col justify-center items-center min-h-[513px] xl:w-[1920px] xl:h-[513px]"
         // >
          <section
-            className="w-full max-w-[1920px] bg-[#D02B38] flex flex-col justify-center items-center min-h-[345px]  xl:w-[1920px] xl:h-[513px]"
+            className="w-full pb-10 max-w-[1920px] bg-[#D02B38] flex flex-col justify-center items-center min-h-[345px]  xl:w-[1920px] xl:h-[513px] sm:pb-10"
         >
             <div className="w-full max-w-[1280px] mx-auto mt-[35px] xl:w-[1280px] xl:h-[272px] px-4 sm:px-6 lg:px-8">
                 <h2 className="font-inter font-bold text-2xl sm:text-3xl lg:text-4xl leading-8 lg:leading-10 text-white text-center mx-auto max-w-[722.5px] xl:w-[722.5px]">

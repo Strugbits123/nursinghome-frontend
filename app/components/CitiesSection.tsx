@@ -18,38 +18,41 @@ export function CitiesSection() {
             className="relative w-full bg-[#F9F9F9] flex justify-center items-start"
             style={{ minHeight: "958px" }}
         >
-            {/* inner div */}
+            {/* Inner div */}
             <div
-                className="bg-[#F9F9F9] mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-0"
+                className="bg-[#F9F9F9] mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-0 relative"
                 style={{
                     minHeight: "753.52px",
                     marginTop: "68px",
                 }}
-            >
-                {/* heading */}
+                >
+                {/* Heading */}
                 <h2
-                    className="text-center font-bold px-4"
+                    className="text-center font-bold px-4 relative"
                     style={{
-                        fontFamily: "Jost",
-                        fontSize: "clamp(24px, 5vw, 32px)",
-                        lineHeight: "1.2",
-                        color: "#2B2B2B",
-                        marginTop: "20px",
+                    fontFamily: "Jost",
+                    fontSize: "clamp(24px, 5vw, 32px)",
+                    lineHeight: "1.2",
+                    color: "#2B2B2B",
+                    marginTop: "20px",
                     }}
                 >
                     Explore Listings By{" "}
-                    <span style={{ color: "#C71F37" }}>Cities</span>
+                    <span className="relative inline-block" style={{ color: "#C71F37" }}>
+                    Cities
+                    <Image
+                        src="/herbs-BCkTGihn.svg fill.png"
+                        alt="herb icon"
+                        className="absolute -top-1 -right-4 sm:-top-1.5 sm:-right-5.5 md:-top-3 md:-right-6.5 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
+                        width={40}
+                        height={40}
+                        style={{
+                        transform: "rotate(-7deg)",
+                        }}
+                    />
+                    </span>
                 </h2>
-                <Image
-                    src="/herbs-BCkTGihn.svg fill.png"
-                    alt="flower icon"
-                    className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
-                    width={40}
-                    height={40}
-                    style={{
-                        transform: 'rotate(-7deg)',  
-                    }}
-                />
+
                 {/* description */}
                 <div className="flex justify-center mt-4 px-4">
                     <p

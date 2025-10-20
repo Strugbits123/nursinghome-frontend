@@ -75,187 +75,106 @@ const facilities = [
 
 // Facility Card Component
 const FacilityCard = ({ facility }: { facility: typeof facilities[0] }) => (
-    <div className="relative rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden mx-auto w-full max-w-[384px] h-[422px]" style={{ boxShadow: '0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)' }}>
-        <img
-            src={facility.image}
-            alt={facility.name}
-            className="w-full h-[192px] object-cover rounded-t-2xl"
-        />
-        {facility.sponsored && (
-            <div className="absolute flex items-center justify-center"
-                style={{
-                    top: '18px',
-                    left: '18px',
-                    width: '117.17px',
-                    height: '28px',
-                    backgroundColor: '#FEF9C3',
-                    borderRadius: '9999px',
-                    padding: '0 8px',
-                }}
-            >
-                <img
-                    src="/crown.png"
-                    alt="Sponsored icon"
-                    style={{
-                        width: '15.75px',
-                        height: '14px',
-                    }}
-                />
-                <span
-                    style={{
-                        fontFamily: 'Inter',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        color: '#212121',
-                        marginLeft: '6px',
-                        lineHeight: '17px',
-                    }}
-                >
-                    Sponsored
-                </span>
-            </div>
-        )}
-        <div className="flex items-center gap-2 justify-center mt-6 ml-2 px-4">
-            <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                    <img key={i} src="/star.png" alt="star" className="w-[15.75px] h-[14px]" />
-                ))}
-            </div>
-            <span
-                style={{
-                    fontFamily: 'Inter',
-                    fontWeight: 400,
-                    fontStyle: 'normal',
-                    fontSize: '14px',
-                    lineHeight: '20px',
-                    color: '#707070',
-                }}
-            >
-                {facility.rating} ({facility.reviewCount} reviews)
-            </span>
-            <div
-                className="flex items-center ml-12 justify-center"
-                style={{
-                    width: '82.84px',
-                    height: '24px',
-                    backgroundColor: facility.cmsColor,
-                    borderRadius: '9999px',
-                }}
-            >
-                <span
-                    style={{
-                        width: '67.14px',
-                        height: '15px',
-                        fontFamily: 'Inter',
-                        fontWeight: 500,
-                        fontStyle: 'medium',
-                        fontSize: '12px',
-                        lineHeight: '16px',
-                        textAlign: 'center',
-                        color: facility.cmsTextColor,
-                    }}
-                >
-                    {facility.cmsRating}
-                </span>
-            </div>
-        </div>
-        <div className="ml-3">
-            <h3
-                style={{
-                    fontFamily: 'Inter',
-                    fontWeight: 600,
-                    fontStyle: 'semi-bold',
-                    fontSize: '20px',
-                    lineHeight: '28px',
-                    color: '#212121',
-                    marginTop: '8px',
-                    marginLeft: '16px',
-                }}
-            >
-                {facility.name}
-            </h3>
-            <p
-                style={{
-                    fontFamily: 'Inter',
-                    fontWeight: 400,
-                    fontStyle: 'normal',
-                    fontSize: '14px',
-                    lineHeight: '20px',
-                    color: '#707070',
-                    marginTop: '4px',
-                    marginLeft: '16px',
-                }}
-            >
-                {facility.location}
-            </p>
-            <div className="flex gap-2 mt-2 ml-4 flex-wrap">
-                {facility.services.map((service, index) => (
-                    <div
-                        key={index}
-                        style={{
-                            height: '24px',
-                            backgroundColor: service.bgColor,
-                            borderRadius: '9999px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '0 8px',
-                            minWidth: 'fit-content',
-                        }}
-                    >
-                        <span
-                            style={{
-                                fontFamily: 'Inter',
-                                fontWeight: 400,
-                                fontSize: '12px',
-                                lineHeight: '16px',
-                                color: service.textColor,
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            {service.name}
-                        </span>
-                    </div>
-                ))}
-            </div>
-        </div>
-        <div className="flex items-center justify-between mt-9 ml-2 px-6">
-            <div className="flex items-center gap-2">
-                <img
-                    src="/bed.png"
-                    alt="Bed Icon"
-                    className="w-[17.5px] h-[14px]"
-                />
-                <span
-                    className="text-[#707070]"
-                    style={{
-                        fontFamily: "Inter",
-                        fontWeight: 400,
-                        fontSize: "14px",
-                        lineHeight: "20px",
-                    }}
-                >
-                    {facility.beds} beds available
-                </span>
-            </div>
-            <button
-                className="rounded-lg"
-                style={{
-                    width: "114.5px",
-                    height: "36px",
-                    backgroundColor: "#C71F37",
-                    color: "#FFFFFF",
-                    fontFamily: "Inter",
-                    fontWeight: 500,
-                    fontSize: "16px",
-                    lineHeight: "20px",
-                    textAlign: "center",
-                }}
-            >
-                View Details
-            </button>
-        </div>
+   <div
+  className="relative rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden mx-auto 
+  mb-2 w-full max-w-[384px] h-auto flex flex-col transition-all duration-300"
+  style={{
+    boxShadow:
+      "0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)",
+  }}
+>
+  <img
+    src={facility.image}
+    alt={facility.name}
+    className="w-full h-[192px] sm:h-[200px] md:h-[220px] object-cover rounded-t-2xl"
+  />
+
+  {facility.sponsored && (
+    <div
+      className="absolute flex items-center justify-center top-4 left-4 bg-[#FEF9C3] rounded-full px-2 py-1"
+      style={{ width: "117px", height: "28px" }}
+    >
+      <img src="/crown.png" alt="Sponsored icon" className="w-4 h-4" />
+      <span className="text-sm font-medium ml-2 text-[#212121] font-inter">
+        Sponsored
+      </span>
     </div>
+  )}
+
+  {/* Rating Row */}
+ <div className="flex flex-wrap items-center justify-between md:justify-between mt-4 px-4 gap-3 w-full">
+  {/* Stars */}
+  <div className="flex items-center gap-1">
+    {[...Array(5)].map((_, i) => (
+      <img key={i} src="/star.png" alt="star" className="w-4 h-4" />
+    ))}
+      {/* Rating text */}
+    <span className="text-sm text-[#707070] ml-2">
+        {facility.rating} ({facility.reviewCount} reviews)
+    </span>
+  </div>
+
+
+
+  {/* CMS Badge */}
+  <div
+    className="flex items-center justify-center rounded-full"
+    style={{
+      backgroundColor: facility.cmsColor,
+      width: "83px",
+      height: "24px",
+    }}
+  >
+    <span
+      className="text-xs font-medium text-center"
+      style={{ color: facility.cmsTextColor }}
+    >
+      {facility.cmsRating}
+    </span>
+  </div>
+</div>
+
+
+  {/* Name + Location */}
+  <div className="px-4 mt-4">
+    <h3 className="font-semibold text-lg text-[#212121]">{facility.name}</h3>
+    <p className="text-sm text-[#707070] mt-1">{facility.location}</p>
+
+    {/* Services */}
+    <div className="flex flex-wrap gap-2 mt-3">
+      {facility.services.map((service, index) => (
+        <div
+          key={index}
+          className="rounded-full px-2 py-1 flex items-center justify-center"
+          style={{ backgroundColor: service.bgColor }}
+        >
+          <span
+            className="text-xs font-normal whitespace-nowrap"
+            style={{ color: service.textColor }}
+          >
+            {service.name}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {/* Bottom Section */}
+  <div className="flex items-center justify-between px-4 mt-6 mb-4">
+    <div className="flex items-center gap-2">
+      <img src="/bed.png" alt="Bed Icon" className="w-4 h-4" />
+      <span className="text-sm text-[#707070]">
+        {facility.beds} beds available
+      </span>
+    </div>
+    <button
+      className="rounded-lg bg-[#C71F37] text-white px-4 py-2 text-sm font-medium hover:bg-[#b01b31] transition-all"
+    >
+      View Details
+    </button>
+  </div>
+</div>
+
 )
 
 const TopRatedFeatured = memo(function TopRatedFeatured() {
@@ -334,47 +253,32 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
                 </div>
 
                 <div className="mx-auto rounded-xl bg-white w-full max-w-[1280px] px-4 md:px-0" style={{ minHeight: "650px" }}>
-                    <div className="flex justify-center items-center gap-2">
-                        <h2
-                            className="font-bold leading-[38.4px] text-center"
-                            style={{
-                                fontFamily: "Jost",
-                                fontSize: "32px",
-                                color: "#212121",
-                            }}
-                        >
-                            Featured Top-Rated{" "}
-                            <span style={{ color: "#C71F37" }}>Facilities</span>
-                        </h2>
-                        <Image
-                                      src="/herbs-BCkTGihn.svg fill.png"
-                                      alt="flower icon"
-                                      className="absolute top-0 right-2 sm:right-4 md:right-6 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
-                                      width={40}
-                                      height={40}
-                                      style={{
-                                          transform: 'rotate(-7deg)',  
-                                      }}
-                                  />
-                    </div>
+                   <div className="flex justify-center items-center relative w-full"> <h2 className="font-bold text-center leading-tight text-[22px] sm:text-[26px] md:text-[30px] lg:text-[32px] font-jost text-[#212121] relative inline-block" >
+                     Featured Top-Rated{" "} 
+                     <span className="text-[#C71F37] relative inline-block">
+                         Facilities 
+                        <Image src="/herbs-BCkTGihn.svg fill.png" alt="flower icon" 
+                        width={40} height={40} 
+                        className="absolute -top-2.5 -right-6.5 sm:-top-1 sm:-right-7.5 md:-top-2.5 md:-right-6.5 lg:-top-2.5 lg:-right-6.5 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-90 rotate-[-7deg]" />
+                         </span> 
+                         </h2> 
+                         </div>
+
                     <p
-                        className="mx-auto text-center"
-                        style={{
-                            maxWidth: "640px",
-                            marginTop: "12px",
-                            fontFamily: "Inter",
-                            fontWeight: 400,
-                            fontStyle: "normal",
-                            fontSize: "18px",
-                            lineHeight: "28px",
-                            color: "#707070",
-                        }}
+                    className="mx-auto text-center text-[14px] sm:text-[16px] md:text-[17px] lg:text-[18px] leading-[24px] sm:leading-[26px] md:leading-[28px]"
+                    style={{
+                        maxWidth: "640px",
+                        marginTop: "12px",
+                        fontFamily: "Inter",
+                        fontWeight: 400,
+                        color: "#707070",
+                    }}
                     >
-                        Discover exceptional nursing homes with outstanding ratings and reviews.
+                    Discover exceptional nursing homes with outstanding ratings and reviews.
                     </p>
 
                     {/* Desktop Grid Layout */}
-                    <div className="hidden md:grid mt-12 grid-cols-3 gap-4 justify-center">
+                    <div className="hidden mx-5 md:grid mt-12 grid-cols-3 gap-x-4 justify-center">
                         {facilities.map((facility) => (
                             <FacilityCard key={facility.id} facility={facility} />
                         ))}
