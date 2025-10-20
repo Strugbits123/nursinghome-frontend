@@ -13,6 +13,7 @@ interface MapViewProps {
   googleMapsApiKey: string;
   markerIconUrl?: string;
   locationName?: string;
+
 }
 
 const containerStyle = {

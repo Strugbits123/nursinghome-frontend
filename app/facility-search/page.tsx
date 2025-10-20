@@ -898,7 +898,7 @@ export default function FacilitySearchPage() {
                   <MapView
                     facilities={facilityCoords}
                     centerCoords={mapCenter}
-                    googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                    googleMapsApiKey={GOOGLE_MAPS_API_KEY!}
                     locationName={locationName}
                     markerIconUrl="/icons/red_hospital_pin.png"
                   />
