@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect, useState  } from "react";
 
 interface AdUnitProps {
   adSlot: string;
@@ -14,6 +14,9 @@ declare global {
 }
 
 export default function AdUnit({ adSlot, layout = "banner" }: AdUnitProps) {
+  const [size, setSize] = useState({ width: 320, height: 100 }); // default (sm)
+
+  // Handle AdSense initialization
   useEffect(() => {
     try {
       const timeout = setTimeout(() => {
@@ -25,10 +28,43 @@ export default function AdUnit({ adSlot, layout = "banner" }: AdUnitProps) {
     }
   }, []);
 
+  // Responsive resizing
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 768) setSize({ width: 320, height: 100 }); // sm
+      else if (w < 1024) setSize({ width: 728, height: 90 }); // md
+      else setSize({ width: 900, height: 90 }); // lg+
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const styles: Record<string, React.CSSProperties> = {
-    banner: { display: "block", textAlign: "center" },
-    sidebar: { display: "block", width: "100%", height: "100%", margin: "0 auto" },
-    square: { display: "block", width: "336px", height: "280px", margin: "0 auto" },
+    banner: {
+      display: "block",
+      textAlign: "center",
+      width: `${size.width}px`,
+      height: `${size.height}px`,
+      border: "1px solid #d1d5db",
+      margin: "0 auto",
+    },
+    sidebar: {
+      display: "block",
+      width: "100%",
+      border: "1px solid #d1d5db",
+      height: "100%",
+      margin: "0 auto",
+    },
+    square: {
+      display: "block",
+      width: "400px",
+      height: "150px",
+      border: "1px solid #d1d5db",
+      margin: "0 auto",
+    },
   };
 
   return (

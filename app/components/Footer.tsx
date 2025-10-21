@@ -98,7 +98,7 @@ export function Footer() {
                 </div>
 
                 {/* Footer Bottom Section */}
-                <div className="mt-6 pt-4 flex flex-col lg:flex-row justify-between items-start lg:items-center border-t border-gray-700 w-full lg:w-[1216px] h-auto lg:h-[57px] gap-4 lg:gap-0">
+                <div className="mt-6 pt-4 pb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center border-t border-gray-700 w-full lg:w-[1216px] h-auto lg:h-[57px] gap-4 lg:gap-0">
                     <span className="text-[#D1D5DB] font-normal text-[14px] lg:text-[16px] leading-[20px] lg:leading-6 order-2 lg:order-1">
                         © 2025 NursingHome. All rights reserved.
                     </span>

@@ -39,7 +39,7 @@ export function useCountUp(
         delay: delay,
         scrollTrigger: {
           trigger: triggerRef.current,
-          start: "top 85%",
+          start: "top 115%",
           end: "bottom 15%",
           toggleActions: "play none none reverse"
         },

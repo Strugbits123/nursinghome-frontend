@@ -98,7 +98,7 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
 
       {/* Dropdown / children */}
       {open && (
-        <div className="absolute top-full left-0 mt-2 z-50">
+        <div className="absolute top-full left-0 mt-2 z-50 z-[9999]">
           {children ? (
             // Custom dropdown content (used for "More Filters")
             children
