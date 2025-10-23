@@ -75,11 +75,11 @@ html, body {
 @media (min-width: 1280px) { .right-ad { right: 30px !important; } }
 @media (min-width: 1536px) { .right-ad { right: 70px !important; } }
 
-@media (min-width: 520px) and (max-width: 640px) {
+/* @media (min-width: 520px) and (max-width: 640px) {
   .ad-square-responsive {
     justify-content: flex-start  !important;
-    padding-left: 50px !important;
-    margin-bottom: 0.75rem !important;
+    padding-left: 30px !important;
+    margin-bottom: 2rem !important;
     margin-top: 0.75rem !important; 
   }
 }
@@ -87,7 +87,7 @@ html, body {
 @media (min-width: 600px) and (max-width: 650px) {
   .ad-square-responsive {
     justify-content: flex-start  !important;
-    padding-left: 90px !important;
+    padding-left: 80px !important;
     margin-bottom: 0.75rem !important;
     margin-top: 0.75rem !important; 
   }
@@ -96,7 +96,7 @@ html, body {
 @media (min-width: 640px) and (max-width: 680px) {
   .ad-square-responsive {
     justify-content: flex-start  !important;
-    padding-left: 120px !important;
+    padding-left: 90px !important;
     margin-bottom: 0.75rem !important;
     margin-top: 0.75rem !important; 
   }
@@ -117,7 +117,7 @@ html, body {
     margin-bottom: 0.75rem !important;
     margin-top: 0.75rem !important; 
   }
-}
+} */
 
 @media (min-width: 530px) and (max-width: 630px) {
   .filter-button {
@@ -290,6 +290,17 @@ html, body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Centering Loader Container */
+.loader-container {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
 }
 
 /* tailwind.css or global.css */

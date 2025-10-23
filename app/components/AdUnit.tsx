@@ -2,10 +2,7 @@
 
 import React, { useEffect, useState  } from "react";
 
-interface AdUnitProps {
-  adSlot: string;
-  layout?: "banner" | "sidebar" | "square";
-}
+
 
 declare global {
   interface Window {
@@ -13,68 +10,56 @@ declare global {
   }
 }
 
+interface AdUnitProps {
+  adSlot: string;
+  layout?:
+    | "banner"
+    | "leaderboard"
+    | "square"
+    | "rectangle"
+    | "skyscraper"
+    | "skyscraperMobile"
+    | "halfpage"
+    | "mobile";
+}
+
 export default function AdUnit({ adSlot, layout = "banner" }: AdUnitProps) {
-  const [size, setSize] = useState({ width: 320, height: 100 }); // default (sm)
-
-  // Handle AdSense initialization
-  useEffect(() => {
-    try {
-      const timeout = setTimeout(() => {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      }, 300);
-      return () => clearTimeout(timeout);
-    } catch (err) {
-      console.error("AdSense error:", err);
-    }
-  }, []);
-
-  // Responsive resizing
-  useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth;
-      if (w < 768) setSize({ width: 320, height: 100 }); // sm
-      else if (w < 1024) setSize({ width: 728, height: 90 }); // md
-      else setSize({ width: 900, height: 90 }); // lg+
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const styles: Record<string, React.CSSProperties> = {
-    banner: {
-      display: "block",
-      textAlign: "center",
-      width: `${size.width}px`,
-      height: `${size.height}px`,
-      border: "1px solid #d1d5db",
-      margin: "0 auto",
-    },
-    sidebar: {
-      display: "block",
-      width: "100%",
-      border: "1px solid #d1d5db",
-      height: "100%",
-      margin: "0 auto",
-    },
-    square: {
-      display: "block",
-      width: "400px",
-      height: "150px",
-      border: "1px solid #d1d5db",
-      margin: "0 auto",
-    },
+  // ✅ Tailwind layout classes for each ad type
+  const layoutClasses: Record<string, string> = {
+    banner:
+      "block mx-auto border border-gray-300 w-[320px] h-[50px] sm:w-[468px] sm:h-[60px] md:w-[728px] md:h-[90px] lg:w-full lg:h-[90px] max-w-[2500px]",
+    leaderboard:
+      "block mx-auto border border-gray-300 w-[320px] h-[50px] sm:w-[728px] sm:h-[90px] lg:w-full lg:h-[90px] max-w-[2000px]",
+    square:
+      "block mx-auto border border-gray-300 w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] md:w-[300px] md:h-[250px]",
+    rectangle:
+      "block mx-auto border border-gray-300 w-[300px] h-[250px] sm:w-[336px] sm:h-[280px]",
+    skyscraperMobile:
+    "block mx-auto border border-gray-300 w-[320px] h-[200px] sm:w-[160px] sm:h-[200px] md:w-[300px] md:h-[600px]",
+    skyscraper:
+      "block mx-auto border border-gray-300 w-[120px] h-[600px] sm:w-[160px] sm:h-[600px] md:w-[300px] md:h-[600px]",
+    halfpage:
+      "block mx-auto border border-gray-300 w-[300px] h-[600px] md:w-[320px] md:h-[600px]",
+    mobile:
+      "block mx-auto border border-gray-300 w-[320px] h-[50px] sm:w-[320px] sm:h-[100px]",
   };
 
   return (
-    <ins
-      className="adsbygoogle"
-      style={styles[layout] || styles.banner}
-      data-ad-client="ca-pub-8855354849568036"
-      data-ad-slot={adSlot}
-      data-ad-format={layout === "banner" ? "auto" : undefined}
-      data-full-width-responsive="true"
-    ></ins>
+    <div
+      className={`${layoutClasses[layout] || layoutClasses.banner} flex justify-center items-center bg-gray-100`}
+    >
+      {/* Replace below with AdSense tag */}
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client="ca-pub-8855354849568036"
+        data-ad-slot={adSlot}
+        data-ad-format={layout === "banner" ? "auto" : undefined}
+        data-full-width-responsive="true"
+      ></ins>
+      <p className="text-xs text-gray-600 absolute bg-white px-2">
+        {layout.toUpperCase()} Ad 
+      </p>
+    </div>
   );
 }

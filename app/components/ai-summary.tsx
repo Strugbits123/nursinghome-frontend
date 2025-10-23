@@ -8,9 +8,19 @@ export function AISummary() {
         <section className="w-full flex justify-center py-4 sm:py-8">
          <div className="relative w-full min-h-fit bg-white flex justify-center items-start p-4 sm:p-8 mx-auto">
 
-           <aside className=" left-ad fixed left-2 top-80 w-[80px] h-[500px] sm:w-[80px] sm:h-[550px] md:w-[100px] md:h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] z-30 flex justify-center items-center border-2 border-dashed border-gray-400 rounded-md bg-[#fafafa] transition-all duration-300 " > <AdUnit adSlot="3645692031" layout="sidebar" /> </aside>
+         {/* ✅ Left Skyscraper Ad — md and up only */}
+        <aside
+        className="hidden md:flex left-ad fixed left-2 top-80 w-[100px] h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] z-30 justify-center items-center border-2 border-gray-400 rounded-md bg-[#fafafa] transition-all duration-300"
+        >
+        <AdUnit adSlot="3645692031" layout="skyscraper" />
+        </aside>
 
-           <aside className=" right-ad fixed right-2 top-80 w-[80px] h-[500px] sm:w-[80px] sm:h-[550px] md:w-[100px] md:h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] z-30 flex justify-center items-center border-2 border-dashed border-gray-400 rounded-md bg-[#fafafa] transition-all duration-300 " > <AdUnit adSlot="3645692031" layout="sidebar" /> </aside>
+        {/* ✅ Right Skyscraper Ad — md and up only */}
+        <aside
+        className="hidden md:flex right-ad fixed right-2 top-80 w-[100px] h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] z-30 justify-center items-center border-2 border-gray-400 rounded-md bg-[#fafafa] transition-all duration-300"
+        >
+        <AdUnit adSlot="3645692031" layout="skyscraper" />
+        </aside>
 
             <div
                 className="

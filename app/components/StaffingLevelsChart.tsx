@@ -20,12 +20,12 @@ interface StaffingLevelsChartProps {
 
 const formatHPRD = (value: string | number | undefined): string => {
     const num = parseFloat(String(value || 0));
-    return isNaN(num) ? 'N/A' : num.toFixed(2);
+    return isNaN(num) ? '' : num.toFixed(2);
 };
 
 const formatPercentage = (value: string | number | undefined): string => {
     const num = parseFloat(String(value || 0));
-    return isNaN(num) ? 'N/A' : `${num.toFixed(1)}%`;
+    return isNaN(num) ? '' : `${num.toFixed(1)}%`;
 };
 
 interface CustomTooltipProps {
@@ -89,7 +89,7 @@ const StaffingLevelsChart = ({ facility }: StaffingLevelsChartProps) => {
         },
         { 
             label: 'Resident Census', 
-            value: safeFacility.avg_resident_census || 'N/A', 
+            value: safeFacility.avg_resident_census || '', 
             icon: Users, 
             color: 'text-green-600' 
         },
@@ -97,7 +97,6 @@ const StaffingLevelsChart = ({ facility }: StaffingLevelsChartProps) => {
 
     return (
         <div className="flex flex-col h-full w-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Staffing Levels (Hours per Resident Day)</h3>
 
             <div className="flex-grow w-full h-[300px] p-2">
                 <ResponsiveContainer width="100%" height="100%">

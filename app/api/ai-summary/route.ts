@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   const place = data.result;
 
   // Create a simple summary from Google data
-  const summary = `${place.name} is located at ${place.formatted_address}. It has a rating of ${place.rating || "N/A"} stars and ${place.reviews?.length || 0} reviews.`;
+  const summary = `${place.name} is located at ${place.formatted_address}. It has a rating of ${place.rating || ""} stars and ${place.reviews?.length || 0} reviews.`;
 
   return NextResponse.json({ summary, reviews: place.reviews || [] });
 }

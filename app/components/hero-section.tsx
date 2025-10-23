@@ -10,7 +10,8 @@ import { useFacilities, FACILITIES_STORAGE_KEY, COORDS_STORAGE_KEY, LOCATION_NAM
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { mapRawFacilityToCard } from '../utils/facilityMapper';
-import Image from "next/image"; // CRITICAL: This path might need adjustment based on your structure.
+import Image from "next/image";
+import AdUnit from "../components/AdUnit";
 
 interface Coords {
   lat: number;
@@ -35,23 +36,132 @@ export function HeroSection() {
     setCoords,
     locationName,
     setLocationName,
-    // Assuming context also has setters for global loading/error state if needed
     setIsLoading: setContextIsLoading,
     setError: setContextError,
+    setTotal
   } = useFacilities();
 
   // const API_URL = "http://13.61.57.246:5000/api/facilities/with-reviews";
   const API_URL = "http://localhost:5000/api/facilities/with-reviews";
 
-  // ------------------------------------
-  // FETCH LOGIC
-  // ------------------------------------
-  // Consolidated fetch function to handle both manual and location-based search
-  const fetchFacilities = async (currentSearchQuery: string, currentCoords: Coords | null) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  
+  
+// const fetchFacilities = async (currentSearchQuery: string, currentCoords: Coords | null) => {
+//   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+//   if (!token) {
+//     toast.error("Please log in to search facilities");
+//     return;
+//   }
+
+//   setIsLoading(true);
+//   setContextIsLoading && setContextIsLoading(true);
+//   setError(null);
+//   setContextError && setContextError(null);
+
+//   try {
+  
+//     const params = new URLSearchParams();
+
+//     if (currentSearchQuery && !currentCoords) {
+//       // ✅ Trim spaces and replace with underscore
+//       const normalizedQuery = currentSearchQuery.trim().replace(/\s+/g, "_");
+//       params.append("q", normalizedQuery);
+//     }
+
+//     if (currentCoords?.lat && currentCoords?.lng) {
+//       params.append("lat", currentCoords.lat.toString());
+//       params.append("lng", currentCoords.lng.toString());
+//     }
+
+//     // ✅ Always start at page 1 and limit 8
+//     params.append("page", "1");
+//     params.append("limit", "8");
+
+//     const url = `${API_URL}?${params.toString()}`;
+//     console.log("Fetching initial page from:", url);
+
+//     // Fetch page 1 (first visible data)
+//     const res = await fetch(url, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     });
+
+//     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+//     const data = await res.json();
+
+//     const rawFacilitiesList = Array.isArray(data.data)
+//       ? data.data
+//       : data?.facilities || [];
+
+//     // 🧭 Map for display
+//     const facilitiesList = rawFacilitiesList.map((raw: any) =>
+//       mapRawFacilityToCard(raw, currentCoords)
+//     );
+
+//     setFacilities(facilitiesList);
+//     setCoords(currentCoords);
+//     setLocationName(currentSearchQuery || "");
+
+//     // Store page 1 immediately
+//     localStorage.setItem(FACILITIES_STORAGE_KEY, JSON.stringify(facilitiesList));
+//     localStorage.setItem(COORDS_STORAGE_KEY, JSON.stringify(currentCoords));
+//     localStorage.setItem(LOCATION_NAME_STORAGE_KEY, JSON.stringify(currentSearchQuery || ""));
+
+//     toast.success("Facilities loaded successfully!");
+
+//     // ✅ Prefetch pages 2–6 in the background
+//     for (let p = 2; p <= 6; p++) {
+//       const nextParams = new URLSearchParams(params);
+//       nextParams.set("page", p.toString());
+//       const nextUrl = `${API_URL}?${nextParams.toString()}`;
+
+//       fetch(nextUrl, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "application/json",
+//         },
+//       })
+//         .then((r) => (r.ok ? r.json() : null))
+//         .then((nextData) => {
+//           if (!nextData || !nextData.data) return;
+//           localStorage.setItem(`facilities_page_${p}`, JSON.stringify(nextData.data));
+//           console.log(`✅ Prefetched and cached page ${p}`);
+//         })
+//         .catch((e) => console.warn(`⚠️ Prefetch failed for page ${p}`, e));
+//     }
+
+//     router.push("/facility-search");
+//   } catch (err: any) {
+//     toast.error(err.message || "Failed to load facilities");
+//     setError(err.message || "Unknown error");
+//     setContextError && setContextError(err.message || "Unknown error");
+
+//     // Clear old data on error
+//     setFacilities([]);
+//     setCoords(null);
+//     setLocationName("");
+//     localStorage.removeItem(FACILITIES_STORAGE_KEY);
+//     localStorage.removeItem(COORDS_STORAGE_KEY);
+//     localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
+//   } finally {
+//     setIsLoading(false);
+//     setContextIsLoading && setContextIsLoading(false);
+//   }
+// };
+
+
+const fetchFacilities = async (
+    currentSearchQuery: string,
+    currentCoords: Coords | null
+    ) => {
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
     if (!token) {
-      toast.error("Please log in to search facilities");
-      return;
+    toast.error("Please log in to search facilities");
+    return;
     }
 
     setIsLoading(true);
@@ -60,67 +170,103 @@ export function HeroSection() {
     setContextError && setContextError(null);
 
     try {
-      const params = new URLSearchParams();
-      if (currentSearchQuery && !currentCoords) {
-        params.append("q", currentSearchQuery);
-      }
-      // Coordinates for proximity search
-      if (currentCoords?.lat && currentCoords?.lng) {
-        params.append("lat", currentCoords.lat.toString());
-        params.append("lng", currentCoords.lng.toString());
-      }
-      // Enable enrichment and control result size
-      params.append("google", "1");
-      params.append("ai", "1");
-      // params.append("limit", "50");
+    // ✅ Build query params
+    const params = new URLSearchParams();
 
-      const url = `${API_URL}?${params.toString()}`;
-      console.log("Fetching from URL:", url);
-
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const rawFacilitiesList = Array.isArray(data) ? data : data?.facilities || [];
-
-      // Map the raw data to the clean Facility format
-      const facilitiesList = rawFacilitiesList.map((raw: any) => mapRawFacilityToCard(raw, currentCoords));
-
-      // Set the mapped, clean facilities list in context
-      setFacilities(facilitiesList);
-      setCoords(currentCoords);
-      setLocationName(currentSearchQuery || "");
-      // Update localStorage immediately
-      if (typeof window !== "undefined") {
-        localStorage.setItem(FACILITIES_STORAGE_KEY, JSON.stringify(facilitiesList));
-        localStorage.setItem(COORDS_STORAGE_KEY, JSON.stringify(currentCoords));
-        localStorage.setItem(LOCATION_NAME_STORAGE_KEY, JSON.stringify(currentSearchQuery || ""));
-      }
-      toast.success("Facilities loaded successfully!");
-
-      router.push("/facility-search");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to load facilities");
-      setError(err.message || "Unknown error");
-      setContextError && setContextError(err.message || "Unknown error");
-      // Clear old data on error
-      setFacilities([]);
-      setCoords(null);
-      setLocationName("");
-      if (typeof window !== "undefined") {
-        localStorage.removeItem(FACILITIES_STORAGE_KEY);
-        localStorage.removeItem(COORDS_STORAGE_KEY);
-        localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
-      }
-    } finally {
-      setIsLoading(false);
-      setContextIsLoading && setContextIsLoading(false);
+    if (currentSearchQuery && !currentCoords) {
+      const normalizedQuery = currentSearchQuery.trim().replace(/\s+/g, "_");
+      params.append("q", normalizedQuery);
     }
-  };
+
+    if (currentCoords?.lat && currentCoords?.lng) {
+      params.append("lat", currentCoords.lat.toString());
+      params.append("lng", currentCoords.lng.toString());
+    }
+
+    params.append("page", "1");
+    params.append("limit", "8");
+
+    const url = `${API_URL}?${params.toString()}`;
+    console.log("🔹 Fetching page 1:", url);
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    const rawFacilitiesList = Array.isArray(data.data)
+      ? data.data
+      : data?.facilities || [];
+
+    // ✅ Map to usable structure
+    const facilitiesList = rawFacilitiesList.map((raw: any) =>
+      mapRawFacilityToCard(raw, currentCoords)
+    );
+
+    // ✅ Store only first page + meta
+    setFacilities(facilitiesList);
+    setCoords(currentCoords);
+    setLocationName(currentSearchQuery || "");
+    setTotal(data.total || 0);
+
+    // ✅ Save to localStorage
+    localStorage.setItem(
+      FACILITIES_STORAGE_KEY,
+      JSON.stringify(facilitiesList)
+    );
+    localStorage.setItem(
+      COORDS_STORAGE_KEY,
+      JSON.stringify(currentCoords || null)
+    );
+    localStorage.setItem(
+      LOCATION_NAME_STORAGE_KEY,
+      JSON.stringify(
+        currentSearchQuery
+          ? currentSearchQuery.trim().replace(/\s+/g, "_").toLowerCase()
+          : ""
+      )
+    );
+    if (data.total) {
+      localStorage.setItem("facilities_total_count", String(data.total));
+    }
+
+    console.log(
+      `✅ Loaded page 1 facilities (${facilitiesList.length}) for "${currentSearchQuery}"`
+    );
+    toast.success("Facilities loaded successfully!");
+
+    router.push("/facility-search");
+
+
+    } catch (err: any) {
+    console.error("❌ Fetch failed:", err);
+    toast.error(err.message || "Failed to load facilities");
+    setError(err.message || "Unknown error");
+    setContextError && setContextError(err.message || "Unknown error");
+
+    // 🔹 Clear stale cache on error
+    setFacilities([]);
+    setCoords(null);
+    setLocationName("");
+    localStorage.removeItem(FACILITIES_STORAGE_KEY);
+    localStorage.removeItem(COORDS_STORAGE_KEY);
+    localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
+
+
+    } finally {
+    setIsLoading(false);
+    setContextIsLoading && setContextIsLoading(false);
+    }
+    };
+
+
+
+
 
   // ------------------------------------
   // HANDLERS
@@ -417,6 +563,17 @@ export function HeroSection() {
 
 
 
+      </div>
+        {/* ✅ Responsive Ads Below "Popular Searches" */}
+        <div className="w-full flex flex-col items-center justify-center  z-10 mt-2">
+         
+
+          {/* Medium & large screens → banner ad */}
+          <div className="hidden sm:flex w-full justify-start px-4 sm:px-8 md:px-22 lg:px-24 xl:px-82">
+            <div className="w-full sm:w-[700px] md:w-[1250px] lg:w-[1250px] xl:w-[1250px] h-[90px] lg:mx-8">
+              <AdUnit adSlot="1234567890" layout="banner" />
+            </div>
+          </div>
       </div>
     </section>
   )

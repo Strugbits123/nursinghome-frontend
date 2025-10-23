@@ -71,7 +71,7 @@ export const mapRawFacilityToCard = (raw: RawFacility, currentCoords?: Coords | 
     city: raw.city_town || "",
     state: raw.state || "",
     zip: raw.zip_code || "",
-    phone: raw.telephone_number != null ? String(raw.telephone_number) : "N/A",
+    phone: raw.telephone_number != null ? String(raw.telephone_number) : "",
     beds: raw.number_of_certified_beds || 0,
     lat: raw.latitude || 0,
     lng: raw.longitude || 0,

@@ -23,12 +23,12 @@ export const mapRawFacilityToCard = (raw: any, searchCoords: Coords | null): Fac
    return {
         _id: raw._id,
         id: raw._id,
-        name: raw.googleName || raw.provider_name || 'N/A Facility',
+        name: raw.googleName || raw.provider_name || 'Facility',
         address: getAddress(raw),
         city: raw.city_town || '',
         state: raw.state || '',
         zip: raw.zip_code || '', 
-        phone: raw.telephone_number || 'N/A',
+        phone: raw.telephone_number || '',
         beds: raw.number_of_certified_beds || 0,
         isNonProfit: !(raw.ownership_type?.toLowerCase().includes('for profit')),
 

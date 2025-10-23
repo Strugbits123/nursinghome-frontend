@@ -97,30 +97,28 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
       )}
 
       {/* Dropdown / children */}
-      {open && (
-        <div className="absolute top-full left-0 mt-2 z-50 z-[9999]">
-          {children ? (
-            // Custom dropdown content (used for "More Filters")
-            children
-          ) : options ? (
-            // Default options dropdown
-            <div className="bg-white border border-gray-300 shadow-lg rounded-lg min-w-full md:min-w-[9rem] md:w-36 p-2">
-              {options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-black text-sm"
-                  onClick={() => {
-                    onSelect?.(opt);
-                    setOpen(false);
-                  }}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      )}
+     {open && (
+          <div className="absolute top-full left-0 mt-2 z-[9999]">
+            {children ? (
+              children
+            ) : options ? (
+              <div className="bg-white border border-gray-300 shadow-lg rounded-lg min-w-full md:min-w-[9rem] md:w-36 p-2">
+                {options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-black text-sm"
+                    onClick={() => {
+                      onSelect?.(opt);
+                      setOpen(false);
+                    }}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        )}
     </div>
   );
 };

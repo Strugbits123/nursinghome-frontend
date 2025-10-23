@@ -192,7 +192,7 @@ export default function FacilitySearchPage() {
         cons: f.aiSummary?.cons?.join(", ") || "No specific cons listed",
         imageUrl: f.photo || "/default_facility_image.png",
         status: f.status  || "Unknown",
-        hours: f.operating_hours || "N/A",
+        hours: f.operating_hours || "",
         rating: f.rating || f.overall_rating || 0,
       }));
 
@@ -807,7 +807,7 @@ export default function FacilitySearchPage() {
                               <div className="flex items-center gap-2">
                                 <img src="/icons/clock_icon.png" alt="Clock Icon" className="w-[12px] h-[12px] sm:w-[14.33px] sm:h-[14.33px]" />
                                 <span className="font-inter font-normal text-[12px] sm:text-[14.33px] leading-[16px] sm:leading-[19.11px] text-[#4B5563]">
-                                  {(facility as any).hours || "N/A"}
+                                  {(facility as any).hours || ""}
                                 </span>
                               </div>
                             </div>

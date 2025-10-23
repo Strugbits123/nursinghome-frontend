@@ -7,7 +7,7 @@ import { Droplet, Zap, Gauge } from 'lucide-react';
 const formatPercentage = (value: string | number): string => {
     // Note: parseFloat handles both strings and numbers, but it's safer to ensure the input type.
     const num = parseFloat(value as string); 
-    return isNaN(num) ? 'N/A' : `${num.toFixed(1)}%`;
+    return isNaN(num) ? '' : `${num.toFixed(1)}%`;
 };
 
 // Custom Tooltip for bar chart
@@ -22,7 +22,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         // Ensure payload[0].value is treated as a number before toFixed
         const value = payload[0].value;
-        const percentage = typeof value === 'number' ? value.toFixed(1) : 'N/A';
+        const percentage = typeof value === 'number' ? value.toFixed(1) : '';
         
         return (
             <div className="p-3 bg-white border border-gray-200 rounded-xl shadow-lg font-sans">

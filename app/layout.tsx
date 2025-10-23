@@ -41,8 +41,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
        <head>
         <Script
-          id="adsense-script"
-          strategy="afterInteractive"
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8855354849568036"
           crossOrigin="anonymous"
