@@ -17,19 +17,18 @@ export function useCountUp(
     if (!numberRef.current || !triggerRef.current) return;
 
     const target = numberRef.current;
-    
+
     // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
 
     if (prefersReducedMotion) {
-      // For reduced motion, just set the final value
-      if (numberRef.current) {
-        numberRef.current.innerText = endValue.toLocaleString();
-      }
+      target.innerText = endValue.toLocaleString();
       return;
     }
 
-    gsap.fromTo(
+    const tl = gsap.fromTo(
       target,
       { innerText: 0 },
       {
@@ -39,23 +38,22 @@ export function useCountUp(
         delay: delay,
         scrollTrigger: {
           trigger: triggerRef.current,
-          start: "top 115%",
+          start: "top 115%", // start animation slightly below viewport
           end: "bottom 15%",
-          toggleActions: "play none none reverse"
+          toggleActions: "play none none reverse",
         },
         snap: { innerText: 1 },
         onUpdate: function () {
-          // parse innerText safely
           const currentVal = parseInt(this.targets()[0].innerText || "0", 10);
-          if (numberRef.current) {
-            numberRef.current.innerText = currentVal.toLocaleString();
-          }
+          target.innerText = currentVal.toLocaleString();
         },
       }
     );
 
     return () => {
+      // Kill all ScrollTriggers and timeline on cleanup
       ScrollTrigger.getAll().forEach((st) => st.kill());
+      tl.kill();
     };
   }, [endValue, triggerRef, delay]);
 

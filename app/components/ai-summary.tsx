@@ -6,21 +6,19 @@ import AdUnit from "../components/AdUnit";
 export function AISummary() {
     return (
         <section className="w-full flex justify-center py-4 sm:py-8">
-         <div className="relative w-full min-h-fit bg-white flex justify-center items-start p-4 sm:p-8 mx-auto">
+      <div className="relative w-full min-h-fit bg-white flex justify-center items-start p-4 sm:p-8 mx-auto">
 
-         {/* ✅ Left Skyscraper Ad — md and up only */}
-        <aside
-        className="hidden md:flex left-ad fixed left-2 top-80 w-[100px] h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] z-30 justify-center items-center border-2 border-gray-400 rounded-md bg-[#fafafa] transition-all duration-300"
-        >
-        <AdUnit adSlot="3645692031" layout="skyscraper" />
-        </aside>
+        {/* ✅ Left Skyscraper Ad — md+ screens */}
+        <div className="hidden md:flex left-ad w-[100px] h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] mr-4 justify-center items-center bg-[#fafafa] transition-all duration-300">
+          <AdUnit adSlot="3645692031" layout="skyscraper" />
+        </div>
 
         {/* ✅ Right Skyscraper Ad — md and up only */}
-        <aside
+        {/* <aside
         className="hidden md:flex right-ad fixed right-2 top-80 w-[100px] h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] z-30 justify-center items-center border-2 border-gray-400 rounded-md bg-[#fafafa] transition-all duration-300"
         >
         <AdUnit adSlot="3645692031" layout="skyscraper" />
-        </aside>
+        </aside> */}
 
             <div
                 className="
@@ -300,6 +298,10 @@ export function AISummary() {
                     </div>
                 </div>
             </div>
+            {/* ✅ Right Skyscraper Ad — md+ screens */}
+                    <div className="hidden md:flex right-ad w-[100px] h-[600px] mx-20 lg:w-[90px] lg:h-[600px] my-30 xl:w-[200px] ml-4 justify-center items-center  bg-[#fafafa] transition-all duration-300">
+                    <AdUnit adSlot="3645692031" layout="skyscraper" />
+                    </div>
 
             </div>
         </section>
