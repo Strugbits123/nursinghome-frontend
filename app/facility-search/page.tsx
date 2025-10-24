@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import AuthModal from "../components/AuthModal";
@@ -14,6 +14,9 @@ import { SearchNursing } from '../components/SearchNursing';
 import { Footer } from '../components/Footer';
 import AdUnit from "../components/AdUnit";
 import { mapRawFacilityToCard, RawFacility } from '../utils/facilityMapper';
+import LocomotiveScroll from "locomotive-scroll";
+import "locomotive-scroll/dist/locomotive-scroll.css";
+
 
 const API_URL = "http://localhost:5000/api/facilities/with-reviews";
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;
@@ -194,7 +197,6 @@ const getStatusColor = (status: Facility['status']): string => {
   }
 };
 
-// const ITEMS_PER_PAGE = 8;
 
 type ViewMode = "both" | "mapOnly";
 
@@ -202,40 +204,31 @@ export default function FacilitySearchPage() {
   const router = useRouter();
 
   const [viewMode, setViewMode] = useState<ViewMode>("both");
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // const [openAuth, setOpenAuth] = React.useState(false);
-  // const { facilities: initialFacilities, locationName, total: totalCountFromProvider = 0,
-  //   isLoading, coords, totalPages, error } = useFacilities();
-  // const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
-  // const [showSkeletonTimer, setShowSkeletonTimer] = useState(true);
-  // const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // const [loadingFacilityId, setLoadingFacilityId] = useState<string | null>(null);
-  // const [allFacilities, setAllFacilities] = useState<Facility[]>(initialFacilities);
+  useEffect(() => {
+    let locoScroll: LocomotiveScroll | undefined;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    if (containerRef.current) {
+      locoScroll = new LocomotiveScroll({
+        el: containerRef.current,
+        smooth: !prefersReducedMotion,
+        multiplier: prefersReducedMotion ? 0 : 1,
+        lerp: prefersReducedMotion ? 1 : 0.1,
+      });
+    }
 
-  // const [filters, setFilters] = useState({
-  //   city: "",
-  //   state: "",
-  //   ratingMin: "",
-  //   ownership: "",
-  //   locationName: "",
-  //   distance: "",
-  //   beds: "",
-  // });
+    const handleResize = () => locoScroll?.update();
+    window.addEventListener("resize", handleResize);
 
-  // const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>(initialFacilities);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      locoScroll?.destroy();
+    };
+  }, []);
 
-  // const [usingFilters, setUsingFilters] = useState(false);
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const [isFiltering, setIsFiltering] = useState(false);
-  // const [isPrefetching, setIsPrefetching] = useState(false);
-  // const handleViewDetails = async (facility: any) => {
-  //   setLoadingFacilityId(facility.id);
-  //   const facilitySlug = slugify(facility.name);
-  //   router.push(`/facility/${facility.id}/${facilitySlug}`);
-
-  // };
-
+ 
 
   // useEffect(() => {
   //   setAllFacilities(initialFacilities);

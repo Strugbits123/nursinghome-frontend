@@ -5,7 +5,7 @@ import React from "react";
 export function SearchNursing() {
     return (
          <section
-    className="w-screen pb-10 max-w-[1920px] bg-[#D02B38] flex flex-col justify-center items-center min-h-[345px] xl:h-[513px] sm:pb-10 "
+    className="w-full pb-10 max-w-[1920px] bg-[#D02B38] flex flex-col justify-center items-center min-h-[345px] xl:h-[513px] sm:pb-10 "
 >
     <div className="w-full max-w-[1280px] mx-auto mt-[35px] xl:w-[1280px] xl:h-[272px] px-4 sm:px-6 lg:px-8">
         <h2 className="font-inter font-bold text-2xl sm:text-3xl lg:text-4xl leading-8 lg:leading-10 text-white text-center mx-auto max-w-[722.5px] xl:w-[722.5px]">
@@ -17,29 +17,32 @@ export function SearchNursing() {
         </p>
         
         {/* BUTTONS: Added mb-4 for vertical space on mobile only */}
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-5 mt-8 sm:mt-10">
-            <button className="w-full mb-0 sm:mb-0 sm:w-[242.7px] h-16 rounded-lg bg-white shadow-sm flex items-center justify-center gap-2.5 xl:w-[242.7px]">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-5 mt-8 sm:mt-10 w-full">
+            {/* Start Your Search Button */}
+            <button className="w-full sm:w-[200px] md:w-[220px] lg:w-[242.7px] h-12 sm:h-14 md:h-14 lg:h-16 rounded-lg bg-white shadow-sm flex items-center justify-center gap-2.5 transition-all duration-200 hover:scale-[1.02]">
                 <img
-                    src="/vector_search_nursing.png"
-                    alt="Search Icon"
-                    className="w-4.5 h-4.5"
+                src="/vector_search_nursing.png"
+                alt="Search Icon"
+                className="w-4 h-4 sm:w-5 sm:h-5"
                 />
-                <span className="font-inter font-semibold text-lg leading-7 text-[#D02B38]">
-                    Start Your Search
+                <span className="font-inter font-semibold text-base sm:text-lg leading-6 sm:leading-7 text-[#D02B38]">
+                Start Your Search
                 </span>
             </button>
 
-            <button className="w-full sm:w-[251.47px] h-16 rounded-lg bg-transparent border-2 border-white shadow-sm flex items-center justify-center gap-2.5 xl:w-[251.47px]">
+            {/* Speak with Expert Button */}
+            <button className="w-full sm:w-[200px] md:w-[220px] lg:w-[251.47px] h-12 sm:h-14 md:h-14 lg:h-16 rounded-lg bg-transparent border-2 border-white shadow-sm flex items-center justify-center gap-2.5 transition-all duration-200 hover:text-white hover:bg-[#D02B38]">
                 <img
-                    src="/phone_search_icon.png"
-                    alt="Expert Icon"
-                    className="w-4.5 h-4.5"
+                src="/phone_search_icon.png"
+                alt="Expert Icon"
+                className="w-4 h-4 sm:w-5 sm:h-5"
                 />
-                <span className="font-inter font-semibold text-lg leading-7 text-white">
-                    Speak with Expert
+                <span className="font-inter font-semibold text-base sm:text-lg leading-6 sm:leading-7 text-white">
+                Speak with Expert
                 </span>
             </button>
         </div>
+
 
         {/* FEATURES: Changed to flex-col and reduced gap for better mobile stacking */}
         <div className="flex flex-col gap-2 sm:flex-row justify-center items-center sm:gap-8 lg:gap-20 mt-6 sm:mt-8 ml-0 sm:ml-5">
