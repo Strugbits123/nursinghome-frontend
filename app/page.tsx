@@ -68,6 +68,7 @@ export default function Home() {
         smartphone: { smooth: true },
         tablet: { smooth: true },
       });
+      
       locoScrollRef.current = locoScroll; // Store for global access
 
       locoScroll.on("scroll", ScrollTrigger.update);
@@ -251,7 +252,9 @@ export default function Home() {
       ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
 
       // Initial cleanup and sync
-      locoScroll.scrollTo(0, { duration: 0, disableLerp: true });
+      locoScroll.scrollTo(0, 0, 0);
+
+      // locoScroll.scrollTo(0, { duration: 0, disableLerp: true }, undefined);
       setTimeout(() => {
         locoScroll.update();
         ScrollTrigger.refresh();
