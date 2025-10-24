@@ -5,7 +5,6 @@ import 'locomotive-scroll/dist/locomotive-scroll.css';
 import { FacilitiesProvider } from './context/FacilitiesContext'
 import { CustomToaster } from "./components/CustomToaster";
 import Script from "next/script";
-import { Html, Head, Main, NextScript } from "next/document";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,20 +38,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-     <Html lang="en" suppressHydrationWarning>
-      <Head>
-        {/* <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8855354849568036"
-          crossOrigin="anonymous"
-        /> */}
-        {/* ✅ Correct AdSense Script */}
+    <html lang="en" suppressHydrationWarning>
+       <head>
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8855354849568036"
           crossOrigin="anonymous"
         ></script>
-      </Head>
+      </head>
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -61,8 +54,8 @@ export default function RootLayout({
         <FacilitiesProvider>
           {children}
         </FacilitiesProvider>
-        <NextScript />
+
       </body>
-    </Html>
+    </html>
   );
 }
