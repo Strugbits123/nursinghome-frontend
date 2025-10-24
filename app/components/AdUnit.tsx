@@ -76,15 +76,15 @@ useEffect(() => {
     <div
       className={`${layoutClasses[layout] || layoutClasses.banner} flex justify-center items-center bg-gray-100`}
     >
-      {/* <ins
+      <ins
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client="ca-pub-8855354849568036"
         data-ad-slot={adSlot}
         data-ad-format={layout === "banner" ? "auto" : undefined}
         data-full-width-responsive="true"
-      ></ins> */}
-     <ins
+      ></ins>
+     {/* <ins
       className="adsbygoogle"
       style={{
         display: "block",
@@ -97,7 +97,7 @@ useEffect(() => {
       data-ad-slot={adSlot}
       data-ad-format="auto"
       data-full-width-responsive="true"
-    />
+    /> */}
 
 
       <p className="text-xs text-gray-600 absolute bg-white px-2">
