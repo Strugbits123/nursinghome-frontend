@@ -406,7 +406,7 @@ const fetchFacilities = async (
             text-white text-center
           "
         >
-          Find the Right Nursing Home <br />
+          Findsaddadwd the Right Nursing Home <br />
           <span className="italic">for Your Loved Ones</span>
         </h1>
       </div>
