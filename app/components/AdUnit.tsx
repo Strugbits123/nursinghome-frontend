@@ -19,11 +19,13 @@ interface AdUnitProps {
     | "rectangle"
     | "skyscraper"
     | "skyscraperMobile"
+    | "skyscraperMain"
     | "halfpage"
     | "mobile";
 }
 
 export default function AdUnit({ adSlot, layout = "banner" }: AdUnitProps) {
+  
   // ✅ Tailwind layout classes for each ad type
   const layoutClasses: Record<string, string> = {
     banner:
@@ -38,17 +40,29 @@ export default function AdUnit({ adSlot, layout = "banner" }: AdUnitProps) {
     "block mx-auto border border-gray-300 w-[320px] h-[200px] sm:w-[160px] sm:h-[200px] md:w-[300px] md:h-[600px]",
     skyscraper:
       "block mx-auto border border-gray-300 w-[120px] h-[600px] sm:w-[160px] sm:h-[600px] md:w-[300px] md:h-[600px]",
+    skyscraperMain:
+      "block mx-auto border border-gray-300 w-[120px] h-[600px] sm:w-[160px] sm:h-[900px] md:w-[200px] md:h-[900px] lg:h-[1000px]",  
     halfpage:
       "block mx-auto border border-gray-300 w-[300px] h-[600px] md:w-[320px] md:h-[600px]",
     mobile:
       "block mx-auto border border-gray-300 w-[320px] h-[50px] sm:w-[320px] sm:h-[100px]",
   };
 
+  // ✅ Initialize AdSense on client-side
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined" && window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (err) {
+      console.error("Adsense error:", err);
+    }
+  }, []);
+
   return (
     <div
       className={`${layoutClasses[layout] || layoutClasses.banner} flex justify-center items-center bg-gray-100`}
     >
-      {/* Replace below with AdSense tag */}
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}

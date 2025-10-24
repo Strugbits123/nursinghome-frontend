@@ -9,9 +9,21 @@ export function AISummary() {
       <div className="relative w-full min-h-fit bg-white flex justify-center items-start p-4 sm:p-8 mx-auto">
 
         {/* ✅ Left Skyscraper Ad — md+ screens */}
-        <div className="hidden md:flex left-ad w-[100px] h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] mr-4 justify-center items-center bg-[#fafafa] transition-all duration-300">
-          <AdUnit adSlot="3645692031" layout="skyscraper" />
+      
+        <div className="
+            hidden md:flex left-ad
+            mt-20
+            w-[120px] h-[600px]       
+            md:w-[120px] md:h-[900px] md:mt-20
+            lg:w-[200px] lg:h-[1000px] lg:mt-20
+            justify-center items-start
+             border-gray-300 rounded-md 
+            bg-[#fafafa] transition-all duration-300
+            mr-6"
+            style={{ marginTop: '10rem' }}>
+        <AdUnit adSlot="3645692031" layout="skyscraperMain" />
         </div>
+
 
         {/* ✅ Right Skyscraper Ad — md and up only */}
         {/* <aside
@@ -33,8 +45,8 @@ export function AISummary() {
                 z-10
                 "
                 style={{
-                marginLeft: 'max(110px, 10vw)',
-                marginRight: 'max(110px, 10vw)',
+                marginLeft: 'max(10px, 2vw)',
+                marginRight: 'max(10px, 2vw)',
                 }}
             >
                 {/* === HEADING === */}
@@ -299,9 +311,22 @@ export function AISummary() {
                 </div>
             </div>
             {/* ✅ Right Skyscraper Ad — md+ screens */}
-                    <div className="hidden md:flex right-ad w-[100px] h-[600px] mx-20 lg:w-[90px] lg:h-[600px] my-30 xl:w-[200px] ml-4 justify-center items-center  bg-[#fafafa] transition-all duration-300">
+                    {/* <div className="hidden md:flex right-ad w-[100px] mt-60 mx-5   h-[600px] my-30 lg:w-[90px] lg:h-[600px]   xl:w-[200px] justify-center items-center  bg-[#fafafa] transition-all duration-300">
+                    <AdUnit adSlot="3645692031" layout="skyscraper" />
+                    </div> */}
+                    <div className="
+                        hidden md:flex right-ad
+                        mt-20
+                        w-[120px] h-[600px]       
+                        md:w-[120px] md:h-[900px] md:mt-20
+                        lg:w-[200px] lg:h-[1000px] lg:mt-20
+                        justify-center items-start
+                        border-gray-300 rounded-md 
+                        bg-[#fafafa] transition-all duration-300
+                    ">
                     <AdUnit adSlot="3645692031" layout="skyscraper" />
                     </div>
+
 
             </div>
         </section>
