@@ -83,6 +83,7 @@ useEffect(() => {
         data-ad-slot={adSlot}
         data-ad-format={layout === "banner" ? "auto" : undefined}
         data-full-width-responsive="true"
+        data-adtest="on"
       ></ins>
      {/* <ins
       className="adsbygoogle"
