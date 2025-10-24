@@ -163,7 +163,7 @@ export default function FacilitySearchPage() {
         }
       }
 
-      const apiUrl = `http://localhost:5000/api/facilities/filter-with-reviews?${params.toString()}`;
+      const apiUrl = `http://13.61.57.246:5000/api/facilities/filter-with-reviews?${params.toString()}`;
       const res = await fetch(apiUrl);
       const data = await res.json();
 

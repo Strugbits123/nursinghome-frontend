@@ -16,7 +16,7 @@ import AdUnit from "../components/AdUnit";
 import { mapRawFacilityToCard, RawFacility } from '../utils/facilityMapper';
  
 
-const API_URL = "http://localhost:5000/api/facilities/with-reviews";
+const API_URL = "http://13.61.57.246:5000/api/facilities/with-reviews";
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;
 
 
@@ -915,7 +915,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
     }
 
     // 🌐 5️⃣ Build final API URL
-    const apiUrl = `http://localhost:5000/api/facilities/filter-with-reviews?${params.toString()}`;
+    const apiUrl = `http://13.61.57.246:5000/api/facilities/filter-with-reviews?${params.toString()}`;
     console.log("🌐 Fetching filtered facilities:", apiUrl);
 
     const res = await fetch(apiUrl);
@@ -955,7 +955,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   }
 };
 
-
+ 
 
 
 // const fetchFilteredFacilities = async (newFilters?: typeof filters) => {

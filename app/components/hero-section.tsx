@@ -42,7 +42,7 @@ export function HeroSection() {
   } = useFacilities();
 
   // const API_URL = "http://13.61.57.246:5000/api/facilities/with-reviews";
-  const API_URL = "http://localhost:5000/api/facilities/with-reviews";
+  const API_URL = "http://13.61.57.246:5000/api/facilities/with-reviews";
 
   
   
