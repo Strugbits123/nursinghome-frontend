@@ -14,7 +14,7 @@ import { SearchNursing } from '../components/SearchNursing';
 import { Footer } from '../components/Footer';
 import AdUnit from "../components/AdUnit";
 import { mapRawFacilityToCard, RawFacility } from '../utils/facilityMapper';
-
+ 
 
 const API_URL = "http://localhost:5000/api/facilities/with-reviews";
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;
