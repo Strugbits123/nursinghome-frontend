@@ -14,8 +14,6 @@ import { SearchNursing } from '../components/SearchNursing';
 import { Footer } from '../components/Footer';
 import AdUnit from "../components/AdUnit";
 import { mapRawFacilityToCard, RawFacility } from '../utils/facilityMapper';
-import LocomotiveScroll from "locomotive-scroll";
-import "locomotive-scroll/dist/locomotive-scroll.css";
 
 
 const API_URL = "http://localhost:5000/api/facilities/with-reviews";
@@ -204,29 +202,7 @@ export default function FacilitySearchPage() {
   const router = useRouter();
 
   const [viewMode, setViewMode] = useState<ViewMode>("both");
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    let locoScroll: LocomotiveScroll | undefined;
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (containerRef.current) {
-      locoScroll = new LocomotiveScroll({
-        el: containerRef.current,
-        smooth: !prefersReducedMotion,
-        multiplier: prefersReducedMotion ? 0 : 1,
-        lerp: prefersReducedMotion ? 1 : 0.1,
-      });
-    }
-
-    const handleResize = () => locoScroll?.update();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      locoScroll?.destroy();
-    };
-  }, []);
 
  
 
