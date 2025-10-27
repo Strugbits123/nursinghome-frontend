@@ -196,7 +196,15 @@ const fetchFacilities = async (
       },
     });
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const errorData = await res.json();
+      if (res.status === 400 && errorData.error) {
+        toast.error(errorData.error); // Show alert for unsupported states
+      } else {
+        toast.error(`HTTP ${res.status}: ${errorData?.error || "Unknown error"}`);
+      }
+      throw new Error(errorData?.error || `HTTP ${res.status}`);
+    }
     const data = await res.json();
 
     const rawFacilitiesList = Array.isArray(data.data)
