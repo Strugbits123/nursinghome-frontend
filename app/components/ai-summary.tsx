@@ -10,7 +10,7 @@ export function AISummary() {
 
         {/* ✅ Left Skyscraper Ad — md+ screens */}
       
-        <div className="
+        {/* <div className="
             hidden md:flex left-ad
             mt-20
             w-[120px] h-[600px]       
@@ -22,16 +22,10 @@ export function AISummary() {
             mr-6"
             style={{ marginTop: '10rem' }}>
         <AdUnit adSlot="3645692031" layout="skyscraperMain" />
-        </div>
+        </div> */}
 
 
-        {/* ✅ Right Skyscraper Ad — md and up only */}
-        {/* <aside
-        className="hidden md:flex right-ad fixed right-2 top-80 w-[100px] h-[600px] lg:w-[160px] lg:h-[600px] xl:w-[200px] z-30 justify-center items-center border-2 border-gray-400 rounded-md bg-[#fafafa] transition-all duration-300"
-        >
-        <AdUnit adSlot="3645692031" layout="skyscraper" />
-        </aside> */}
-
+       
             <div
                 className="
                 w-full
@@ -311,10 +305,8 @@ export function AISummary() {
                 </div>
             </div>
             {/* ✅ Right Skyscraper Ad — md+ screens */}
-                    {/* <div className="hidden md:flex right-ad w-[100px] mt-60 mx-5   h-[600px] my-30 lg:w-[90px] lg:h-[600px]   xl:w-[200px] justify-center items-center  bg-[#fafafa] transition-all duration-300">
-                    <AdUnit adSlot="3645692031" layout="skyscraper" />
-                    </div> */}
-                    <div className="
+                    
+                    {/* <div className="
                         hidden md:flex right-ad
                         mt-20
                         w-[120px] h-[600px]       
@@ -325,7 +317,7 @@ export function AISummary() {
                         bg-[#fafafa] transition-all duration-300
                     ">
                     <AdUnit adSlot="3645692031" layout="skyscraper" />
-                    </div>
+                    </div> */}
 
 
             </div>

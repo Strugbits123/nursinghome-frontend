@@ -17,7 +17,7 @@ export const LOCATION_NAME_STORAGE_KEY = "locationName";
 export const FILTERS_STORAGE_KEY = "filters";
 
 // API Base URL
-const API_BASE_URL = "http://13.61.57.246:5000/api/facilities";
+const API_BASE_URL = "https://app.carenav.io/api/facilities";
 
 // --- Cache Duration (7 days) ---
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;

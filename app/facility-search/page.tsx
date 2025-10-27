@@ -16,7 +16,7 @@ import AdUnit from "../components/AdUnit";
 import { mapRawFacilityToCard, RawFacility } from '../utils/facilityMapper';
  
 
-const API_URL = "http://13.61.57.246:5000/api/facilities/with-reviews";
+const API_URL = "https://app.carenav.io/api/facilities/with-reviews";
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;
 
 
@@ -319,7 +319,7 @@ export default function FacilitySearchPage() {
   //           }
 
   //           // Assume API_URL is the base URL for paginated search (e.g., http://13.61.57.246:5000/api/facilities/with-reviews)
-  //           const API_URL_PAGINATED = `http://localhost:5000/api/facilities/with-reviews`;
+  //           const API_URL_PAGINATED = `https://app.carenav.io/api/facilities/with-reviews`;
   //           const res = await fetch(`${API_URL_PAGINATED}?${params.toString()}`, {
   //             headers: {
   //               Authorization: `Bearer ${token}`,
@@ -823,7 +823,7 @@ const getVisiblePageNumbers = (
 //       }
 //     }
 
-//     const apiUrl = `http://localhost:5000/api/facilities/filter-with-reviews?${params.toString()}`;
+//     const apiUrl = `https://app.carenav.io/api/facilities/filter-with-reviews?${params.toString()}`;
 //     const res = await fetch(apiUrl);
 //     const data = await res.json();
 
@@ -915,7 +915,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
     }
 
     // 🌐 5️⃣ Build final API URL
-    const apiUrl = `http://13.61.57.246:5000/api/facilities/filter-with-reviews?${params.toString()}`;
+    const apiUrl = `https://app.carenav.io/api/facilities/filter-with-reviews?${params.toString()}`;
     console.log("🌐 Fetching filtered facilities:", apiUrl);
 
     const res = await fetch(apiUrl);
@@ -1000,7 +1000,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
 //     }
 
 //     // 🌐 4️⃣ Fetch filtered data
-//     const apiUrl = `http://localhost:5000/api/facilities/filter-with-reviews?${params.toString()}`;
+//     const apiUrl = `https://app.carenav.io/api/facilities/filter-with-reviews?${params.toString()}`;
 //     console.log("🌐 Fetching filtered facilities:", apiUrl);
 
 //     const res = await fetch(apiUrl);

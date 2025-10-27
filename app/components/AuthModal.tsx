@@ -5,7 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://http://13.61.57.246:5000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://app.carenav.io/api";
 
 interface AuthModalProps {
   open: boolean;
