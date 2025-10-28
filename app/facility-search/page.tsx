@@ -401,6 +401,7 @@ const [totalFacilities, setTotalFacilities] = useState(totalCountFromProvider ||
 const [isPageLoading, setIsPageLoading] = useState(false);
 // =====================
 const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>([]);
+const [hasRestoredFromCache, setHasRestoredFromCache] = useState(false);
 
 
 
@@ -424,6 +425,7 @@ useEffect(() => {
         setAllFacilities(parsed);
         setFilteredFacilities(parsed);
         setPaginatedFacilities(parsed);
+        setHasRestoredFromCache(true); 
       }
     } catch (e) {
       console.error("Failed to parse cached page 1:", e);
@@ -446,7 +448,13 @@ useEffect(() => {
   if (typeof window === "undefined") return;
   if (!initialFacilities || initialFacilities.length === 0) return;
 
-  console.log("💾 Caching first page facilities");
+  // 🧠 Skip caching on first load if we already restored from cache
+  if (hasRestoredFromCache && currentPage === 1) {
+    console.log("⚠️ Skipping cache overwrite after restore");
+    return;
+  }
+
+  console.log("💾 Caching first page facilities",initialFacilities);
   localStorage.setItem("facilities_page_1", JSON.stringify(initialFacilities));
   localStorage.setItem(
     "facilities_meta",
@@ -461,7 +469,7 @@ useEffect(() => {
   setAllFacilities(initialFacilities);
   setFilteredFacilities(initialFacilities);
   if (currentPage === 1) setPaginatedFacilities(initialFacilities);
-}, [initialFacilities, totalCountFromProvider, currentPage]);
+}, [initialFacilities, totalCountFromProvider, currentPage, hasRestoredFromCache]);
 
 // =====================
 // 🔁 Get facilities by page — cache first
@@ -1131,23 +1139,23 @@ const facilityCoords = useMemo(
     );
   }
 
-  // ✅ Case 1: No facilities at all (initial load or context empty)
-  if (initialFacilities.length === 0 && !isLoading) {
-    return (
-      <div className="p-10 text-center text-xl">
-        <h2 className="text-2xl font-bold mb-2">No Facilities Found</h2>
-        <p className="text-gray-600">
-          We couldn’t find any facilities matching your location.
-        </p>
-        <Button
-          onClick={() => router.push('/')}
-          className="mt-4 bg-red-600 hover:bg-red-700"
-        >
-          Start a New Search
-        </Button>
-      </div>
-    );
-  }
+  // // ✅ Case 1: No facilities at all (initial load or context empty)
+  // if (initialFacilities.length === 0 && !isLoading) {
+  //   return (
+  //     <div className="p-10 text-center text-xl">
+  //       <h2 className="text-2xl font-bold mb-2">No Facilities Found</h2>
+  //       <p className="text-gray-600">
+  //         We couldn’t find any facilities matching your location.
+  //       </p>
+  //       <Button
+  //         onClick={() => router.push('/')}
+  //         className="mt-4 bg-red-600 hover:bg-red-700"
+  //       >
+  //         Start a New Search
+  //       </Button>
+  //     </div>
+  //   );
+  // }
 
  
 
