@@ -204,10 +204,6 @@ export default function FacilitySearchPage() {
   const router = useRouter();
 
   const [viewMode, setViewMode] = useState<ViewMode>("both");
-
-
- 
-  const [openAuth, setOpenAuth] = React.useState(false);
   const {
     facilities: initialFacilities,
     locationName,
@@ -228,7 +224,6 @@ export default function FacilitySearchPage() {
       distance: "",
       beds: "",
     });
-  console.log('locationName from context',locationName);
 
   const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
   const [isFiltering, setIsFiltering] = useState(false);
@@ -243,14 +238,11 @@ export default function FacilitySearchPage() {
   const [isPrefetching, setIsPrefetching] = useState(false);
   const [totalFacilities, setTotalFacilities] = useState(totalCountFromProvider || 0);
   const [isPageLoading, setIsPageLoading] = useState(false);
-  // =====================
+
   const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>([]);
   const [hasRestoredFromCache, setHasRestoredFromCache] = useState(false);
 
 
-
-
-console.log('recommendations',recommendations);
 
 // =====================
 // 💾 Restore from cache on mount
@@ -461,8 +453,9 @@ const handleViewDetails = async (facility: any) => {
 
 };
 
-
+ const apiKey = "http://localhost:5000/api/facilities/with-reviews";
 const loadPage = useCallback(
+ 
   async (page: number) => {
     console.log("🟡 loadPage triggered for page:", page);
 
@@ -512,7 +505,7 @@ const loadPage = useCallback(
         params.append("lng", coords.lng.toString());
       }
 
-      const url = `${API_URL}/?${params.toString()}`;
+      const url = `${apiKey}/?${params.toString()}`;
       console.log("🌐 Fetching:", url);
       setIsPageLoading(true);
 

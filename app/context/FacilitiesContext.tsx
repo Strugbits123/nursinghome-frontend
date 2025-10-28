@@ -204,11 +204,27 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (typeof window === "undefined") return;
       try {
-      const saved = localStorage.getItem(LOCATION_NAME_STORAGE_KEY);
-       if (saved) {
-        setLocationName(saved);
-        setNormalizedLocation(saved.trim().replace(/\s+/g, "_").toLowerCase());
-      }
+         const saved = localStorage.getItem(LOCATION_NAME_STORAGE_KEY);
+          if (saved) {
+            let parsed = JSON.parse(saved);
+
+            // Handle nested Value structure
+            if (parsed?.Value) {
+              try {
+                const inner = JSON.parse(parsed.Value);
+                parsed = inner?.Value ?? inner; // inner.Value = "New York"
+              } catch {
+                parsed = parsed.Value; // fallback
+              }
+            }
+
+            if (typeof parsed === "string") {
+              setLocationName(parsed);
+              setNormalizedLocation(parsed.trim().replace(/\s+/g, "_").toLowerCase());
+            } else {
+              console.warn("Unexpected structure for location data:", parsed);
+            }
+          }
       } catch (err) {
       console.error("Failed to restore locationName:", err);
     }
