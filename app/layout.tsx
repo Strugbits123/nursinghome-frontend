@@ -42,13 +42,13 @@ export default function RootLayout({
        <head>
         <meta
           name="google-adsense-account"
-          content="ca-pub-8855354849568036"
+          content="ca-pub-7125240672406407"
         />
-        {/* <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8855354849568036"
-          crossOrigin="anonymous"
-        ></script> */}
+      <Script
+              async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7125240672406407"
+              crossOrigin="anonymous"
+              strategy="afterInteractive" // or "lazyOnload"
+            />
       </head>
       <body
         suppressHydrationWarning

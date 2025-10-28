@@ -79,7 +79,7 @@ useEffect(() => {
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
-        data-ad-client="ca-pub-8855354849568036"
+        data-ad-client="ca-pub-7125240672406407"
         data-ad-slot={adSlot}
         data-ad-format={layout === "banner" ? "auto" : undefined}
         data-full-width-responsive="true"
