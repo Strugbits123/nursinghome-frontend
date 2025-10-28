@@ -71,115 +71,8 @@ export function HeroSection() {
   // const API_URL = "http://13.61.57.246:5000/api/facilities/with-reviews";
   const API_URL = "https://app.carenav.io/api/facilities/with-reviews";
 
-  
-  
-// const fetchFacilities = async (currentSearchQuery: string, currentCoords: Coords | null) => {
-//   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-//   if (!token) {
-//     toast.error("Please log in to search facilities");
-//     return;
-//   }
 
-//   setIsLoading(true);
-//   setContextIsLoading && setContextIsLoading(true);
-//   setError(null);
-//   setContextError && setContextError(null);
-
-//   try {
-  
-//     const params = new URLSearchParams();
-
-//     if (currentSearchQuery && !currentCoords) {
-//       // ✅ Trim spaces and replace with underscore
-//       const normalizedQuery = currentSearchQuery.trim().replace(/\s+/g, "_");
-//       params.append("q", normalizedQuery);
-//     }
-
-//     if (currentCoords?.lat && currentCoords?.lng) {
-//       params.append("lat", currentCoords.lat.toString());
-//       params.append("lng", currentCoords.lng.toString());
-//     }
-
-//     // ✅ Always start at page 1 and limit 8
-//     params.append("page", "1");
-//     params.append("limit", "8");
-
-//     const url = `${API_URL}?${params.toString()}`;
-//     console.log("Fetching initial page from:", url);
-
-//     // Fetch page 1 (first visible data)
-//     const res = await fetch(url, {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         "Content-Type": "application/json",
-//       },
-//     });
-
-//     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-//     const data = await res.json();
-
-//     const rawFacilitiesList = Array.isArray(data.data)
-//       ? data.data
-//       : data?.facilities || [];
-
-//     // 🧭 Map for display
-//     const facilitiesList = rawFacilitiesList.map((raw: any) =>
-//       mapRawFacilityToCard(raw, currentCoords)
-//     );
-
-//     setFacilities(facilitiesList);
-//     setCoords(currentCoords);
-//     setLocationName(currentSearchQuery || "");
-
-//     // Store page 1 immediately
-//     localStorage.setItem(FACILITIES_STORAGE_KEY, JSON.stringify(facilitiesList));
-//     localStorage.setItem(COORDS_STORAGE_KEY, JSON.stringify(currentCoords));
-//     localStorage.setItem(LOCATION_NAME_STORAGE_KEY, JSON.stringify(currentSearchQuery || ""));
-
-//     toast.success("Facilities loaded successfully!");
-
-//     // ✅ Prefetch pages 2–6 in the background
-//     for (let p = 2; p <= 6; p++) {
-//       const nextParams = new URLSearchParams(params);
-//       nextParams.set("page", p.toString());
-//       const nextUrl = `${API_URL}?${nextParams.toString()}`;
-
-//       fetch(nextUrl, {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//         },
-//       })
-//         .then((r) => (r.ok ? r.json() : null))
-//         .then((nextData) => {
-//           if (!nextData || !nextData.data) return;
-//           localStorage.setItem(`facilities_page_${p}`, JSON.stringify(nextData.data));
-//           console.log(`✅ Prefetched and cached page ${p}`);
-//         })
-//         .catch((e) => console.warn(`⚠️ Prefetch failed for page ${p}`, e));
-//     }
-
-//     router.push("/facility-search");
-//   } catch (err: any) {
-//     toast.error(err.message || "Failed to load facilities");
-//     setError(err.message || "Unknown error");
-//     setContextError && setContextError(err.message || "Unknown error");
-
-//     // Clear old data on error
-//     setFacilities([]);
-//     setCoords(null);
-//     setLocationName("");
-//     localStorage.removeItem(FACILITIES_STORAGE_KEY);
-//     localStorage.removeItem(COORDS_STORAGE_KEY);
-//     localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
-//   } finally {
-//     setIsLoading(false);
-//     setContextIsLoading && setContextIsLoading(false);
-//   }
-// };
-
-
-const fetchFacilities = async (
+  const fetchFacilities = async (
     currentSearchQuery: string,
     currentCoords: Coords | null
     ) => {
@@ -210,7 +103,11 @@ const fetchFacilities = async (
     const params = new URLSearchParams();
 
     if (currentSearchQuery && !currentCoords) {
-      const normalizedQuery = currentSearchQuery.trim().replace(/\s+/g, "_");
+       const normalizedQuery = currentSearchQuery
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_");
+      // const normalizedQuery = currentSearchQuery.trim().replace(/\s+/g, "_");
       params.append("q", normalizedQuery);
     }
 

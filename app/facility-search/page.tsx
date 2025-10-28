@@ -207,201 +207,45 @@ export default function FacilitySearchPage() {
 
 
  
+  const [openAuth, setOpenAuth] = React.useState(false);
+  const {
+    facilities: initialFacilities,
+    locationName,
+    total: totalCountFromProvider = 0,
+    isLoading,
+    coords,
+    totalPages,
+    error,
+    recommendations
+  } = useFacilities();
 
-  // useEffect(() => {
-  //   setAllFacilities(initialFacilities);
-  //   if (!usingFilters) {
-  //     setFilteredFacilities(initialFacilities);
-  //   }
-  // }, [initialFacilities, usingFilters]);
+  const [filters, setFilters] = useState({
+      city: "",
+      state: "",
+      ratingMin: "",
+      ownership: "",
+      locationName: "",
+      distance: "",
+      beds: "",
+    });
+  console.log('locationName from context',locationName);
 
-  // // ✅ Filtered Facilities Sync
-  // useEffect(() => {
-  //   if (!usingFilters) {
-  //     setFilteredFacilities(allFacilities);
-  //   }
-  // }, [allFacilities, usingFilters]);
-
-  // const totalFacilities = usingFilters ? initialFacilities.length : totalCountFromProvider;
-
-  // // Total pages based on the actual total count
-  // const totalFacilityPages = Math.ceil(totalFacilities / ITEMS_PER_PAGE);
-  // const getPaginatedFacilities = (page: number): Facility[] => {
-  //   const start = (page - 1) * ITEMS_PER_PAGE;
-
-  //   // Pages 1–6 (cached from first fetch)
-  //   if (page <= 6 && filteredFacilities.length >= start) {
-  //     return filteredFacilities.slice(start, start + ITEMS_PER_PAGE);
-  //   }
-
-  //   // Pages 7+ or fallback: fetch from localStorage
-  //   if (typeof window !== "undefined") {
-  //     const cached = localStorage.getItem(`facilities_page_${page}`);
-  //     return cached ? JSON.parse(cached) : [];
-  //   }
-
-  //   return [];
-  // };
-
-  // const paginatedFacilities = useMemo(
-  //   () => getPaginatedFacilities(currentPage),
-  //   [filteredFacilities, currentPage]
-  // );
-
-
-
-  
-
-
-
-
-  // function getFacilityStatus(facility: any) {
-  //   if (!facility.number_of_certified_beds || !facility.average_number_of_residents_per_day)
-  //     return "Unknown";
-
-  //   const occupancyRate =
-  //     (facility.average_number_of_residents_per_day / facility.number_of_certified_beds) * 100;
-
-  //   if (occupancyRate < 80) return "Accepting";
-  //   if (occupancyRate < 100) return "Waitlist";
-  //   return "Full";
-  // }
-
-  // // ✅ Clear filters
-  // const clearFilters = () => {
-  //   setFilters({
-  //     city: "",
-  //     state: "",
-  //     ratingMin: "",
-  //     ownership: "",
-  //     locationName: "",
-  //     distance: "",
-  //     beds: "",
-  //   });
-  //   setUsingFilters(false);
-  //   setFilteredFacilities(initialFacilities);
-  //   setCurrentPage(1);
-  //   toast.success("Filters cleared!");
-  // };
-
-  // // ✅ Pagination
-
-
-
-  // console.log("paginatedFacilities for Pagination:", paginatedFacilities);
-
-
-  // const startFacility = totalFacilities > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
-  // const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, totalFacilities);
-  // const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
-
-
-  // const goToPage = useCallback(
-  //   async (page: number) => {
-  //     const normalizedPage = Math.max(1, Math.min(page, totalFacilityPages));
-  //     setCurrentPage(normalizedPage);
-
-  //     // Only fetch/cache new pages if not filtering and page is past the initial cached batch
-  //     if (!usingFilters && normalizedPage > 6) {
-  //       const cached = localStorage.getItem(`facilities_page_${normalizedPage}`);
-  //       if (!cached) {
-  //         try {
-  //           const token = localStorage.getItem("token");
-  //           if (!token) return;
-
-  //           const params = new URLSearchParams();
-  //           const normalizedQuery = locationName.trim().replace(/\s+/g, "_");
-  //           params.append("q", normalizedQuery);
-  //           params.append("page", normalizedPage.toString());
-  //           params.append("limit", ITEMS_PER_PAGE.toString());
-
-  //           if (coords?.lat && coords?.lng) {
-  //             params.append("lat", coords.lat.toString());
-  //             params.append("lng", coords.lng.toString());
-  //           }
-
-  //           // Assume API_URL is the base URL for paginated search (e.g., http://13.61.57.246:5000/api/facilities/with-reviews)
-  //           const API_URL_PAGINATED = `https://app.carenav.io/api/facilities/with-reviews`;
-  //           const res = await fetch(`${API_URL_PAGINATED}?${params.toString()}`, {
-  //             headers: {
-  //               Authorization: `Bearer ${token}`,
-  //               "Content-Type": "application/json",
-  //             },
-  //           });
-
-  //           if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  //           const data = await res.json();
-  //           if (!data.data?.length) return;
-
-  //           const mapped = data.data.map((raw: any) => mapRawFacilityToCard(raw, coords));
-
-  //           // Cache the page data
-  //           localStorage.setItem(`facilities_page_${normalizedPage}`, JSON.stringify(mapped));
-
-  //           // Merge into allFacilities for a continuous total count and future reference
-  //           setAllFacilities((prev) => {
-  //             const newFacilities = [...prev];
-  //             // Calculate the index where the new data starts
-  //             const startIndex = (normalizedPage - 1) * ITEMS_PER_PAGE;
-  //             // Replace/Insert the new page data
-  //             mapped.forEach((facility: Facility, index: number) => {
-  //               newFacilities[startIndex + index] = facility;
-  //             });
-  //             // Ensure array length accommodates the new facilities if they extend beyond the current length
-  //             if (newFacilities.length < startIndex + mapped.length) {
-  //               return [...newFacilities.slice(0, startIndex), ...mapped];
-  //             }
-  //             return newFacilities;
-  //           });
-
-  //         } catch (err) {
-  //           console.warn("Failed to fetch page", normalizedPage, err);
-  //         }
-  //       }
-  //     }
-  //   },
-  //   [coords, locationName, totalFacilityPages, usingFilters]
-  // );
-
-
-const [openAuth, setOpenAuth] = React.useState(false);
-const {
-  facilities: initialFacilities,
-  locationName,
-  total: totalCountFromProvider = 0,
-  isLoading,
-  coords,
-  totalPages,
-  error,
-  recommendations
-} = useFacilities();
-
- const [filters, setFilters] = useState({
-    city: "",
-    state: "",
-    ratingMin: "",
-    ownership: "",
-    locationName: "",
-    distance: "",
-    beds: "",
-  });
-
-const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
-const [isFiltering, setIsFiltering] = useState(false);
-const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
-const [showSkeletonTimer, setShowSkeletonTimer] = useState(true);
-const [isAuthenticated, setIsAuthenticated] = useState(false);
-const [loadingFacilityId, setLoadingFacilityId] = useState<string | null>(null);
-const [allFacilities, setAllFacilities] = useState<Facility[]>(initialFacilities);
-const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>(initialFacilities);
-const [usingFilters, setUsingFilters] = useState(false);
-const [currentPage, setCurrentPage] = useState(1);
-const [isPrefetching, setIsPrefetching] = useState(false);
-const [totalFacilities, setTotalFacilities] = useState(totalCountFromProvider || 0);
-const [isPageLoading, setIsPageLoading] = useState(false);
-// =====================
-const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>([]);
-const [hasRestoredFromCache, setHasRestoredFromCache] = useState(false);
+  const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [showSkeletonTimer, setShowSkeletonTimer] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loadingFacilityId, setLoadingFacilityId] = useState<string | null>(null);
+  const [allFacilities, setAllFacilities] = useState<Facility[]>(initialFacilities);
+  const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>(initialFacilities);
+  const [usingFilters, setUsingFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isPrefetching, setIsPrefetching] = useState(false);
+  const [totalFacilities, setTotalFacilities] = useState(totalCountFromProvider || 0);
+  const [isPageLoading, setIsPageLoading] = useState(false);
+  // =====================
+  const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>([]);
+  const [hasRestoredFromCache, setHasRestoredFromCache] = useState(false);
 
 
 
@@ -1206,9 +1050,14 @@ const facilityCoords = useMemo(
             className="w-[6px] h-[10px] sm:w-[8.72px] sm:h-[13.95px] align-middle"
           />
           <span className="font-inter font-medium text-[14px] sm:text-[16.71px] leading-[20px] sm:leading-[23.87px] text-[#111827] align-middle truncate max-w-[200px] sm:max-w-none">
-            {locationName
+            {/* {locationName
               ?.toLowerCase()
-              .replace(/\b\w/g, (char) => char.toUpperCase())}
+              .replace(/\b\w/g, (char) => char.toUpperCase())} */}
+              {locationName &&
+                  locationName
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (char) => char.toUpperCase())}
+
           </span>
         </div>
       </section>
@@ -1266,7 +1115,12 @@ const facilityCoords = useMemo(
             <div className="flex flex-col items-start flex-wrap gap-x-0 sm:gap-x-4 ml-0 md:ml-[90px] md:flex-1 md:min-w-[150px] lg:min-w-[250px]">
               <span className="font-inter font-medium text-[15px] sm:text-[17px] leading-[22px] sm:leading-[26px] text-[#111827] ml-2 sm:ml-[55px]">
                 {totalFacilities} Facilities Found in{" "}
-                {locationName?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())}
+                {locationName &&
+                  locationName
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (char) => char.toUpperCase())}
+
+                {/* {locationName?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())} */}
               </span>
 
               <div className="flex items-center gap-2 ml-2 sm:ml-13 mt-[2px] flex-shrink-0 md:ml-14">

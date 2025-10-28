@@ -172,12 +172,14 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     getInitialState(COORDS_STORAGE_KEY, null)
   );
 
-  const [locationName, setLocationName] = useState<string>(() => {
-    const saved = getInitialState(LOCATION_NAME_STORAGE_KEY, "");
-    return typeof saved === "string" && saved.trim()
-      ? saved.trim().replace(/\s+/g, "_").toLowerCase()
-      : "";
-  });
+  // const [locationName, setLocationName] = useState<string>(() => {
+  //   const saved = getInitialState(LOCATION_NAME_STORAGE_KEY, "");
+  //   return typeof saved === "string" && saved.trim()
+  //     ? saved.trim().replace(/\s+/g, "_").toLowerCase()
+  //     : "";
+  // });
+  const [locationName, setLocationName] = useState<string>("");
+  const [normalizedLocation, setNormalizedLocation] = useState<string>("");
 
   const [filters, setFilters] = useState<FilterState>(() =>
     getInitialState(FILTERS_STORAGE_KEY, {})
@@ -197,6 +199,20 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       `${FACILITIES_STORAGE_KEY}_${JSON.stringify(filters)}_${locationName}`,
     [filters, locationName]
   );
+
+  // --- Rehydrate locationName after mount ---
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+      try {
+      const saved = localStorage.getItem(LOCATION_NAME_STORAGE_KEY);
+       if (saved) {
+        setLocationName(saved);
+        setNormalizedLocation(saved.trim().replace(/\s+/g, "_").toLowerCase());
+      }
+      } catch (err) {
+      console.error("Failed to restore locationName:", err);
+    }
+  }, []);
 
   // --- Helper: Fetch Top Recommendations ---
   const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
@@ -310,9 +326,14 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   }, [facilities, currentPage]);
 
   // --- Persist states ---
+  useEffect(() => {
+    if (!locationName) return;
+        saveToStorage(LOCATION_NAME_STORAGE_KEY, locationName);
+        setNormalizedLocation(locationName.trim().replace(/\s+/g, "_").toLowerCase());
+  }, [locationName]);
   useEffect(() => saveToStorage(FACILITIES_STORAGE_KEY, facilities), [facilities]);
   useEffect(() => saveToStorage(COORDS_STORAGE_KEY, coords), [coords]);
-  useEffect(() => saveToStorage(LOCATION_NAME_STORAGE_KEY, locationName), [locationName]);
+  // useEffect(() => saveToStorage(LOCATION_NAME_STORAGE_KEY, locationName), [locationName]);
   useEffect(() => saveToStorage(FILTERS_STORAGE_KEY, filters), [filters]);
 
   // --- Auto-fetch if cache empty ---

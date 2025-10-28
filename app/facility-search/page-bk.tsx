@@ -1115,3 +1115,161 @@ export default function FacilitySearchPage() {
     </>
   )
 }
+
+  // // ✅ All Facilities Sync
+
+  // useEffect(() => {
+  //   setAllFacilities(initialFacilities);
+  //   if (!usingFilters) {
+  //     setFilteredFacilities(initialFacilities);
+  //   }
+  // }, [initialFacilities, usingFilters]);
+
+  // // ✅ Filtered Facilities Sync
+  // useEffect(() => {
+  //   if (!usingFilters) {
+  //     setFilteredFacilities(allFacilities);
+  //   }
+  // }, [allFacilities, usingFilters]);
+
+  // const totalFacilities = usingFilters ? initialFacilities.length : totalCountFromProvider;
+
+  // // Total pages based on the actual total count
+  // const totalFacilityPages = Math.ceil(totalFacilities / ITEMS_PER_PAGE);
+  // const getPaginatedFacilities = (page: number): Facility[] => {
+  //   const start = (page - 1) * ITEMS_PER_PAGE;
+
+  //   // Pages 1–6 (cached from first fetch)
+  //   if (page <= 6 && filteredFacilities.length >= start) {
+  //     return filteredFacilities.slice(start, start + ITEMS_PER_PAGE);
+  //   }
+
+  //   // Pages 7+ or fallback: fetch from localStorage
+  //   if (typeof window !== "undefined") {
+  //     const cached = localStorage.getItem(`facilities_page_${page}`);
+  //     return cached ? JSON.parse(cached) : [];
+  //   }
+
+  //   return [];
+  // };
+
+  // const paginatedFacilities = useMemo(
+  //   () => getPaginatedFacilities(currentPage),
+  //   [filteredFacilities, currentPage]
+  // );
+
+
+
+  
+
+
+
+
+  // function getFacilityStatus(facility: any) {
+  //   if (!facility.number_of_certified_beds || !facility.average_number_of_residents_per_day)
+  //     return "Unknown";
+
+  //   const occupancyRate =
+  //     (facility.average_number_of_residents_per_day / facility.number_of_certified_beds) * 100;
+
+  //   if (occupancyRate < 80) return "Accepting";
+  //   if (occupancyRate < 100) return "Waitlist";
+  //   return "Full";
+  // }
+
+  // // ✅ Clear filters
+  // const clearFilters = () => {
+  //   setFilters({
+  //     city: "",
+  //     state: "",
+  //     ratingMin: "",
+  //     ownership: "",
+  //     locationName: "",
+  //     distance: "",
+  //     beds: "",
+  //   });
+  //   setUsingFilters(false);
+  //   setFilteredFacilities(initialFacilities);
+  //   setCurrentPage(1);
+  //   toast.success("Filters cleared!");
+  // };
+
+  // // ✅ Pagination
+
+
+
+  // console.log("paginatedFacilities for Pagination:", paginatedFacilities);
+
+
+  // const startFacility = totalFacilities > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+  // const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, totalFacilities);
+  // const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
+
+
+  // const goToPage = useCallback(
+  //   async (page: number) => {
+  //     const normalizedPage = Math.max(1, Math.min(page, totalFacilityPages));
+  //     setCurrentPage(normalizedPage);
+
+  //     // Only fetch/cache new pages if not filtering and page is past the initial cached batch
+  //     if (!usingFilters && normalizedPage > 6) {
+  //       const cached = localStorage.getItem(`facilities_page_${normalizedPage}`);
+  //       if (!cached) {
+  //         try {
+  //           const token = localStorage.getItem("token");
+  //           if (!token) return;
+
+  //           const params = new URLSearchParams();
+  //           const normalizedQuery = locationName.trim().replace(/\s+/g, "_");
+  //           params.append("q", normalizedQuery);
+  //           params.append("page", normalizedPage.toString());
+  //           params.append("limit", ITEMS_PER_PAGE.toString());
+
+  //           if (coords?.lat && coords?.lng) {
+  //             params.append("lat", coords.lat.toString());
+  //             params.append("lng", coords.lng.toString());
+  //           }
+
+  //           // Assume API_URL is the base URL for paginated search (e.g., http://13.61.57.246:5000/api/facilities/with-reviews)
+  //           const API_URL_PAGINATED = `https://app.carenav.io/api/facilities/with-reviews`;
+  //           const res = await fetch(`${API_URL_PAGINATED}?${params.toString()}`, {
+  //             headers: {
+  //               Authorization: `Bearer ${token}`,
+  //               "Content-Type": "application/json",
+  //             },
+  //           });
+
+  //           if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  //           const data = await res.json();
+  //           if (!data.data?.length) return;
+
+  //           const mapped = data.data.map((raw: any) => mapRawFacilityToCard(raw, coords));
+
+  //           // Cache the page data
+  //           localStorage.setItem(`facilities_page_${normalizedPage}`, JSON.stringify(mapped));
+
+  //           // Merge into allFacilities for a continuous total count and future reference
+  //           setAllFacilities((prev) => {
+  //             const newFacilities = [...prev];
+  //             // Calculate the index where the new data starts
+  //             const startIndex = (normalizedPage - 1) * ITEMS_PER_PAGE;
+  //             // Replace/Insert the new page data
+  //             mapped.forEach((facility: Facility, index: number) => {
+  //               newFacilities[startIndex + index] = facility;
+  //             });
+  //             // Ensure array length accommodates the new facilities if they extend beyond the current length
+  //             if (newFacilities.length < startIndex + mapped.length) {
+  //               return [...newFacilities.slice(0, startIndex), ...mapped];
+  //             }
+  //             return newFacilities;
+  //           });
+
+  //         } catch (err) {
+  //           console.warn("Failed to fetch page", normalizedPage, err);
+  //         }
+  //       }
+  //     }
+  //   },
+  //   [coords, locationName, totalFacilityPages, usingFilters]
+  // );
+
