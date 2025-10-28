@@ -118,11 +118,13 @@ export function ResultsSection() {
                   }`}
                 >
                   <Image
-                    src="/map-icon.png"
+                    src="/icons/map_icon.png"
                     alt="Map Icon"
                     width={19}
                     height={17}
-                    className="w-4 h-3 sm:w-[19px] sm:h-[17px]"
+                    className={`w-4 h-3 sm:w-[19px] sm:h-[17px] transition-all ${
+                      viewMode === "map" ? "invert brightness-0" : ""
+                    }`}
                   />
                   <span className="hidden sm:inline">Map View</span>
                   <span className="sm:hidden">Map</span>

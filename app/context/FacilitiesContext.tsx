@@ -50,6 +50,26 @@ function getInitialState<T>(key: string, defaultValue: T): T {
   }
   return defaultValue;
 }
+/**
+ * Extract state and city from a query string.
+ * Example:
+ *   "Birmingham, AL" => { city: "Birmingham", state: "AL" }
+ *   "AL" => { city: "", state: "AL" }
+ */
+const parseQueryToStateCity = (query: string | undefined) => {
+  if (!query) return { state: "", city: "" };
+
+  const parts = query.split(",").map((p) => p.trim());
+  if (parts.length === 2) {
+    return { city: parts[0], state: parts[1] };
+  } else if (parts.length === 1) {
+    return { city: "", state: parts[0] };
+  } else {
+    return { city: "", state: "" };
+  }
+};
+
+
 
 // --- Interfaces ---
 export interface Coords {
@@ -113,6 +133,8 @@ export interface Facility {
 interface FacilitiesContextType {
   facilities: Facility[];
   setFacilities: React.Dispatch<React.SetStateAction<Facility[]>>;
+  recommendations: Facility[]; // ✅ Add recommendations
+  setRecommendations: React.Dispatch<React.SetStateAction<Facility[]>>; // ✅ Add setter
   coords: Coords | null;
   setCoords: React.Dispatch<React.SetStateAction<Coords | null>>;
   locationName: string;
@@ -143,6 +165,9 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   const [facilities, setFacilities] = useState<Facility[]>(() =>
     getInitialState(FACILITIES_STORAGE_KEY, [])
   );
+
+  const [recommendations, setRecommendations] = useState<Facility[]>([]); // ✅ Add this
+
   const [coords, setCoords] = useState<Coords | null>(() =>
     getInitialState(COORDS_STORAGE_KEY, null)
   );
@@ -173,6 +198,21 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     [filters, locationName]
   );
 
+  // --- Helper: Fetch Top Recommendations ---
+  const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
+    if (!state || !city) return [];
+    const token = localStorage.getItem("token") || "";
+    const url = `http://localhost:8000/top-facilities?state=${state}&city=${city}&top_n=${top_n}`;
+    try {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data || [];
+    } catch {
+      return [];
+    }
+  };
+
   // --- Fetch Facilities (with cache) ---
   const fetchFacilities = useCallback(
     async (currentFilters: FilterState) => {
@@ -197,14 +237,17 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
             setFacilities(data.facilities || []);
             setCoords(data.centerCoords || null);
             setTotal(data.total || data.totalCount || data.facilities?.length || 0);
+            setRecommendations(data.recommendations || []); // ✅ load cached recommendations
             setIsLoading(false);
             return;
           }
         }
 
-        // API call if no cache
+        // --- API call for main facilities ---
         const url = `${API_BASE_URL}/filter-with-reviews?${queryString}`;
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: { "Content-Type": "application/json" },
+        });
         if (!response.ok) throw new Error("Failed to fetch facilities");
 
         const data = await response.json();
@@ -215,27 +258,37 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
           setCoords(data.centerCoords);
         }
 
-        // Save in cache
+        // --- Fetch Top Recommendations from FastAPI ---
+        const { state, city } = parseQueryToStateCity(filters.locationName || locationName);
+        const topFacilities = await fetchTopRecommendations(state, city, 5);
+        setRecommendations(topFacilities);
+
+        // --- Save in cache including recommendations ---
         localStorage.setItem(
           cacheKey,
           JSON.stringify({
-            data,
+            data: {
+              ...data,
+              recommendations: topFacilities,
+            },
             timestamp: Date.now(),
           })
         );
 
-        console.log(`✅ Cached ${data.facilities?.length || 0} facilities`);
+        console.log(`✅ Cached ${data.facilities?.length || 0} facilities and ${topFacilities.length} recommendations`);
       } catch (err: any) {
         console.error("❌ Fetch error:", err);
         setError(err.message);
         setFacilities([]);
+        setRecommendations([]); // ✅ clear recommendations on error
       } finally {
         setIsLoading(false);
       }
     },
-    [cacheKey]
+    [cacheKey, filters, locationName]
   );
 
+  // --- Refetch wrapper ---
   const refetchFacilities = useCallback(
     (newFilters?: FilterState) => {
       if (newFilters) {
@@ -274,6 +327,8 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       value={{
         facilities,
         setFacilities,
+        recommendations,
+        setRecommendations,
         coords,
         setCoords,
         locationName,

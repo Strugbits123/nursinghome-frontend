@@ -14,7 +14,9 @@ import { SearchNursing } from '../components/SearchNursing';
 import { Footer } from '../components/Footer';
 import AdUnit from "../components/AdUnit";
 import { mapRawFacilityToCard, RawFacility } from '../utils/facilityMapper';
- 
+import Link from "next/link";
+import HeaderFacility from '../components/HeaderFacility';
+
 
 const API_URL = "https://app.carenav.io/api/facilities/with-reviews";
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;
@@ -371,6 +373,7 @@ const {
   coords,
   totalPages,
   error,
+  recommendations
 } = useFacilities();
 
  const [filters, setFilters] = useState({
@@ -398,6 +401,11 @@ const [totalFacilities, setTotalFacilities] = useState(totalCountFromProvider ||
 const [isPageLoading, setIsPageLoading] = useState(false);
 // =====================
 const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>([]);
+
+
+
+
+console.log('recommendations',recommendations);
 
 // =====================
 // 💾 Restore from cache on mount
@@ -1034,6 +1042,15 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
 // };
 
 
+
+// Scroll to recommendations once loaded
+useEffect(() => {
+  if (recommendations.length) {
+    document.getElementById("recommendations")?.scrollIntoView({ behavior: "smooth" });
+  }
+}, [recommendations]);
+
+
 const mapCenter = useMemo(
   () => calculateMapCenter(filteredFacilities, selectedCoords || coords),
   [filteredFacilities, selectedCoords, coords]
@@ -1102,9 +1119,9 @@ const facilityCoords = useMemo(
     )
   }
 
-  if (isLoading || showSkeletonTimer) {
-    return <FacilityReviewSkeleton />;
-  }
+  // if (isLoading || showSkeletonTimer) {
+  //   return <FacilityReviewSkeleton />;
+  // }
 
   if (error) {
     return (
@@ -1132,6 +1149,9 @@ const facilityCoords = useMemo(
     );
   }
 
+ 
+
+
   const slugify = (text: string): string => {
     return text
       .toString()
@@ -1145,78 +1165,33 @@ const facilityCoords = useMemo(
   return (
     <>
 
-      <header className="w-full h-[78px] bg-[#C71F37] border-b border-[#C71F37]">
-        <div className="max-w-[1856px] h-full px-4 sm:px-6 sm:px-[12px] flex items-center justify-between ">
-          <img
-            src="/footer_icon.png"
-            alt="NursingHome Logo"
-            className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] sm:ml-[60px] md:mx-38 lg:mx-42"
-          />
-          <div className="flex items-center justify-end space-x-2 sm:space-x-6 ">
-            {isAuthenticated ? (
-              <div
-                onClick={handleLogout}
-                className="flex cursor-pointer items-center w-[100px] sm:w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-2 sm:px-4"
-              >
-                <img
-                  src="/icons/arrow_btn.png"
-                  alt="Logout icon"
-                  className="w-[16px] h-[16px] sm:w-[18.78px] sm:h-[18.78px] mr-1 sm:mr-2"
-                />
-                <span className="font-jost font-semibold text-[14px] sm:text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
-                  Logout
-                </span>
-              </div>
-            ) : (
-              <div
-                onClick={() => setOpenAuth(true)}
-                className="flex cursor-pointer items-center w-[100px] sm:w-[130px] h-[35.2px] rounded-md hover:bg-[#a91a2e] px-2 sm:px-4"
-              >
-                <img
-                  src="/icons/header_sign.png"
-                  alt="Sign in icon"
-                  className="w-[16px] h-[16px] sm:w-[18.78px] sm:h-[18.78px] mr-1 sm:mr-2"
-                />
-                <span className="font-jost font-semibold text-[14px] sm:text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-white">
-                  Sign In
-                </span>
-              </div>
-            )}
-
-            {/* <button className="flex items-center justify-center w-[163.37px] h-[54px] bg-white hover:bg-[#a91a2e] rounded-[7.04px] px-4">
-              <img
-                src="/icons/faciltiy_search_svg.png"
-                alt="Add icon"
-                className="w-[18.78px] h-[18.78px] fill-red-500  mr-2 invert"
-              />
-              <span className="font-jost font-semibold text-[16px] leading-[15.26px] tracking-[0.23px] capitalize text-[#c71f37]">
-                Add Listing
-              </span>
-            </button> */}
-          </div>
-        </div>
-
-        <AuthModal
-          open={openAuth}
-          onOpenChange={(open) => {
-            setOpenAuth(open);
-            if (!open) {
-              setIsAuthenticated(!!localStorage.getItem("token"));
-            }
-          }}
-        />
-      </header>
-
-
+    
+      <HeaderFacility />
+      {isLoading || showSkeletonTimer ? (
+          <FacilityReviewSkeleton />
+        ) : (
+        <>
       <section className="w-full min-h-[60px] bg-[#F5F5F5] flex items-center justify-start  px-4 sm:px-6">
         <div className="flex items-center gap-x-1 sm:gap-x-2 text-[#4B5563] mx-2 sm:mx-13 font-inter font-normal text-[14px] sm:text-[16.28px] leading-[20px] sm:leading-[23.26px] md:mx-37">
-          <span className="align-middle">Home</span>
+          {/* <span className="align-middle">Home</span> */}
+          <Link
+            href="/"
+            className="align-middle"
+          >
+            Home
+          </Link>
           <img
             src="/icons/search_fac_right_icon.png"
             alt="Arrow"
             className="w-[6px] h-[10px] sm:w-[8.72px] sm:h-[13.95px] align-middle"
           />
-          <span className="align-middle">Search Results</span>
+          <Link
+            href="/facility-search"
+            className="align-middle"
+          >
+            Search Results
+          </Link>
+          {/* <span className="align-middle">Search Results</span> */}
           <img
             src="/icons/search_fac_right_icon.png"
             alt="Arrow"
@@ -1229,6 +1204,49 @@ const facilityCoords = useMemo(
           </span>
         </div>
       </section>
+
+      {/* --------------------- Top Recommendations --------------------- */}
+      {/* <section className="w-full p-4 sm:p-6 bg-white" id="recommendations">
+        <h2 className="text-2xl font-bold mb-4">Top Recommendations</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {recommendations.slice(0, 3).map((facility) => (
+            <motion.div
+              key={facility.id}
+              layout
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="cursor-pointer border rounded-lg shadow hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+              onClick={() => handleCardClick(facility)}
+            >
+              <div className="relative h-40 w-full bg-gray-200">
+                {facility.photo ? (
+                  <img
+                    src={facility.photo}
+                    alt={facility.provider_name}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    No Image
+                  </div>
+                )}
+              </div>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold truncate">{facility.provider_name}</h3>
+                <p className="text-gray-600 text-sm truncate">{facility.city_town}, {facility.state}</p>
+                {facility.rating && (
+                  <div className="flex items-center mt-2">
+                    <span className="text-yellow-500 mr-1">★</span>
+                    <span className="text-gray-800">{facility.rating}</span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section> */}
+
 
       <section className="w-full min-h-[148px] mx-auto bg-white flex flex-col justify-center px-4 sm:px-6 py-4 ">
         <div className="flex flex-col md:flex-col md:items-start w-full mb-4 gap-4">
@@ -1685,17 +1703,17 @@ const facilityCoords = useMemo(
 
                           {/* Page numbers (1–6, 7–12, etc.) */}
                          {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
-    <button
-      key={idx}
-      onClick={() => typeof page === "number" && goToPage(page)}
-      className={`px-3 py-2 rounded-md text-sm sm:text-base ${
-        currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
-      }`}
-      disabled={page === "..."} // disable ellipsis
-    >
-      {page}
-    </button>
-  ))}
+                            <button
+                              key={idx}
+                              onClick={() => typeof page === "number" && goToPage(page)}
+                              className={`px-3 py-2 rounded-md text-sm sm:text-base ${
+                                currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
+                              }`}
+                              disabled={page === "..."} // disable ellipsis
+                            >
+                              {page}
+                            </button>
+                          ))}
                           {/* Next */}
                           <button
                             disabled={currentPage === totalFacilityPages}
@@ -2100,6 +2118,8 @@ const facilityCoords = useMemo(
       </section>
       <SearchNursing />
       <Footer />
+        </>
+      )}
     </>
   )
 }

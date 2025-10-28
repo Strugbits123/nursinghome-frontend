@@ -18,6 +18,31 @@ interface Coords {
   lng: number;
 }
 
+// Helper to extract state/city from a query string
+const parseQueryToStateCity = (query: string | undefined) => {
+  if (!query) return { state: "", city: "" };
+  const parts = query.split(",").map((p) => p.trim());
+  if (parts.length === 2) return { city: parts[0], state: parts[1] };
+  if (parts.length === 1) return { city: "", state: parts[0] };
+  return { city: "", state: "" };
+};
+
+// Fetch top recommendations from FastAPI
+const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
+  if (!state || !city) return [];
+  const token = localStorage.getItem("token") || "";
+  const url = `http://localhost:8000/top-facilities?state=${state}&city=${city}&top_n=${top_n}`;
+  try {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data || [];
+  } catch {
+    return [];
+  }
+
+
+};
 export function HeroSection() {
   const popularSearches = ["New York", " New Jersey", "Connecticut", "Pennsylvania"];
   const router = useRouter();
@@ -38,7 +63,9 @@ export function HeroSection() {
     setLocationName,
     setIsLoading: setContextIsLoading,
     setError: setContextError,
-    setTotal
+    setTotal,
+    recommendations,
+    setRecommendations
   } = useFacilities();
 
   // const API_URL = "http://13.61.57.246:5000/api/facilities/with-reviews";
@@ -164,6 +191,15 @@ const fetchFacilities = async (
     return;
     }
 
+    // ✅ Validate empty input
+    if (
+      (!currentSearchQuery || currentSearchQuery.trim() === "") &&
+      (!currentCoords?.lat || !currentCoords?.lng)
+    ) {
+      toast.error("Please enter a city, state, or ZIP code");
+      return;
+    }
+
     setIsLoading(true);
     setContextIsLoading && setContextIsLoading(true);
     setError(null);
@@ -243,9 +279,16 @@ const fetchFacilities = async (
       localStorage.setItem("facilities_total_count", String(data.total));
     }
 
+     // ✅ Fetch Top Recommendations based on state/city
+    const { state, city } = parseQueryToStateCity(currentSearchQuery); // Helper to extract state/city
+    const topFacilities = await fetchTopRecommendations(state, city, 5);
+    setRecommendations(topFacilities); // Save to recommendations state
+
     console.log(
-      `✅ Loaded page 1 facilities (${facilitiesList.length}) for "${currentSearchQuery}"`
+      `✅ Loaded page 1 facilities (${facilitiesList.length}) for "${currentSearchQuery}"`,
+      `Top Recommendations: ${topFacilities.length}`
     );
+
     toast.success("Facilities loaded successfully!");
 
     router.push("/facility-search");
@@ -264,7 +307,7 @@ const fetchFacilities = async (
     localStorage.removeItem(FACILITIES_STORAGE_KEY);
     localStorage.removeItem(COORDS_STORAGE_KEY);
     localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
-
+    setRecommendations([]);
 
     } finally {
     setIsLoading(false);
@@ -365,21 +408,14 @@ const fetchFacilities = async (
   };
 
 
-  // ------------------------------------
-  // EFFECT HOOK: Triggers fetch after successful geolocation
-  // ------------------------------------
   useEffect(() => {
-    // Trigger fetch only if coordinates are present AND a location name was successfully determined.
     if (coords?.lat && coords.lng && locationName && active) {
-      // We pass locationName as the search query since it contains the city/state info
       fetchFacilities(locationName, coords);
-      setActive(false); // Reset active state after fetching
+      setActive(false);
     }
   }, [coords, locationName]);
-  // auto-fetch if coords changes
   useEffect(() => {
     if ((coords && coords.lat) || searchQuery) {
-      // This effect is intentionally empty - it's just for tracking changes
     }
   }, [coords, searchQuery]);
 
@@ -481,8 +517,8 @@ const fetchFacilities = async (
             priority
           />
           <span
-            className={`font-jost font-medium text-[15px] sm:text-[16px] leading-[100%] transition-colors duration-200 ${
-              active ? "text-white" : "text-[#212529B2]"
+            className={`font-jost font-medium text-[15px] cursor-pointer sm:text-[16px] leading-[100%] transition-colors duration-200 ${
+              active ? "text-white" : "text-[#212529B2]" 
             }`}
           >
             Use My Location
@@ -494,7 +530,7 @@ const fetchFacilities = async (
           type="text"
           value={locationName}
           onChange={(e) => setLocationName(e.target.value)}
-          placeholder="Enter Location ZIP code, city, or state..."
+          placeholder="Search City, State, or ZIP code from United States"
           className="
             w-full sm:flex-1 md:w-[65%] lg:w-[703px]
             h-[56px] border-x border-[#ADADAD]
@@ -516,6 +552,7 @@ const fetchFacilities = async (
             text-white flex items-center justify-center gap-2
             font-jost font-medium transition-all duration-200
             hover:bg-[#A01A2E]
+            cursor-pointer
             [@media(min-width:640px)_and_(max-width:880px)]:text-[15px]
           "
         >
