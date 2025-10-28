@@ -453,7 +453,7 @@ const handleViewDetails = async (facility: any) => {
 
 };
 
- const apiKey = "http://localhost:5000/api/facilities/with-reviews";
+ const apiKey = "https://app.carenav.io/api/facilities/with-reviews";
 const loadPage = useCallback(
  
   async (page: number) => {
