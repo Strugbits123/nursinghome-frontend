@@ -68,8 +68,7 @@ export function HeroSection() {
     setRecommendations
   } = useFacilities();
 
-  // const API_URL = "http://13.61.57.246:5000/api/facilities/with-reviews";
-  const API_URL = "https://app.carenav.io/api/facilities/with-reviews";
+  const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews`;
 
 
   const fetchFacilities = async (
@@ -260,7 +259,7 @@ export function HeroSection() {
         },
         (err: GeolocationPositionError) => {
           console.error("Geolocation error:", err);
-          toast.error(`Geolocation error: ${err.message}`);
+          toast.error(`Geolocation Error`);
           setActive(false);
         }
       );

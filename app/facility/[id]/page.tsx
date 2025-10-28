@@ -14,7 +14,7 @@ export default function FacilityPage() {
     if (!facilityId) return;
 
     // 1. Get facility from your DB API
-    fetch(`https://app.carenav.io/api/facilities/${facilityId}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/facilities/${facilityId}`)
       .then((res) => res.json())
       .then((data) => {
         setFacility(data);
@@ -22,7 +22,7 @@ export default function FacilityPage() {
         // 2. Fetch Google details by text
         if (data.name && data.city) {
           const q = `${data.name} ${data.city} ${data.state} ${data.zip}`;
-          fetch(`https://app.carenav.io/api/google/details-by-text?q=${encodeURIComponent(q)}`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/google/details-by-text?q=${encodeURIComponent(q)}`)
             .then((res) => res.json())
             .then((g) => setGoogle(g));
         }

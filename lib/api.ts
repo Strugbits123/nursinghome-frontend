@@ -10,7 +10,7 @@ export interface FacilityResponse {
 
 export async function getFacilities(zip: string, city: string, state: string): Promise<FacilityResponse> {
   const params = new URLSearchParams({ zip, city, state });
-  const res = await fetch(`https://app.carenav.io/api/facilities/with-reviews?${params.toString()}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews?${params.toString()}`, {
     next: { revalidate: 0 }, // no caching
   });
 

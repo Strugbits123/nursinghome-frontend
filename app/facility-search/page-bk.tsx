@@ -163,7 +163,7 @@ export default function FacilitySearchPage() {
         }
       }
 
-      const apiUrl = `https://app.carenav.io/api/facilities/filter-with-reviews?${params.toString()}`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
       const res = await fetch(apiUrl);
       const data = await res.json();
 

@@ -3,7 +3,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Star, Brain, Building } from "lucide-react";
 import { useRef } from "react";
-import { useCountUp } from "../hooks/useCountUp";
+// Assuming your fixed useCountUp hook is correctly imported
+import { useCountUp } from "../hooks/useCountUp"; 
 import Image from "next/image";
 
 type Feature = {
@@ -17,6 +18,7 @@ type Feature = {
 export function TrustedSection() {
 
   const features: Feature[] = [
+    // ... (Your feature data remains the same)
     {
       icon: Shield,
       title: "Verified CMS Ratings",
@@ -47,46 +49,63 @@ export function TrustedSection() {
     },
   ];
 
-  const sectionRef = useRef<HTMLDivElement>(null);
+  // We keep sectionRef but will no longer use it as the trigger
+  const sectionRef = useRef<HTMLDivElement>(null); 
 
   return (
     <section className="py-12 sm:py-16 px-4 bg-white" ref={sectionRef}>
-     <div className="relative max-w-6xl mx-auto">
-      {/* Section header */}
-      <div className="text-center mb-8 sm:mb-12 animate-child relative">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-[#212121] relative inline-block">
-          Trusted by Families{" "}
-          <span className="text-[#C71F37] relative">
-            Nationwide
-            <Image
-              src="/herbs-BCkTGihn.svg fill.png"
-              alt="flower icon"
-              className="absolute -top-1 -right-4 sm:-top-1 sm:-right-6 md:-top-1 md:-right-6.5 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
-              width={40}
-              height={40}
-              style={{
-                transform: "rotate(-7deg)",
-              }}
-            />
-          </span>
-        </h2>
+      <div className="relative max-w-6xl mx-auto">
+        {/* Section header */}
+        <div className="text-center mb-8 sm:mb-12 animate-child relative">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-[#212121] relative inline-block">
+            Trusted by Families{" "}
+            <span className="text-[#C71F37] relative">
+              Nationwide
+              <Image
+                src="/herbs-BCkTGihn.svg fill.png"
+                alt="flower icon"
+                className="absolute -top-1 -right-4 sm:-top-1 sm:-right-6 md:-top-1 md:-right-6.5 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-80"
+                width={40}
+                height={40}
+                style={{
+                  transform: "rotate(-7deg)",
+                }}
+              />
+            </span>
+          </h2>
 
-        <p className="text-sm sm:text-lg max-w-2xl mx-auto text-[#212121]">
-          Our comprehensive database includes verified information from CMS, real
-          family reviews, and AI-powered insights.
-        </p>
-      </div>
+          <p className="text-sm sm:text-lg max-w-2xl mx-auto text-[#212121]">
+            Our comprehensive database includes verified information from CMS, real
+            family reviews, and AI-powered insights.
+          </p>
+        </div>
 
         {/* Features grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
+            
+            // 🐛 FIX: Create a local ref for the Card to use as a precise trigger
+            // The RefObject must be explicitly typed as HTMLElement
+            const cardRef = useRef<HTMLDivElement>(null); 
+            
             // Add staggered delay for count-up animation
             const countUpDelay = 0.6 + (index * 0.2);
-            const numberRef = useCountUp(feature.value, sectionRef as React.RefObject<HTMLElement>, countUpDelay);
+            
+            // 🐛 FIX: Pass the precise cardRef instead of the large sectionRef
+            const numberRef = useCountUp(
+              feature.value, 
+              cardRef as React.RefObject<HTMLElement>, // Use the cardRef as the trigger
+              countUpDelay
+            );
 
             return (
-              <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow hover-lift animate-child">
+              // 🐛 FIX: Attach the local ref to the element you want to trigger the animation
+              <Card 
+                key={index} 
+                ref={cardRef} // ATTACH REF HERE
+                className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow hover-lift animate-child"
+              >
                 <CardContent className="p-4 sm:p-6 text-center">
                   <div className="flex justify-center mb-3 sm:mb-4">
                     <div

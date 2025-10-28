@@ -18,7 +18,7 @@ import Link from "next/link";
 import HeaderFacility from '../components/HeaderFacility';
 
 
-const API_URL = "https://app.carenav.io/api/facilities/with-reviews";
+const API_URL = "${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews";
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;
 
 
@@ -453,7 +453,7 @@ const handleViewDetails = async (facility: any) => {
 
 };
 
- const apiKey = "https://app.carenav.io/api/facilities/with-reviews";
+ const apiKey = "${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews";
 const loadPage = useCallback(
  
   async (page: number) => {
@@ -676,7 +676,7 @@ const getVisiblePageNumbers = (
 //       }
 //     }
 
-//     const apiUrl = `https://app.carenav.io/api/facilities/filter-with-reviews?${params.toString()}`;
+//     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
 //     const res = await fetch(apiUrl);
 //     const data = await res.json();
 
@@ -768,7 +768,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
     }
 
     // 🌐 5️⃣ Build final API URL
-    const apiUrl = `https://app.carenav.io/api/facilities/filter-with-reviews?${params.toString()}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
     console.log("🌐 Fetching filtered facilities:", apiUrl);
 
     const res = await fetch(apiUrl);
@@ -853,7 +853,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
 //     }
 
 //     // 🌐 4️⃣ Fetch filtered data
-//     const apiUrl = `https://app.carenav.io/api/facilities/filter-with-reviews?${params.toString()}`;
+//     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
 //     console.log("🌐 Fetching filtered facilities:", apiUrl);
 
 //     const res = await fetch(apiUrl);

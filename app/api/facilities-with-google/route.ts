@@ -52,7 +52,7 @@ export async function GET(req: Request) {
     const state = searchParams.get("state") || "";
 
     const backendRes = await fetch(
-      `https://app.carenav.io/api/facilities/with-reviews?zip=${zip}&city=${city}&state=${state}`
+      `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews?zip=${zip}&city=${city}&state=${state}`
     );
     const facilities = await backendRes.json();
 
