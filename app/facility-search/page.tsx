@@ -22,92 +22,6 @@ const API_URL = "${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews"
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;
 
 
-// export const mapRawFacilityToCard = (raw: any, coords: { lat: number; lng: number } | null) => {
-//   return {
-//     id: raw._id || raw.id,
-//     name: raw.googleName || raw.name,
-//     address: raw.provider_address || raw.address,
-//     city: raw.city_town || raw.city,
-//     state: raw.state,
-//     zip: raw.zip_code || raw.zip,
-//     phone: raw.telephone_number || raw.phone,
-//     beds: raw.number_of_certified_beds || raw.beds,
-//     lat: raw.lat || raw.latitude || raw.geoLocation?.coordinates?.[1] || 0,
-//     lng: raw.lng || raw.longitude || raw.geoLocation?.coordinates?.[0] || 0,
-//     isNonProfit: raw.ownership_type?.toLowerCase().includes("non") || false,
-//     provider_name: raw.provider_name,
-//     pros: raw.aiSummary?.pros?.join(", ") || "No specific pros listed",
-//     cons: raw.aiSummary?.cons?.join(", ") || "No specific cons listed",
-//     imageUrl: raw.photo || "/default_facility_image.png",
-//     status: raw.status || "Unknown",
-//     hours: raw.operating_hours || "",
-//     rating: raw.rating || raw.overall_rating || 0,
-//     distance: coords && raw.lat && raw.lng
-//       ? getDistanceFromCoords(coords.lat, coords.lng, raw.lat, raw.lng)
-//       : null,
-//   };
-// };
-
-// page.ts
-
-
-
-
-
-// export const getDistanceFromCoords = (
-//   lat1: number,
-//   lng1: number,
-//   lat2: number,
-//   lng2: number
-// ) => {
-//   const toRad = (x: number) => (x * Math.PI) / 180;
-//   const R = 6371; // km
-//   const dLat = toRad(lat2 - lat1);
-//   const dLng = toRad(lng2 - lng1);
-//   const a =
-//     Math.sin(dLat / 2) ** 2 +
-//     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-//   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//   return R * c; // distance in km
-// };
-
-
-
-// function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
-//   const delta = 1; // number of pages to show around current page
-//   const range: (number | string)[] = [];
-//   let left = currentPage - delta;
-//   let right = currentPage + delta;
-
-//   if (left < 1) {
-//     left = 1;
-//     right = Math.min(1 + 2 * delta, totalPages);
-//   }
-
-//   if (right > totalPages) {
-//     right = totalPages;
-//     left = Math.max(1, totalPages - 2 * delta);
-//   }
-
-//   // Add first page
-//   if (left > 1) {
-//     range.push(1);
-//     if (left > 2) range.push("...");
-//   }
-
-//   // Add middle pages
-//   for (let i = left; i <= right; i++) {
-//     range.push(i);
-//   }
-
-//   // Add last page
-//   if (right < totalPages) {
-//     if (right < totalPages - 1) range.push("...");
-//     range.push(totalPages);
-//   }
-
-//   return range;
-// }
 
 function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
   const pages: (number | string)[] = [];
@@ -139,23 +53,6 @@ function getPageNumbers(currentPage: number, totalPages: number): (number | stri
 
   return pages;
 }
-
-
-
-
-// function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
-//   const pages: (number | string)[] = [];
-//   if (totalPages <= 6) {
-//     for (let i = 1; i <= totalPages; i++) pages.push(i);
-//   } else {
-//     if (currentPage <= 3) pages.push(1, 2, 3, "...", totalPages);
-//     else if (currentPage >= totalPages - 2)
-//       pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
-//     else pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
-//   }
-//   return pages;
-// }
-
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const extractFacilityCoords = (facilities: Facility[]) => {
@@ -335,7 +232,7 @@ useEffect(() => {
   setFilteredFacilities(initialFacilities);
   setTotalFacilities(actualTotal);
   if (currentPage === 1) setPaginatedFacilities(initialFacilities);
-}, [initialFacilities, totalCountFromProvider, currentPage, hasRestoredFromCache]);
+}, [initialFacilities, totalCountFromProvider, hasRestoredFromCache]);
 // 🎯 FIX: Add this effect to sync totals from provider and update cache
 useEffect(() => {
   if (totalCountFromProvider && totalCountFromProvider > 0) {
@@ -415,7 +312,7 @@ const debugCache = () => {
 };
 
 // Call this when you need to debug
-debugCache();
+// debugCache();
 
 
 
@@ -456,86 +353,6 @@ useEffect(() => {
     loadPage(currentPage);
   }
 }, [currentPage, filteredFacilities]);
-
-// const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>(() => {
-//   if (typeof window !== "undefined") {
-//     const cached = localStorage.getItem("facilities_page_1");
-//     if (cached) {
-//       try {
-//         const parsed = JSON.parse(cached);
-//         if (Array.isArray(parsed) && parsed.length > 0) {
-//           console.log("⚡ Instant restore from cache (before render)");
-//           return parsed;
-//         }
-//       } catch (e) {
-//         console.error("Failed to parse cache:", e);
-//       }
-//     }
-//   }
-//   return initialFacilities || [];
-// });
-
-
-// // ✅ Get facilities by page — cached (1–6) or from localStorage (7+)
-// const getPaginatedFacilities = (page: number): Facility[] => {
-//   const start = (page - 1) * ITEMS_PER_PAGE;
-
-//   if (page <= 6) {
-//     return filteredFacilities.slice(start, start + ITEMS_PER_PAGE);
-//   }
-
-//   if (typeof window !== "undefined") {
-//     const cached = localStorage.getItem(`facilities_page_${page}`);
-//     return cached ? JSON.parse(cached) : [];
-//   }
-
-//   return [];
-// };
-// // 🧠 Restore all cached pages on mount
-// useEffect(() => {
-//   if (typeof window === "undefined") return;
-
-//   const cachedMeta = localStorage.getItem("facilities_meta");
-//   const cachedFacilities = localStorage.getItem("facilities_page_1");
-
-//   if (cachedFacilities) {
-//     try {
-//       const parsed = JSON.parse(cachedFacilities);
-//       setAllFacilities(parsed);
-//       setFilteredFacilities(parsed);
-//       setPaginatedFacilities(parsed);
-//       console.log("✅ Restored from cache");
-//     } catch (e) {
-//       console.error("Failed to restore cache:", e);
-//     }
-//   } else if (initialFacilities && initialFacilities.length > 0) {
-//     // First-time load — cache immediately
-//     console.log("💾 First-time cache save");
-//     localStorage.setItem("facilities_page_1", JSON.stringify(initialFacilities));
-//     localStorage.setItem(
-//       "facilities_meta",
-//       JSON.stringify({
-//         totalFacilities: totalCountFromProvider || initialFacilities.length,
-//         totalPages: Math.ceil(
-//           (totalCountFromProvider || initialFacilities.length) / ITEMS_PER_PAGE
-//         ),
-//       })
-//     );
-//   }
-// }, [initialFacilities, totalCountFromProvider]);
-
-
-// // 🔁 When currentPage changes, show cached or fetch
-// useEffect(() => {
-//   const pageData = getPaginatedFacilities(currentPage);
-//   if (pageData.length > 0) {
-//     setPaginatedFacilities(pageData);
-//   } else {
-//     loadPage(currentPage);
-//   }
-// }, [currentPage, filteredFacilities]);
-
-
 
 
 const ITEMS_PER_PAGE = 8;
@@ -690,14 +507,76 @@ const loadPage = useCallback(
 // =====================
 // 🧭 PAGINATION HANDLERS
 // =====================
+// const goToPage = (page: number) => {
+//   if (page < 1 || page > totalFacilityPages) return;
+
+//   console.log("📄 Switching to page:", page);
+//   setCurrentPage(page);
+
+//   // 🟢 Only call loadPage for page > 1 (page 1 is already in provider)
+//   if (page > 1) loadPage(page);
+// };
+
+// 🎯 FIX: Update pagination for filtered results
+// const goToPage = (page: number) => {
+//   if (page < 1 || page > totalFacilityPages) return;
+
+//   console.log("📄 Switching to page:", page);
+//   setCurrentPage(page);
+
+//   if (usingFilters) {
+//     // 🎯 For filtered results, fetch the specific page from API
+//     fetchFilteredFacilitiesWithPagination(filters, page);
+//   } else {
+//     // For non-filtered results, use existing logic
+//     if (page > 1) loadPage(page);
+//   }
+// };
+
+// const goToNextPage = () => {
+//   if (currentPage < totalFacilityPages) {
+//     const nextPage = currentPage + 1;
+//     goToPage(nextPage);
+//   }
+// };
+
+// const goToPrevPage = () => {
+//   if (currentPage > 1) {
+//     const prevPage = currentPage - 1;
+//     goToPage(prevPage);
+//   }
+// };
+
+// 🎯 UPDATE: Display logic in JSX
+const displayTotal = totalFacilities;
+const startFacility = displayTotal > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, displayTotal);
+const totalFacilityPages = Math.ceil(displayTotal / ITEMS_PER_PAGE);
+
+
+// 🎯 FIXED: Update pagination for filtered results
 const goToPage = (page: number) => {
   if (page < 1 || page > totalFacilityPages) return;
 
   console.log("📄 Switching to page:", page);
   setCurrentPage(page);
+  console.log("📄 Current filters:", filters, page);
+  if (usingFilters) {
+      console.log("📄 in using filters", filters, page);
 
-  // 🟢 Only call loadPage for page > 1 (page 1 is already in provider)
-  if (page > 1) loadPage(page);
+    // 🎯 For filtered results, fetch the specific page from API
+    fetchFilteredFacilitiesWithPagination(filters, page);
+  } else {
+          console.log("📄 else filters", filters, page);
+
+    // For non-filtered results, use existing logic
+    if (page > 1) {
+      loadPage(page);
+    } else {
+      // For page 1 without filters, use initial facilities
+      setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
+    }
+  }
 };
 
 const goToNextPage = () => {
@@ -712,7 +591,10 @@ const goToPrevPage = () => {
     const prevPage = currentPage - 1;
     goToPage(prevPage);
   }
+
 };
+
+
 
 // =====================
 // 🧩 AUTO LOAD PAGE 1 (INITIAL)
@@ -726,15 +608,6 @@ useEffect(() => {
     loadPage(currentPage);
   }
 }, [currentPage, initialFacilities, loadPage]);
-
-// =====================
-// 🧮 RANGE + PAGE GROUPS
-// =====================
-// const startFacility =
-//   totalFacilities > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
-// const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, totalFacilities);
-
-// const totalFacilityPages = Math.ceil(totalFacilities / ITEMS_PER_PAGE);
 
 const getVisiblePageNumbers = (
   currentPage: number,
@@ -751,96 +624,81 @@ const getVisiblePageNumbers = (
 };
 
 
+// 🎯 FIXED: Separate function for filtered pagination - ONLY updates paginated facilities, NOT total
+const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
+  setIsPageLoading(true);
 
-// const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
-//   const appliedFilters = newFilters || filters;
-//   setIsFiltering(true);
+  try {
+    const params = new URLSearchParams();
 
-//   try {
-//     const params = new URLSearchParams();
+    // Add pagination parameters
+    params.append("page", page.toString());
+    params.append("limit", ITEMS_PER_PAGE.toString());
 
-//     // 🧩 1️⃣ Build query params from filters (clean strings)
-//     Object.entries(appliedFilters).forEach(([key, value]) => {
-//       if (typeof value === "string" && value.trim()) {
-//         // Trim spaces and replace internal spaces with underscores
-//         const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
-//         params.append(key, cleanValue);
-//       }
-//     });
+    Object.entries(appliedFilters).forEach(([key, value]) => {
+      if (typeof value === "string" && value.trim()) {
+        const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+        params.append(key, cleanValue);
+      }
+    });
 
-//     // 🧭 2️⃣ Add user coordinates if available
-//     if (coords?.lat && coords?.lng) {
-//       params.append("userLat", coords.lat.toString());
-//       params.append("userLng", coords.lng.toString());
-//     }
+    if (coords?.lat && coords?.lng) {
+      params.append("userLat", coords.lat.toString());
+      params.append("userLng", coords.lng.toString());
+    }
 
-//     const hasFilters = [...params].length > 0;
+    if (!params.has("locationName")) {
+      let location = locationName?.trim() || "";
+      if (!location) {
+        const facilityCoords = extractFacilityCoords(initialFacilities);
+        location = facilityCoords.length > 0 ? facilityCoords[0].name.trim() : "";
+      }
+      if (location) {
+        params.set("locationName", location.replace(/^\+/, "").replace(/\s+/g, "_"));
+      }
+    }
 
-//     // 🔄 3️⃣ No filters → reset to initial data
-//     if (!hasFilters) {
-//       setFilteredFacilities(initialFacilities);
-//       setUsingFilters(false);
-//       setCurrentPage(1);
-//       setIsFiltering(false);
-//       return;
-//     }
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
+    console.log("🌐 Fetching filtered facilities page:", page);
 
-//     // 🏙️ 4️⃣ Ensure locationName is present
-//     if (!params.has("locationName")) {
-//       let location = locationName?.trim() || "";
-//       if (!location) {
-//         const facilityCoords = extractFacilityCoords(initialFacilities);
-//         location = facilityCoords.length > 0 ? facilityCoords[0].name.trim() : "";
-//       }
-//       if (location) {
-//         // ✅ normalize: remove leading +, replace spaces with _
-//         params.set("locationName", location.replace(/^\+/, "").replace(/\s+/g, "_"));
-//       }
-//     }
+    const res = await fetch(apiUrl);
 
-//     // 🌐 5️⃣ Build final API URL
-//     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
-//     console.log("🌐 Fetching filtered facilities:", apiUrl);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
 
-//     const res = await fetch(apiUrl);
+    const data = await res.json();
 
-//     if (!res.ok) {
-//       const text = await res.text();
-//       throw new Error(`HTTP ${res.status}: ${text}`);
-//     }
+    // 🎯 FIX: Handle new API response structure
+    const facilitiesData = data.data?.facilities || data.facilities || [];
+    
+    if (!facilitiesData || facilitiesData.length === 0) {
+      setPaginatedFacilities([]);
+      setIsPageLoading(false);
+      return;
+    }
 
-//     const data = await res.json();
+    const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
+      mapRawFacilityToCard(f, coords)
+    );
 
-//     if (!data.facilities || data.facilities.length === 0) {
-//       setFilteredFacilities([]);
-//       setUsingFilters(true);
-//       setIsFiltering(false);
-//       toast.error("No facilities found");
-//       return;
-//     }
-
-//     // 🧭 6️⃣ Map raw → typed Facility
-//     const mappedFacilities: Facility[] = data.facilities.map((f: RawFacility) =>
-//       mapRawFacilityToCard(f, coords)
-//     );
-
-//     // 🧮 7️⃣ Update state
-//     setFilteredFacilities(mappedFacilities);
-//     setUsingFilters(true);
-//     setCurrentPage(1);
-
-//     toast.success("Filters applied!");
-//   } catch (err: any) {
-//     console.error("❌ Filter fetch failed:", err);
-//     setFilteredFacilities([]);
-//     toast.error(err.message || "Error applying filters");
-//   } finally {
-//     setIsFiltering(false);
-//   }
-// };
+    // 🎯 FIX: ONLY update paginated facilities, NOT total count
+    setPaginatedFacilities(mappedFacilities);
+    
+    console.log(`✅ Loaded page ${page} with ${mappedFacilities.length} filtered facilities`);
+    
+  } catch (err: any) {
+    console.error("❌ Filter pagination failed:", err);
+    setPaginatedFacilities([]);
+  } finally {
+    setIsPageLoading(false);
+  }
+};
 
 
-// 🎯 FIX: Also update the filter function to handle totals correctly
+
+// 🎯 FIXED: Main filter function - updates BOTH total count AND paginated facilities
 const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   const appliedFilters = newFilters || filters;
   setIsFiltering(true);
@@ -855,20 +713,31 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
       }
     });
 
+    // Add pagination parameters
+    params.append("page", "1");
+    params.append("limit", ITEMS_PER_PAGE.toString());
+
     if (coords?.lat && coords?.lng) {
       params.append("userLat", coords.lat.toString());
       params.append("userLng", coords.lng.toString());
     }
 
-    const hasFilters = [...params].length > 0;
+    const hasFilters = [...params].length > 2; // Includes page and limit
 
-    // 🔄 Reset filters - show all facilities with current actual total
+    // 🔄 Reset filters - show all facilities with cached total
     if (!hasFilters) {
       setFilteredFacilities(initialFacilities);
+      setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
       setUsingFilters(false);
       setCurrentPage(1);
-      setTotalFacilities(totalCountFromProvider); // 🎯 FIX: Use current provider total
+      
+      // 🎯 FIX: Get total from localStorage cache when clearing filters
+      const cachedTotalCount = localStorage.getItem("facilities_total_count");
+      const cachedTotal = cachedTotalCount ? parseInt(cachedTotalCount) : totalCountFromProvider;
+      setTotalFacilities(cachedTotal);
+      
       setIsFiltering(false);
+      toast.success("Filters cleared!");
       return;
     }
 
@@ -895,28 +764,52 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
 
     const data = await res.json();
 
-    if (!data.facilities || data.facilities.length === 0) {
+    // 🎯 FIX: Handle new API response structure - facilities are under data.facilities
+    const facilitiesData = data.data?.facilities || data.facilities || [];
+    const paginationData = data.data?.pagination || data.pagination;
+
+    if (!facilitiesData || facilitiesData.length === 0) {
       setFilteredFacilities([]);
+      setPaginatedFacilities([]);
       setUsingFilters(true);
       setTotalFacilities(0);
+      setCurrentPage(1);
       setIsFiltering(false);
       toast.error("No facilities found");
       return;
     }
 
-    const mappedFacilities: Facility[] = data.facilities.map((f: RawFacility) =>
+    const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
       mapRawFacilityToCard(f, coords)
     );
 
+    // 🎯 FIX: Update BOTH filtered facilities AND paginated facilities
     setFilteredFacilities(mappedFacilities);
+    setPaginatedFacilities(mappedFacilities);
     setUsingFilters(true);
     setCurrentPage(1);
-    setTotalFacilities(mappedFacilities.length);
+    
+    // 🎯 FIX: Use totalCount from pagination metadata in new structure
+    if (paginationData && paginationData.totalCount) {
+      setTotalFacilities(paginationData.totalCount);
+    } else {
+      setTotalFacilities(facilitiesData.length);
+    }
 
-    toast.success("Filters applied!");
+    const total = paginationData?.totalCount || facilitiesData.length;
+    
+    // 🎯 Handle cached response
+    if (data.cached) {
+      console.log(`⚡ Filtered results served from ${data.from} cache`);
+      toast.success(`Found ${total} facilities (cached)`);
+    } else {
+      toast.success(`Found ${total} facilities`);
+    }
+    
   } catch (err: any) {
     console.error("❌ Filter fetch failed:", err);
     setFilteredFacilities([]);
+    setPaginatedFacilities([]);
     setTotalFacilities(0);
     toast.error(err.message || "Error applying filters");
   } finally {
@@ -924,11 +817,170 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   }
 };
 
+// // 🎯 FIXED: Separate function for filtered pagination
+// const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
+//   setIsPageLoading(true);
 
-const displayTotal = totalFacilities;
-const startFacility = displayTotal > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
-const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, displayTotal);
-const totalFacilityPages = Math.ceil(displayTotal / ITEMS_PER_PAGE);
+//   try {
+//     const params = new URLSearchParams();
+
+//     // Add pagination parameters
+//     params.append("page", page.toString());
+//     params.append("limit", ITEMS_PER_PAGE.toString());
+
+//     Object.entries(appliedFilters).forEach(([key, value]) => {
+//       if (typeof value === "string" && value.trim()) {
+//         const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+//         params.append(key, cleanValue);
+//       }
+//     });
+
+//     if (coords?.lat && coords?.lng) {
+//       params.append("userLat", coords.lat.toString());
+//       params.append("userLng", coords.lng.toString());
+//     }
+
+//     if (!params.has("locationName")) {
+//       let location = locationName?.trim() || "";
+//       if (!location) {
+//         const facilityCoords = extractFacilityCoords(initialFacilities);
+//         location = facilityCoords.length > 0 ? facilityCoords[0].name.trim() : "";
+//       }
+//       if (location) {
+//         params.set("locationName", location.replace(/^\+/, "").replace(/\s+/g, "_"));
+//       }
+//     }
+
+//     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
+//     console.log("🌐 Fetching filtered facilities page:", page);
+
+//     const res = await fetch(apiUrl);
+
+//     if (!res.ok) {
+//       const text = await res.text();
+//       throw new Error(`HTTP ${res.status}: ${text}`);
+//     }
+
+//     const data = await res.json();
+
+//     // 🎯 FIX: Handle new API response structure
+//     const facilitiesData = data.data?.facilities || data.facilities || [];
+
+//     if (!facilitiesData || facilitiesData.length === 0) {
+//       setPaginatedFacilities([]);
+//       setIsPageLoading(false);
+//       return;
+//     }
+
+//     const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
+//       mapRawFacilityToCard(f, coords)
+//     );
+
+//     // 🎯 FIX: Update paginated facilities for the current page
+//     setPaginatedFacilities(mappedFacilities);
+    
+//     console.log(`✅ Loaded page ${page} with ${mappedFacilities.length} filtered facilities`);
+    
+//   } catch (err: any) {
+//     console.error("❌ Filter pagination failed:", err);
+//     setPaginatedFacilities([]);
+//   } finally {
+//     setIsPageLoading(false);
+//   }
+// };
+
+
+
+
+// // 🎯 FIX: Also update the filter function to handle totals correctly
+// const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
+//   const appliedFilters = newFilters || filters;
+//   setIsFiltering(true);
+
+//   try {
+//     const params = new URLSearchParams();
+
+//     Object.entries(appliedFilters).forEach(([key, value]) => {
+//       if (typeof value === "string" && value.trim()) {
+//         const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+//         params.append(key, cleanValue);
+//       }
+//     });
+
+//     if (coords?.lat && coords?.lng) {
+//       params.append("userLat", coords.lat.toString());
+//       params.append("userLng", coords.lng.toString());
+//     }
+
+//     const hasFilters = [...params].length > 0;
+
+//     // 🔄 Reset filters - show all facilities with current actual total
+//     if (!hasFilters) {
+//       setFilteredFacilities(initialFacilities);
+//       setUsingFilters(false);
+//       setCurrentPage(1);
+//       setTotalFacilities(totalCountFromProvider); // 🎯 FIX: Use current provider total
+//       setIsFiltering(false);
+//       return;
+//     }
+
+//     if (!params.has("locationName")) {
+//       let location = locationName?.trim() || "";
+//       if (!location) {
+//         const facilityCoords = extractFacilityCoords(initialFacilities);
+//         location = facilityCoords.length > 0 ? facilityCoords[0].name.trim() : "";
+//       }
+//       if (location) {
+//         params.set("locationName", location.replace(/^\+/, "").replace(/\s+/g, "_"));
+//       }
+//     }
+
+//     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
+//     console.log("🌐 Fetching filtered facilities:", apiUrl);
+
+//     const res = await fetch(apiUrl);
+
+//     if (!res.ok) {
+//       const text = await res.text();
+//       throw new Error(`HTTP ${res.status}: ${text}`);
+//     }
+
+//     const data = await res.json();
+
+//     if (!data.facilities || data.facilities.length === 0) {
+//       setFilteredFacilities([]);
+//       setUsingFilters(true);
+//       setTotalFacilities(0);
+//       setIsFiltering(false);
+//       toast.error("No facilities found");
+//       return;
+//     }
+
+//     const mappedFacilities: Facility[] = data.facilities.map((f: RawFacility) =>
+//       mapRawFacilityToCard(f, coords)
+//     );
+
+//     setFilteredFacilities(mappedFacilities);
+//     setUsingFilters(true);
+//     setCurrentPage(1);
+//     setTotalFacilities(mappedFacilities.length);
+
+//     toast.success("Filters applied!");
+//   } catch (err: any) {
+//     console.error("❌ Filter fetch failed:", err);
+//     setFilteredFacilities([]);
+//     setTotalFacilities(0);
+//     toast.error(err.message || "Error applying filters");
+//   } finally {
+//     setIsFiltering(false);
+//   }
+// };
+
+
+// const displayTotal = totalFacilities;
+// const startFacility = displayTotal > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+// const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, displayTotal);
+// const totalFacilityPages = Math.ceil(displayTotal / ITEMS_PER_PAGE);
 
 
 
@@ -993,12 +1045,6 @@ const facilityCoords = useMemo(
     router.push('/');
   };
 
-  console.log('NEWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',locationName)
-  
-  console.log(`DEBUG 2: Facilities in Search Page: ${initialFacilities.length}`);
-  console.log(`DEBUG 3: Facility Coords for MapView: ${facilityCoords.length}`, facilityCoords);
-  console.log("DEBUG 4: Calculated Map Center:", mapCenter);
-
   {
     isPrefetching && (
       <div className="flex justify-center items-center w-full py-10">
@@ -1030,6 +1076,7 @@ const facilityCoords = useMemo(
 
   return (
     <>
+
 
     
       <HeaderFacility />
@@ -1362,250 +1409,204 @@ const facilityCoords = useMemo(
       </section>
 
       <section
-        className={`flex flex-col md:mx-46 lg:flex-row gap-6 mx-4 sm:mx-6 lg:mx-2 mt-10 px-4 sm:px-6 lg:px-8 min-h-screen ${viewMode === "mapOnly" ? "lg:h-[677px]" : "min-h-[2368px]"
-          }`}
-      >
-        <div className="hidden md:flex justify-center items-start w-[120px] my-18 lg:w-[120px]">
-          <AdUnit adSlot="right-skyscraper" layout="skyscraper" />
-        </div>
-        {isFiltering || showSkeletonTimer ? (
-          <FacilityReviewSkeleton />
-        ) : filteredFacilities.length === 0 ? (
-          <div className="flex justify-center items-center w-full h-[300px] text-gray-500 text-lg font-medium">
-            No Facilities Found
-          </div>
-        ) : (
-          <>
-            {viewMode === "both" && (
-              <>
-                {isLoading || isPageLoading  ? (
-                  <FacilityReviewSkeleton />
-                ) : (
-                  <div className="w-full lg:w-[720px] min-h-[400px] overflow-hidden space-y-4">
-                    {paginatedFacilities.map((facility: Facility) => (
-                      <div
-                        key={facility.id}
-                        onClick={() => handleCardClick(facility)}
-                        className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer ${selectedFacilityId?.toString() === facility.id
-                          ? "border-l-[4.78px] border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
-                          : ""
-                          }`}
-                      >
-                        <div className="flex flex-col sm:flex-row">
-                          {/* Image */}
-                          <div className="w-full sm:w-1/4 flex justify-center sm:justify-start mb-4 sm:mb-0">
+  className={`flex flex-col md:mx-46 lg:flex-row gap-6 mx-4 sm:mx-6 lg:mx-2 mt-10 px-4 sm:px-6 lg:px-8 min-h-screen ${
+    viewMode === "mapOnly" ? "lg:h-[677px]" : "min-h-[2368px]"
+  }`}
+>
+  <div className="hidden md:flex justify-center items-start w-[120px] my-18 lg:w-[120px]">
+    <AdUnit adSlot="right-skyscraper" layout="skyscraper" />
+  </div>
+  {isFiltering || showSkeletonTimer ? (
+    <FacilityReviewSkeleton />
+  ) : filteredFacilities.length === 0 ? (
+    <div className="flex justify-center items-center w-full h-[300px] text-gray-500 text-lg font-medium">
+      No Facilities Found
+    </div>
+  ) : (
+    <>
+      {viewMode === "both" && (
+        <>
+          {isLoading || isPageLoading  ? (
+            <FacilityReviewSkeleton />
+          ) : (
+            <div className="w-full lg:w-[720px] min-h-[400px] overflow-hidden space-y-4">
+              {paginatedFacilities.map((facility: Facility) => (
+                <div
+                  key={facility.id}
+                  onClick={() => handleCardClick(facility)}
+                  className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer ${
+                    selectedFacilityId?.toString() === facility.id
+                      ? "border-l-[4.78px] border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
+                      : ""
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row">
+                    {/* Image */}
+                    <div className="w-full sm:w-1/4 flex justify-center sm:justify-start mb-4 sm:mb-0">
+                      <img
+                        src={facility.imageUrl || "/Default_image.png"}
+                        alt={facility.name}
+                        className="w-[114px] h-[114px] object-cover rounded-[9.56px]"
+                      />
+                    </div>
+
+                    {/* Details */}
+                    <div className="flex-1 sm:ml-5">
+                      <h3 className="text-[#111827] font-bold text-[20px] sm:text-[23.89px] leading-[28px] sm:leading-[33.45px]">
+                        {facility.name}
+                      </h3>
+
+                      <div className="flex items-center gap-2 mt-2">
+                        <img
+                          src="/icons/location_icon_new.png"
+                          alt="Location Icon"
+                          className="w-[12px] h-[16px]"
+                        />
+                        <span className="text-[#4B5563] text-sm sm:text-base">
+                          {facility.distance != null
+                            ? `${facility.distance.toFixed(1)} miles`
+                            : ""}
+                          {facility.address ? ` • ${facility.address}` : ""}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="/icons/bed_icon.png"
+                            alt="Beds Icon"
+                            className="w-[18px] h-[12px]"
+                          />
+                          <span className="text-[#4B5563] text-sm sm:text-base">
+                            {facility.beds} beds
+                          </span>
+                        </div>
+
+                        <div className="flex flex-row items-center gap-2 sm:gap-3">
+                          <span className="text-[#4B5563] text-sm sm:text-base">
+                            {facility.isNonProfit ? "Non-Profit" : "For-Profit"}
+                          </span>
+                          <span
+                            className={`text-sm sm:text-base font-medium ${getStatusColor(facility.status)}`}
+                          >
+                            {facility.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Pros & Cons */}
+                      <div className="bg-[#F5F5F5] rounded-md p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                        <div className="flex items-start gap-2">
+                          <span className="text-green-600 font-medium">✓</span>
+                          <p className="text-green-600 text-sm leading-5">
+                            Pros:{" "}
+                            {facility.pros
+                              ? facility.pros.split(" ").length > 10
+                                ? facility.pros.split(" ").slice(0, 10).join(" ") + "..."
+                                : facility.pros
+                              : "No pros available"}
+                          </p>
+                        </div>
+
+                        <div className="flex items-start gap-2">
+                          <span className="text-red-600 font-medium">✗</span>
+                          <p className="text-red-600 text-sm leading-5">
+                            Cons:{" "}
+                            {facility.cons
+                              ? facility.cons.split(" ").length > 10
+                                ? facility.cons.split(" ").slice(0, 10).join(" ") + "..."
+                                : facility.cons
+                              : "No cons available"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Contact + Button */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                          <div className="flex items-center gap-2">
                             <img
-                              src={facility.imageUrl || "/Default_image.png"}
-                              alt={facility.name}
-                              className="w-[114px] h-[114px] object-cover rounded-[9.56px]"
+                              src="/icons/phone_icon.png"
+                              alt="Phone"
+                              className="w-[12px] h-[12px]"
                             />
+                            <span className="text-[#4B5563] text-sm sm:text-base">
+                              {facility.phone}
+                            </span>
                           </div>
 
-                          {/* Details */}
-                          <div className="flex-1 sm:ml-5">
-                            <h3 className="text-[#111827] font-bold text-[20px] sm:text-[23.89px] leading-[28px] sm:leading-[33.45px]">
-                              {facility.name}
-                            </h3>
-
-                            <div className="flex items-center gap-2 mt-2">
-                              <img
-                                src="/icons/location_icon_new.png"
-                                alt="Location Icon"
-                                className="w-[12px] h-[16px]"
-                              />
-                              <span className="text-[#4B5563] text-sm sm:text-base">
-                                {facility.distance != null
-                                  ? `${facility.distance.toFixed(1)} miles`
-                                  : ""}
-                                {facility.address ? ` • ${facility.address}` : ""}
-                              </span>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3">
-                              <div className="flex items-center gap-2">
-                                <img
-                                  src="/icons/bed_icon.png"
-                                  alt="Beds Icon"
-                                  className="w-[18px] h-[12px]"
-                                />
-                                <span className="text-[#4B5563] text-sm sm:text-base">
-                                  {facility.beds} beds
-                                </span>
-                              </div>
-
-                              <div className="flex flex-row items-center gap-2 sm:gap-3">
-                                <span className="text-[#4B5563] text-sm sm:text-base">
-                                  {facility.isNonProfit ? "Non-Profit" : "For-Profit"}
-                                </span>
-                                <span
-                                  className={`text-sm sm:text-base font-medium ${getStatusColor(facility.status)}`}
-                                >
-                                  {facility.status}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Pros & Cons */}
-                            <div className="bg-[#F5F5F5] rounded-md p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                              <div className="flex items-start gap-2">
-                                <span className="text-green-600 font-medium">✓</span>
-                                <p className="text-green-600 text-sm leading-5">
-                                  Pros:{" "}
-                                  {facility.pros
-                                    ? facility.pros.split(" ").length > 10
-                                      ? facility.pros.split(" ").slice(0, 10).join(" ") + "..."
-                                      : facility.pros
-                                    : "No pros available"}
-                                </p>
-                              </div>
-
-                              <div className="flex items-start gap-2">
-                                <span className="text-red-600 font-medium">✗</span>
-                                <p className="text-red-600 text-sm leading-5">
-                                  Cons:{" "}
-                                  {facility.cons
-                                    ? facility.cons.split(" ").length > 10
-                                      ? facility.cons.split(" ").slice(0, 10).join(" ") + "..."
-                                      : facility.cons
-                                    : "No cons available"}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Contact + Button */}
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                  <img
-                                    src="/icons/phone_icon.png"
-                                    alt="Phone"
-                                    className="w-[12px] h-[12px]"
-                                  />
-                                  <span className="text-[#4B5563] text-sm sm:text-base">
-                                    {facility.phone}
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  <img
-                                    src="/icons/clock_icon.png"
-                                    alt="Clock"
-                                    className="w-[12px] h-[12px]"
-                                  />
-                                  <span className="text-[#4B5563] text-sm sm:text-base">
-                                    {facility.hours}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <button
-                                className="w-full sm:w-[136.76px] h-[43px] bg-[#D02B38] rounded-[4.78px] text-white font-inter font-medium text-[16.72px] leading-[23.89px] flex items-center justify-center text-center disabled:opacity-70"
-                                onClick={() => handleViewDetails(facility)}
-                                disabled={loadingFacilityId === facility.id}
-                              >
-                                {loadingFacilityId === facility.id ? (
-                                  <div className="loader border-t-2 border-white border-solid rounded-full w-[18px] h-[18px] animate-spin"></div>
-                                ) : (
-                                  "View Details"
-                                )}
-                              </button>
-                            </div>
+                          <div className="flex items-center gap-2">
+                            <img
+                              src="/icons/clock_icon.png"
+                              alt="Clock"
+                              className="w-[12px] h-[12px]"
+                            />
+                            <span className="text-[#4B5563] text-sm sm:text-base">
+                              {facility.hours}
+                            </span>
                           </div>
                         </div>
-                      </div>
-                    ))}
 
-
-                    {/* {totalFacilityPages > 1 && (
-                      <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full">
-                        <p className="text-[#4B5563] text-sm sm:text-base mb-2 sm:mb-0">
-                          Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, totalFacilities)} of {totalFacilities} facilities
-                        </p>
-
-                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
-                          <button
-                            disabled={currentPage === 1}
-                            onClick={() => goToPage(currentPage - 1)}
-                            className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
-                          >
-                            Prev
-                          </button>
-
-                          {getPageNumbers(currentPage, totalFacilityPages).map((page, index) =>
-                            typeof page === "number" ? (
-                              <button
-                                key={page}
-                                onClick={() => goToPage(page)}
-                                className={`px-3 py-2 rounded-md text-sm sm:text-base ${currentPage === page
-                                  ? "bg-[#D02B38] text-white"
-                                  : "border hover:bg-gray-100"
-                                  }`}
-                              >
-                                {page}
-                              </button>
-                            ) : (
-                              <span key={`ellipsis-${index}`} className="px-2 text-gray-400 select-none">
-                                ...
-                              </span>
-                            )
-                          )}
-
-                          <button
-                            disabled={currentPage === totalFacilityPages}
-                            onClick={() => goToPage(currentPage + 1)}
-                            className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
-                          >
-                            Next
-                          </button>
-                        </div>
-                      </div>
-                    )} */}
-
-                    {totalFacilityPages > 1 && (
-                      <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full">
-                        {/* <p className="text-[#4B5563] text-sm sm:text-base mb-2 sm:mb-0">
-                          Showing {startFacility}–{endFacility} of {totalFacilities} facilities
-                        </p> */}
-                        {usingFilters ? (
-                            <p>Showing {startFacility}-{endFacility} of {displayTotal} filtered facilities</p>
+                        <button
+                          className="w-full sm:w-[136.76px] h-[43px] bg-[#D02B38] rounded-[4.78px] text-white font-inter font-medium text-[16.72px] leading-[23.89px] flex items-center justify-center text-center disabled:opacity-70"
+                          onClick={() => handleViewDetails(facility)}
+                          disabled={loadingFacilityId === facility.id}
+                        >
+                          {loadingFacilityId === facility.id ? (
+                            <div className="loader border-t-2 border-white border-solid rounded-full w-[18px] h-[18px] animate-spin"></div>
                           ) : (
-                            <p>Showing {startFacility}-{endFacility} of {displayTotal} total facilities</p>
+                            "View Details"
                           )}
-
-                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
-                          {/* Prev */}
-                          <button
-                            disabled={currentPage === 1}
-                            onClick={goToPrevPage}
-                            className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
-                          >
-                            Prev
-                          </button>
-
-                          {/* Page numbers (1–6, 7–12, etc.) */}
-                         {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => typeof page === "number" && goToPage(page)}
-                              className={`px-3 py-2 rounded-md text-sm sm:text-base ${
-                                currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
-                              }`}
-                              disabled={page === "..."} // disable ellipsis
-                            >
-                              {page}
-                            </button>
-                          ))}
-                          {/* Next */}
-                          <button
-                            disabled={currentPage === totalFacilityPages}
-                            onClick={goToNextPage}
-                            className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
-                          >
-                            Next
-                          </button>
-                        </div>
+                        </button>
                       </div>
-                    )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {totalFacilityPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full">
+                  {/* Total Count Display - ONLY THIS PART CHANGED */}
+                   {usingFilters ? (
+                    <p>Showing {startFacility}-{endFacility} of {displayTotal} filtered facilities</p>
+                  ) : (
+                    <p>Showing {startFacility}-{endFacility} of {displayTotal} total facilities</p>
+                  )}
+
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
+                    {/* Prev */}
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={goToPrevPage}
+                      className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      Prev
+                    </button>
+
+                    {/* Page numbers (1–6, 7–12, etc.) */}
+                    {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => typeof page === "number" && goToPage(page)}
+                        className={`px-3 py-2 rounded-md text-sm sm:text-base ${
+                          currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
+                        }`}
+                        disabled={page === "..."} // disable ellipsis
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    {/* Next */}
+                    <button
+                      disabled={currentPage === totalFacilityPages}
+                      onClick={goToNextPage}
+                      className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
 
 
 

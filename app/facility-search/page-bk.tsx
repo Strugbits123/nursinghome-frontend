@@ -1273,3 +1273,49 @@ export default function FacilitySearchPage() {
   //   [coords, locationName, totalFacilityPages, usingFilters]
   // );
 
+
+
+   {/* {totalFacilityPages > 1 && (
+                      <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full">
+                        <p className="text-[#4B5563] text-sm sm:text-base mb-2 sm:mb-0">
+                          Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, totalFacilities)} of {totalFacilities} facilities
+                        </p>
+
+                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
+                          <button
+                            disabled={currentPage === 1}
+                            onClick={() => goToPage(currentPage - 1)}
+                            className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                          >
+                            Prev
+                          </button>
+
+                          {getPageNumbers(currentPage, totalFacilityPages).map((page, index) =>
+                            typeof page === "number" ? (
+                              <button
+                                key={page}
+                                onClick={() => goToPage(page)}
+                                className={`px-3 py-2 rounded-md text-sm sm:text-base ${currentPage === page
+                                  ? "bg-[#D02B38] text-white"
+                                  : "border hover:bg-gray-100"
+                                  }`}
+                              >
+                                {page}
+                              </button>
+                            ) : (
+                              <span key={`ellipsis-${index}`} className="px-2 text-gray-400 select-none">
+                                ...
+                              </span>
+                            )
+                          )}
+
+                          <button
+                            disabled={currentPage === totalFacilityPages}
+                            onClick={() => goToPage(currentPage + 1)}
+                            className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )} */}
