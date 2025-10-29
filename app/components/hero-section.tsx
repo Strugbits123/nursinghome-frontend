@@ -209,8 +209,8 @@ const HeroSection = memo(function HeroSection() {
     setRecommendations
   } = useFacilities();
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://app.carenav.io/api/facilities/with-reviews";
-
+  
+  const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews` || "https://app.carenav.io/api/facilities/with-reviews";
     
   const fetchFacilities = async (
     currentSearchQuery: string,
