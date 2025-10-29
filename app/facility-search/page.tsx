@@ -453,7 +453,8 @@ const handleViewDetails = async (facility: any) => {
 
 };
 
- const apiKey = "${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews";
+const apiKey = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews`;
+ 
 const loadPage = useCallback(
  
   async (page: number) => {
