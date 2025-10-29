@@ -318,7 +318,7 @@ export default function Home() {
   }, [ready]); // Re-run when ready and dependencies are set
 
   return (
-    <div
+   <div
       className={`${
         ready ? "opacity-100" : "opacity-0"
       } transition-opacity duration-500`}
@@ -326,16 +326,17 @@ export default function Home() {
       <div
         ref={containerRef}
         data-scroll-container
-        className="bg-background"
+        className="min-h-screen bg-background "
       >
         {/* Hero */}
-        <div
-          className="relative w-full h-[947px] bg-cover bg-center bg-no-repeat hero-bg"
-          style={{
-            backgroundImage: `url('/b20ba9d675afe9a11e0416efde3e22d2fb92f8a4.png')`,
-          }}
-        >
-          <div className="absolute inset-0 bg-[#020D16] opacity-60 z-0"></div>
+<div
+  className="relative w-full h-[947px] bg-cover bg-center bg-[#020D16] hero-bg"
+  style={{
+    backgroundImage: `url('/b20ba9d675afe9a11e0416efde3e22d2fb92f8a4.png')`,
+  }}
+>
+  {/* Dark Background Overlay */}
+  <div className="absolute inset-0 bg-[#020D16] opacity-60 z-0"></div>
           <div className="relative z-10">
 
             <Header />

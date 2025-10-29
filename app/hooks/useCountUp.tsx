@@ -1,13 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
-
-// Ensure the plugin is registered only once globally
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 export function useCountUp(
   endValue: number,
@@ -19,82 +12,55 @@ export function useCountUp(
   useEffect(() => {
     const target = numberRef.current;
     const trigger = triggerRef.current;
-
-    // Set initial text to endValue for accessibility and fallbacks
-    if (target) {
-      target.innerText = endValue.toLocaleString();
-    }
-
     if (!target || !trigger) return;
 
-    // --- Cleanup Variables ---
-    let countUpTimeline: gsap.core.Tween;
-    let scrollTriggerInstance: ScrollTrigger | undefined;
-
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    if (prefersReducedMotion) {
-      return;
-    }
-
-    // Set a starting innerText value for GSAP to animate from
     target.innerText = "0";
 
-    // 💡 Mobile Fix: Defer ScrollTrigger creation to ensure correct dimensions are calculated
-    const setupAnimation = () => {
-        countUpTimeline = gsap.fromTo(
-            target,
-            { innerText: 0 },
-            {
-                innerText: endValue,
-                duration: 2.5,
-                ease: "power2.out",
-                delay: delay,
-                scrollTrigger: {
-                    trigger: trigger,
-                    // Use a slightly different start for better mobile reliability:
-                    // Start when the center of the trigger hits 80% up the viewport
-                    start: "center 80%", 
-                    end: "bottom 0%", 
-                    toggleActions: "play none none none", // Play once
-                    // Ensures the ScrollTrigger is recalculated when certain events occur (like font loading)
-                    refreshPriority: 1, 
-                },
-                snap: { innerText: 1 },
-                onUpdate: function () {
-                    const currentVal = Math.round(parseFloat(this.targets()[0].innerText));
-                    target.innerText = currentVal.toLocaleString();
-                },
-                onComplete: () => {
-                    target.innerText = endValue.toLocaleString();
-                }
-            }
-        );
-        
-        // Store the specific ScrollTrigger instance for cleanup
-        scrollTriggerInstance = countUpTimeline.scrollTrigger;
+    let hasAnimated = false;
+    let observer: IntersectionObserver;
 
-        // 💡 Crucial Fix for Inconsistent Layouts (e.g., mobile URL bar changing viewport)
-        // Ensure the ScrollTrigger calculates start/end positions based on final layout
-        ScrollTrigger.refresh();
+    const countUp = () => {
+      if (hasAnimated) return;
+      hasAnimated = true;
+
+      let start = 0;
+      const duration = 2500; // 2.5s same as GSAP
+      const startTime = performance.now();
+
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const value = Math.floor(progress * endValue);
+        target.innerText = value.toLocaleString();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          target.innerText = endValue.toLocaleString();
+        }
+      };
+
+      setTimeout(() => requestAnimationFrame(animate), delay * 1000);
     };
 
-    // Use a small timeout (e.g., 50ms) to ensure GSAP runs after the browser paints
-    const timer = setTimeout(setupAnimation, 50);
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            countUp();
+            observer.unobserve(trigger);
+          }
+        });
+      },
+      {
+        threshold: 0.5, // when 50% visible
+      }
+    );
+
+    observer.observe(trigger);
 
     return () => {
-      clearTimeout(timer); // Clear the timeout if the component unmounts early
-      
-      // Cleanup: Kill *only* the specific ScrollTrigger and timeline
-      if (scrollTriggerInstance) {
-        scrollTriggerInstance.kill();
-      }
-      if (countUpTimeline) {
-        countUpTimeline.kill();
-      }
+      if (observer && trigger) observer.unobserve(trigger);
     };
   }, [endValue, triggerRef, delay]);
 
