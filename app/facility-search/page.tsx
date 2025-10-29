@@ -242,15 +242,14 @@ export default function FacilitySearchPage() {
   const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>([]);
   const [hasRestoredFromCache, setHasRestoredFromCache] = useState(false);
 
-
-
 // =====================
-// 💾 Restore from cache on mount
+// 💾 Restore from cache on mount - FIXED VERSION
 // =====================
 useEffect(() => {
   if (typeof window === "undefined") return;
 
   const cachedMeta = localStorage.getItem("facilities_meta");
+  const cachedTotalCount = localStorage.getItem("facilities_total_count");
   const cachedPage1 = localStorage.getItem("facilities_page_1");
 
   if (cachedPage1) {
@@ -261,24 +260,45 @@ useEffect(() => {
         setAllFacilities(parsed);
         setFilteredFacilities(parsed);
         setPaginatedFacilities(parsed);
-        setHasRestoredFromCache(true); 
+        setHasRestoredFromCache(true);
+        
+        // 🎯 FIX: Check both cache locations for total
+        let cachedTotal = 0;
+        
+        // First try facilities_total_count (the correct one)
+        if (cachedTotalCount) {
+          try {
+            cachedTotal = parseInt(cachedTotalCount);
+            console.log("✅ Found total in facilities_total_count:", cachedTotal);
+          } catch (e) {
+            console.error("Failed to parse facilities_total_count:", e);
+          }
+        }
+        
+        // If not found, try facilities_meta as fallback
+        if (cachedTotal === 0 && cachedMeta) {
+          try {
+            const meta = JSON.parse(cachedMeta);
+            if (meta.totalFacilities) {
+              cachedTotal = meta.totalFacilities;
+              console.log("✅ Found total in facilities_meta:", cachedTotal);
+            }
+          } catch (e) {
+            console.error("Failed to parse cached meta:", e);
+          }
+        }
+        
+        if (cachedTotal > 0) {
+          setTotalFacilities(cachedTotal);
+        }
       }
     } catch (e) {
       console.error("Failed to parse cached page 1:", e);
     }
   }
-  if (cachedMeta) {
-    try {
-      const meta = JSON.parse(cachedMeta);
-      if (meta.totalFacilities) setTotalFacilities(meta.totalFacilities);
-    } catch (e) {
-      console.error("Failed to parse cached meta:", e);
-    }
-  }
 }, []);
-
 // =====================
-// 💾 Save first page cache when initialFacilities loads
+// 💾 Save first page cache when initialFacilities loads - FIXED VERSION
 // =====================
 useEffect(() => {
   if (typeof window === "undefined") return;
@@ -290,22 +310,114 @@ useEffect(() => {
     return;
   }
 
-  console.log("💾 Caching first page facilities",initialFacilities);
+  console.log("💾 Caching first page facilities", initialFacilities);
   localStorage.setItem("facilities_page_1", JSON.stringify(initialFacilities));
-  localStorage.setItem(
-    "facilities_meta",
-    JSON.stringify({
-      totalFacilities: totalCountFromProvider || initialFacilities.length,
-      totalPages: Math.ceil(
-        (totalCountFromProvider || initialFacilities.length) / ITEMS_PER_PAGE
-      ),
-    })
-  );
+  
+  // 🎯 FIX: Save total in BOTH locations for consistency
+  const actualTotal = totalCountFromProvider;
+  if (actualTotal > 0) {
+    // Save in the main meta location
+    localStorage.setItem(
+      "facilities_meta",
+      JSON.stringify({
+        totalFacilities: actualTotal,
+        totalPages: Math.ceil(actualTotal / ITEMS_PER_PAGE),
+      })
+    );
+    
+    // 🎯 ALSO save in the separate total_count key that already has 601
+    localStorage.setItem("facilities_total_count", actualTotal.toString());
+    
+    console.log("💾 Saved total in cache:", actualTotal);
+  }
 
   setAllFacilities(initialFacilities);
   setFilteredFacilities(initialFacilities);
+  setTotalFacilities(actualTotal);
   if (currentPage === 1) setPaginatedFacilities(initialFacilities);
 }, [initialFacilities, totalCountFromProvider, currentPage, hasRestoredFromCache]);
+// 🎯 FIX: Add this effect to sync totals from provider and update cache
+useEffect(() => {
+  if (totalCountFromProvider && totalCountFromProvider > 0) {
+    console.log("🔄 Updating total from provider:", totalCountFromProvider);
+    setTotalFacilities(totalCountFromProvider);
+    
+    // 🎯 FIX: Update BOTH cache locations
+    if (typeof window !== "undefined") {
+      // Update facilities_meta
+      const cachedMeta = localStorage.getItem("facilities_meta");
+      if (cachedMeta) {
+        try {
+          const meta = JSON.parse(cachedMeta);
+          localStorage.setItem(
+            "facilities_meta",
+            JSON.stringify({
+              ...meta,
+              totalFacilities: totalCountFromProvider,
+              totalPages: Math.ceil(totalCountFromProvider / ITEMS_PER_PAGE),
+            })
+          );
+        } catch (e) {
+          console.error("Failed to update cache meta:", e);
+        }
+      }
+      
+      // 🎯 ALSO update the separate total_count key
+      localStorage.setItem("facilities_total_count", totalCountFromProvider.toString());
+      console.log("💾 Updated cache with fresh total:", totalCountFromProvider);
+    }
+  }
+}, [totalCountFromProvider]);
+
+// 🎯 FIX: Also add this cleanup function to ensure cache consistency
+useEffect(() => {
+  // Check if we have inconsistent cache and fix it
+  if (typeof window !== "undefined" && totalFacilities === 0) {
+    const cachedTotalCount = localStorage.getItem("facilities_total_count");
+    const cachedPage1 = localStorage.getItem("facilities_page_1");
+    
+    if (cachedTotalCount && cachedPage1) {
+      try {
+        const total = parseInt(cachedTotalCount);
+        const facilities = JSON.parse(cachedPage1);
+        
+        if (total > 0 && Array.isArray(facilities) && facilities.length > 0) {
+          console.log("🛠️ Fixing inconsistent cache: total was 0 but facilities exist");
+          setTotalFacilities(total);
+          
+          // Also fix facilities_meta
+          localStorage.setItem(
+            "facilities_meta",
+            JSON.stringify({
+              totalFacilities: total,
+              totalPages: Math.ceil(total / ITEMS_PER_PAGE),
+            })
+          );
+        }
+      } catch (e) {
+        console.error("Error fixing cache inconsistency:", e);
+      }
+    }
+  }
+}, [totalFacilities]);
+
+
+// Add this helper function to debug cache issues
+const debugCache = () => {
+  if (typeof window === "undefined") return;
+  
+  console.log("🔍 CACHE DEBUG INFO:");
+  console.log("facilities_meta:", localStorage.getItem("facilities_meta"));
+  console.log("facilities_total_count:", localStorage.getItem("facilities_total_count"));
+  console.log("facilities_page_1 exists:", !!localStorage.getItem("facilities_page_1"));
+  console.log("totalCountFromProvider:", totalCountFromProvider);
+  console.log("totalFacilities state:", totalFacilities);
+};
+
+// Call this when you need to debug
+debugCache();
+
+
 
 // =====================
 // 🔁 Get facilities by page — cache first
@@ -618,11 +730,10 @@ useEffect(() => {
 // =====================
 // 🧮 RANGE + PAGE GROUPS
 // =====================
-const startFacility =
-  totalFacilities > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
-const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, totalFacilities);
+// const startFacility =
+//   totalFacilities > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+// const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, totalFacilities);
 
-const totalFacilityPages = Math.ceil(totalFacilities / ITEMS_PER_PAGE);
 // const totalFacilityPages = Math.ceil(totalFacilities / ITEMS_PER_PAGE);
 
 const getVisiblePageNumbers = (
@@ -648,11 +759,16 @@ const getVisiblePageNumbers = (
 //   try {
 //     const params = new URLSearchParams();
 
+//     // 🧩 1️⃣ Build query params from filters (clean strings)
 //     Object.entries(appliedFilters).forEach(([key, value]) => {
-//       if (value.trim()) params.append(key, value.trim());
+//       if (typeof value === "string" && value.trim()) {
+//         // Trim spaces and replace internal spaces with underscores
+//         const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+//         params.append(key, cleanValue);
+//       }
 //     });
 
-
+//     // 🧭 2️⃣ Add user coordinates if available
 //     if (coords?.lat && coords?.lng) {
 //       params.append("userLat", coords.lat.toString());
 //       params.append("userLng", coords.lng.toString());
@@ -660,6 +776,7 @@ const getVisiblePageNumbers = (
 
 //     const hasFilters = [...params].length > 0;
 
+//     // 🔄 3️⃣ No filters → reset to initial data
 //     if (!hasFilters) {
 //       setFilteredFacilities(initialFacilities);
 //       setUsingFilters(false);
@@ -668,53 +785,53 @@ const getVisiblePageNumbers = (
 //       return;
 //     }
 
-//     if (!appliedFilters.locationName) {
-//       if (locationName) {
-//         params.set("locationName", locationName);
-//       } else {
+//     // 🏙️ 4️⃣ Ensure locationName is present
+//     if (!params.has("locationName")) {
+//       let location = locationName?.trim() || "";
+//       if (!location) {
 //         const facilityCoords = extractFacilityCoords(initialFacilities);
-//         if (facilityCoords.length > 0) params.set("locationName", facilityCoords[0].name);
+//         location = facilityCoords.length > 0 ? facilityCoords[0].name.trim() : "";
+//       }
+//       if (location) {
+//         // ✅ normalize: remove leading +, replace spaces with _
+//         params.set("locationName", location.replace(/^\+/, "").replace(/\s+/g, "_"));
 //       }
 //     }
 
+//     // 🌐 5️⃣ Build final API URL
 //     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
+//     console.log("🌐 Fetching filtered facilities:", apiUrl);
+
 //     const res = await fetch(apiUrl);
+
+//     if (!res.ok) {
+//       const text = await res.text();
+//       throw new Error(`HTTP ${res.status}: ${text}`);
+//     }
+
 //     const data = await res.json();
 
-//     if (!res.ok || !data.facilities || data.facilities.length === 0) {
+//     if (!data.facilities || data.facilities.length === 0) {
 //       setFilteredFacilities([]);
 //       setUsingFilters(true);
 //       setIsFiltering(false);
-//       toast.error("No Facilities Found");
+//       toast.error("No facilities found");
 //       return;
 //     }
 
-//     const mappedFacilities = (data.facilities || []).map((f: any) => ({
-//       id: f._id || f.id,
-//       name: f.googleName || f.name,
-//       address: f.provider_address || f.address,
-//       city: f.city_town || f.city,
-//       state: f.state,
-//       zip: f.zip_code || f.zip,
-//       phone: f.telephone_number || f.phone,
-//       beds: f.number_of_certified_beds || f.beds,
-//       lat: f.lat || f.latitude || f.geoLocation?.coordinates[1],
-//       lng: f.lng || f.longitude || f.geoLocation?.coordinates[0],
-//       isNonProfit: (f.ownership_type?.toLowerCase().includes("non") || false),
-//       provider_name: f.provider_name,
-//       pros: f.aiSummary?.pros?.join(", ") || "No specific pros listed",
-//       cons: f.aiSummary?.cons?.join(", ") || "No specific cons listed",
-//       imageUrl: f.photo || "/Default_image.png",
-//       status: f.status || "Unknown",
-//       hours: f.operating_hours || "",
-//       rating: f.rating || f.overall_rating || 0,
-//     }));
+//     // 🧭 6️⃣ Map raw → typed Facility
+//     const mappedFacilities: Facility[] = data.facilities.map((f: RawFacility) =>
+//       mapRawFacilityToCard(f, coords)
+//     );
 
+//     // 🧮 7️⃣ Update state
 //     setFilteredFacilities(mappedFacilities);
 //     setUsingFilters(true);
 //     setCurrentPage(1);
+
 //     toast.success("Filters applied!");
 //   } catch (err: any) {
+//     console.error("❌ Filter fetch failed:", err);
 //     setFilteredFacilities([]);
 //     toast.error(err.message || "Error applying filters");
 //   } finally {
@@ -722,6 +839,8 @@ const getVisiblePageNumbers = (
 //   }
 // };
 
+
+// 🎯 FIX: Also update the filter function to handle totals correctly
 const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   const appliedFilters = newFilters || filters;
   setIsFiltering(true);
@@ -729,16 +848,13 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   try {
     const params = new URLSearchParams();
 
-    // 🧩 1️⃣ Build query params from filters (clean strings)
     Object.entries(appliedFilters).forEach(([key, value]) => {
       if (typeof value === "string" && value.trim()) {
-        // Trim spaces and replace internal spaces with underscores
         const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
         params.append(key, cleanValue);
       }
     });
 
-    // 🧭 2️⃣ Add user coordinates if available
     if (coords?.lat && coords?.lng) {
       params.append("userLat", coords.lat.toString());
       params.append("userLng", coords.lng.toString());
@@ -746,16 +862,16 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
 
     const hasFilters = [...params].length > 0;
 
-    // 🔄 3️⃣ No filters → reset to initial data
+    // 🔄 Reset filters - show all facilities with current actual total
     if (!hasFilters) {
       setFilteredFacilities(initialFacilities);
       setUsingFilters(false);
       setCurrentPage(1);
+      setTotalFacilities(totalCountFromProvider); // 🎯 FIX: Use current provider total
       setIsFiltering(false);
       return;
     }
 
-    // 🏙️ 4️⃣ Ensure locationName is present
     if (!params.has("locationName")) {
       let location = locationName?.trim() || "";
       if (!location) {
@@ -763,12 +879,10 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
         location = facilityCoords.length > 0 ? facilityCoords[0].name.trim() : "";
       }
       if (location) {
-        // ✅ normalize: remove leading +, replace spaces with _
         params.set("locationName", location.replace(/^\+/, "").replace(/\s+/g, "_"));
       }
     }
 
-    // 🌐 5️⃣ Build final API URL
     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
     console.log("🌐 Fetching filtered facilities:", apiUrl);
 
@@ -784,108 +898,37 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
     if (!data.facilities || data.facilities.length === 0) {
       setFilteredFacilities([]);
       setUsingFilters(true);
+      setTotalFacilities(0);
       setIsFiltering(false);
       toast.error("No facilities found");
       return;
     }
 
-    // 🧭 6️⃣ Map raw → typed Facility
     const mappedFacilities: Facility[] = data.facilities.map((f: RawFacility) =>
       mapRawFacilityToCard(f, coords)
     );
 
-    // 🧮 7️⃣ Update state
     setFilteredFacilities(mappedFacilities);
     setUsingFilters(true);
     setCurrentPage(1);
+    setTotalFacilities(mappedFacilities.length);
 
     toast.success("Filters applied!");
   } catch (err: any) {
     console.error("❌ Filter fetch failed:", err);
     setFilteredFacilities([]);
+    setTotalFacilities(0);
     toast.error(err.message || "Error applying filters");
   } finally {
     setIsFiltering(false);
   }
 };
 
- 
 
-
-// const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
-//   const appliedFilters = newFilters || filters;
-//   setIsFiltering(true);
-
-//   try {
-//     const params = new URLSearchParams();
-
-//     // 🧩 1️⃣ Build query params from filters
-//     Object.entries(appliedFilters).forEach(([key, value]) => {
-//       if (typeof value === "string" && value.trim()) {
-//         params.append(key, value.trim());
-//       }
-//     });
-
-//     // 🧭 2️⃣ Add user coordinates
-//     if (coords?.lat && coords?.lng) {
-//       params.append("userLat", coords.lat.toString());
-//       params.append("userLng", coords.lng.toString());
-//     }
-
-//     const hasFilters = [...params].length > 0;
-//     if (!hasFilters) {
-//       // 🔄 Reset filters and use initial data
-//       setFilteredFacilities(initialFacilities);
-//       setUsingFilters(false);
-//       setCurrentPage(1);
-//       setIsFiltering(false);
-//       return;
-//     }
-
-//     // 🏙️ 3️⃣ Ensure locationName is present
-//     if (!appliedFilters.locationName) {
-//       if (locationName) {
-//         params.set("locationName", locationName);
-//       } else {
-//         const facilityCoords = extractFacilityCoords(initialFacilities);
-//         if (facilityCoords.length > 0)
-//           params.set("locationName", facilityCoords[0].name);
-//       }
-//     }
-
-//     // 🌐 4️⃣ Fetch filtered data
-//     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
-//     console.log("🌐 Fetching filtered facilities:", apiUrl);
-
-//     const res = await fetch(apiUrl);
-//     const data = await res.json();
-
-//     if (!res.ok || !data.facilities || data.facilities.length === 0) {
-//       setFilteredFacilities([]);
-//       setUsingFilters(true);
-//       setIsFiltering(false);
-//       toast.error("No facilities found");
-//       return;
-//     }
-
-//     // 🧭 5️⃣ Map raw → typed Facility
-//     const mappedFacilities: Facility[] = (data.facilities || []).map((f: RawFacility) =>
-//       mapRawFacilityToCard(f, coords)
-//     );
-
-//     // 🧮 6️⃣ Update state
-//     setFilteredFacilities(mappedFacilities);
-//     setUsingFilters(true);
-//     setCurrentPage(1);
-//     toast.success("Filters applied!");
-//   } catch (err: any) {
-//     console.error("❌ Filter fetch failed:", err);
-//     setFilteredFacilities([]);
-//     toast.error(err.message || "Error applying filters");
-//   } finally {
-//     setIsFiltering(false);
-//   }
-// };
+const displayTotal = totalFacilities;
+const startFacility = displayTotal > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, displayTotal);
+const totalFacilityPages = Math.ceil(displayTotal / ITEMS_PER_PAGE);
 
 
 
@@ -965,9 +1008,6 @@ const facilityCoords = useMemo(
     )
   }
 
-  // if (isLoading || showSkeletonTimer) {
-  //   return <FacilityReviewSkeleton />;
-  // }
 
   if (error) {
     return (
@@ -976,26 +1016,6 @@ const facilityCoords = useMemo(
       </div>
     );
   }
-
-  // // ✅ Case 1: No facilities at all (initial load or context empty)
-  // if (initialFacilities.length === 0 && !isLoading) {
-  //   return (
-  //     <div className="p-10 text-center text-xl">
-  //       <h2 className="text-2xl font-bold mb-2">No Facilities Found</h2>
-  //       <p className="text-gray-600">
-  //         We couldn’t find any facilities matching your location.
-  //       </p>
-  //       <Button
-  //         onClick={() => router.push('/')}
-  //         className="mt-4 bg-red-600 hover:bg-red-700"
-  //       >
-  //         Start a New Search
-  //       </Button>
-  //     </div>
-  //   );
-  // }
-
- 
 
 
   const slugify = (text: string): string => {
@@ -1108,7 +1128,7 @@ const facilityCoords = useMemo(
             {/* Info Section */}
             <div className="flex flex-col items-start flex-wrap gap-x-0 sm:gap-x-4 ml-0 md:ml-[90px] md:flex-1 md:min-w-[150px] lg:min-w-[250px]">
               <span className="font-inter font-medium text-[15px] sm:text-[17px] leading-[22px] sm:leading-[26px] text-[#111827] ml-2 sm:ml-[55px]">
-                {totalFacilities} Facilities Found in{" "}
+                {displayTotal} Facilities Found in{" "}
                 {locationName &&
                   locationName
                     .replace(/_/g, " ")
@@ -1543,9 +1563,14 @@ const facilityCoords = useMemo(
 
                     {totalFacilityPages > 1 && (
                       <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full">
-                        <p className="text-[#4B5563] text-sm sm:text-base mb-2 sm:mb-0">
+                        {/* <p className="text-[#4B5563] text-sm sm:text-base mb-2 sm:mb-0">
                           Showing {startFacility}–{endFacility} of {totalFacilities} facilities
-                        </p>
+                        </p> */}
+                        {usingFilters ? (
+                            <p>Showing {startFacility}-{endFacility} of {displayTotal} filtered facilities</p>
+                          ) : (
+                            <p>Showing {startFacility}-{endFacility} of {displayTotal} total facilities</p>
+                          )}
 
                         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
                           {/* Prev */}
