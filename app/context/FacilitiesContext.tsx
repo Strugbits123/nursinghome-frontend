@@ -204,23 +204,27 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     const normalized = normalizeLocationName(currentLocation);
     const page1CacheKey = getPage1CacheKey(normalized);
     const totalCacheKey = getTotalCacheKey(normalized);
+    const recommendationsCacheKey = getRecommendationsCacheKey(normalized);
     
     console.log("🔍 Context: Looking for cache with keys:", { 
       page1CacheKey, 
-      totalCacheKey
+      totalCacheKey,
+      recommendationsCacheKey
     });
     
     try {
       const cachedPage1 = localStorage.getItem(page1CacheKey);
       const cachedTotal = localStorage.getItem(totalCacheKey);
+      const cachedRecommendations = localStorage.getItem(recommendationsCacheKey);
       
       if (cachedPage1 && cachedTotal) {
         const facilities = JSON.parse(cachedPage1);
         const total = parseInt(cachedTotal);
+        const recommendations = cachedRecommendations ? JSON.parse(cachedRecommendations) : [];
         
         if (Array.isArray(facilities) && facilities.length > 0 && total > 0) {
           console.log(`⚡ Context: Using cached data for ${normalized}`);
-          return { facilities, total };
+          return { facilities, total, recommendations };
         }
       }
     } catch (error) {
@@ -231,7 +235,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // 🎯 FIXED: Save data with consistent normalization
-  const saveToLocationCache = useCallback((currentLocation: string, facilities: Facility[], total: number) => {
+  const saveToLocationCache = useCallback((currentLocation: string, facilities: Facility[], total: number, recommendations: Facility[] = []) => {
     if (!currentLocation || typeof window === "undefined") return;
     
     const normalized = normalizeLocationName(currentLocation);
@@ -239,14 +243,17 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     try {
       const page1CacheKey = getPage1CacheKey(normalized);
       const totalCacheKey = getTotalCacheKey(normalized);
+      const recommendationsCacheKey = getRecommendationsCacheKey(normalized);
       
       localStorage.setItem(page1CacheKey, JSON.stringify(facilities));
       localStorage.setItem(totalCacheKey, total.toString());
+      localStorage.setItem(recommendationsCacheKey, JSON.stringify(recommendations));
       localStorage.setItem("facilities_total_count", total.toString());
       
       console.log(`💾 Context: Cached data for ${normalized}`, {
         facilitiesCount: facilities.length,
-        total
+        total,
+        recommendationsCount: recommendations.length
       });
     } catch (error) {
       console.error('Error saving to cache:', error);
@@ -255,15 +262,16 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
   // Helper: Fetch Top Recommendations
   const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
-    if (!state || !city) return [];
+    if (!state && !city) return [];
     const token = localStorage.getItem("token") || "";
-    const url = `http://localhost:8000/top-facilities?state=${state}&city=${city}&top_n=${top_n}`;
+    const url = `http://localhost:8000/recommendations/top?state=${encodeURIComponent(state)}&city=${encodeURIComponent(city)}&limit=${top_n}`;
     try {
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) return [];
       const data = await res.json();
-      return data || [];
-    } catch {
+      return data.recommendations || [];
+    } catch (err) {
+      console.error("Failed to fetch top recommendations:", err);
       return [];
     }
   };
@@ -307,7 +315,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
           console.log("⚡ Loaded facilities from location cache");
           setFacilities(cachedData.facilities);
           setTotal(cachedData.total);
-          setRecommendations([]); // Clear recommendations for cached data
+          setRecommendations(cachedData.recommendations);
           setIsLoading(false);
           return;
         }
@@ -325,28 +333,28 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         const facilitiesData = data.facilities || [];
         const totalCount = data.total || data.totalCount || facilitiesData.length;
 
+        // --- Fetch Top Recommendations from FastAPI in parallel ---
+        const { state, city } = parseQueryToStateCity(currentFilters.locationName || locationName);
+        let topFacilities: Facility[] = [];
+        
+        if (state || city) {
+          topFacilities = await fetchTopRecommendations(state, city, 5);
+        }
+
+        // Update state
         setFacilities(facilitiesData);
         setTotal(totalCount);
+        setRecommendations(topFacilities);
 
         if (data.centerCoords?.lat && data.centerCoords?.lng) {
           setCoords(data.centerCoords);
         }
 
-        // --- Fetch Top Recommendations from FastAPI ---
-        const { state, city } = parseQueryToStateCity(currentFilters.locationName || locationName);
-        let topFacilities: Facility[] = [];
-        
-        if (state && city) {
-          topFacilities = await fetchTopRecommendations(state, city, 5);
-        }
-        
-        setRecommendations(topFacilities);
-
         // 🎯 SMART CACHE: Only cache page 1 data for this location (no filter cache)
         if (!Object.keys(currentFilters).some(key => 
           key !== 'locationName' && currentFilters[key]
         )) {
-          saveToLocationCache(locationName, facilitiesData, totalCount);
+          saveToLocationCache(locationName, facilitiesData, totalCount, topFacilities);
         }
 
         console.log(`✅ Context: Loaded ${facilitiesData.length} facilities and ${topFacilities.length} recommendations`);
@@ -429,7 +437,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       const data = await res.json();
       const rawFacilitiesList = Array.isArray(data.data) ? data.data : data?.facilities || [];
 
-      // Map to usable structure (you'll need to import mapRawFacilityToCard)
+      // Map to usable structure
       const facilitiesList = rawFacilitiesList.map((raw: any) => ({
         ...raw,
         id: raw._id || raw.id,
@@ -450,21 +458,24 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         distance: raw.distance || raw.distance_km || null,
       }));
 
+      // 🎯 FIXED: Fetch recommendations in parallel with facilities
+      const { state, city } = parseQueryToStateCity(searchQuery);
+      console.log("🔹 Context: Fetching top recommendations for:", state, city);
+      
+      const [topFacilities] = await Promise.all([
+        fetchTopRecommendations(state, city, 5)
+      ]);
+
       // Update state
       setFacilities(facilitiesList);
       setCoords(currentCoords);
       setLocationName(searchQuery || "");
       setTotal(data.total || 0);
-
-      // Fetch recommendations
-      const { state, city } = parseQueryToStateCity(searchQuery);
-      console.log("🔹 Context: Fetching top recommendations for:", state, city);
-      const topFacilities = await fetchTopRecommendations(state, city, 5);
       setRecommendations(topFacilities);
 
-      // 🎯 CACHE: Save to location-based cache
+      // 🎯 CACHE: Save everything to location-based cache
       if (searchQuery) {
-        saveToLocationCache(searchQuery, facilitiesList, data.total || 0);
+        saveToLocationCache(searchQuery, facilitiesList, data.total || 0, topFacilities);
       }
 
       // Save to localStorage for backward compatibility
@@ -496,19 +507,61 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [saveToLocationCache]);
 
-  // 🎯 FIXED: Restore from cache on mount
+  // 🎯 FIXED: Restore from cache on mount - IMPROVED
   useEffect(() => {
-    if (typeof window === "undefined" || !locationName) return;
+    if (typeof window === "undefined") return;
 
-    console.log("🔄 Context: Restoring from cache for:", locationName);
-    
-    const cachedData = getCachedData(locationName);
-    if (cachedData && facilities.length === 0) {
-      console.log("✅ Context: Restored facilities from cache on mount");
-      setFacilities(cachedData.facilities);
-      setTotal(cachedData.total);
+    console.log("🔄 Context: Checking for cached data on mount", {
+      locationName,
+      facilitiesLength: facilities.length,
+      total
+    });
+
+    // If we have locationName but no facilities or total, try to restore from cache
+    if (locationName && (facilities.length === 0 || total === 0)) {
+      console.log("🔄 Context: Attempting to restore from cache for:", locationName);
+      
+      const cachedData = getCachedData(locationName);
+      if (cachedData) {
+        console.log("✅ Context: Restored facilities from cache on mount", {
+          facilitiesCount: cachedData.facilities.length,
+          total: cachedData.total,
+          recommendationsCount: cachedData.recommendations.length
+        });
+        setFacilities(cachedData.facilities);
+        setTotal(cachedData.total);
+        setRecommendations(cachedData.recommendations);
+        
+        // Also restore coords if available in localStorage
+        const savedCoords = getFromStorage(COORDS_STORAGE_KEY, null);
+        if (savedCoords) {
+          setCoords(savedCoords);
+        }
+      } else {
+        console.log("❌ Context: No location-specific cache found for:", locationName);
+        
+        // 🎯 FIXED: Check legacy localStorage data
+        const savedFacilities = getFromStorage(FACILITIES_STORAGE_KEY, []);
+        const savedTotal = localStorage.getItem("facilities_total_count");
+        
+        if (savedFacilities.length > 0) {
+          console.log("✅ Context: Restored facilities from localStorage", {
+            facilitiesCount: savedFacilities.length,
+            total: savedTotal
+          });
+          setFacilities(savedFacilities);
+          if (savedTotal) {
+            const totalValue = parseInt(savedTotal);
+            if (!isNaN(totalValue) && totalValue > 0) {
+              setTotal(totalValue);
+            }
+          }
+        } else {
+          console.log("❌ Context: No cached data found anywhere");
+        }
+      }
     }
-  }, [locationName, getCachedData, facilities.length]);
+  }, [locationName, facilities.length, total, getCachedData]);
 
   // 🎯 FIXED: Persist state changes to localStorage
   useEffect(() => {
@@ -533,13 +586,18 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     saveToStorage(FILTERS_STORAGE_KEY, filters);
   }, [filters]);
 
-  // --- Auto-fetch if cache empty ---
+  // 🎯 FIXED: Auto-fetch if cache empty - IMPROVED
   useEffect(() => {
-    if (facilities.length === 0 && locationName) {
+    if (locationName && facilities.length === 0) {
       const cachedData = getCachedData(locationName);
-      if (!cachedData) {
-        console.log("🔄 Context: No cache found, fetching facilities");
+      const savedFacilities = getFromStorage(FACILITIES_STORAGE_KEY, []);
+      
+      // Only fetch if we have NO cached data at all
+      if (!cachedData && savedFacilities.length === 0) {
+        console.log("🔄 Context: No cache found, fetching facilities for:", locationName);
         fetchFacilities(filters);
+      } else {
+        console.log("✅ Context: Using cached data, no fetch needed");
       }
     }
   }, [locationName, facilities.length, getCachedData, fetchFacilities, filters]);

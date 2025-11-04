@@ -182,6 +182,303 @@ const fetchTopRecommendations = async (state: string, city: string, top_n: numbe
   }
 };
 
+// const HeroSection = memo(function HeroSection() {  
+//   const popularSearches = ["New York", " New Jersey", "Connecticut", "Pennsylvania"];
+//   const router = useRouter();
+
+//   const [active, setActive] = useState<boolean>(false);
+//   const [searchQuery, setSearchQuery] = useState<string>("");
+//   const [isLoading, setIsLoading] = useState<boolean>(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [currentCoords, setCurrentCoords] = React.useState<{ lat: number; lng: number } | null>(null);
+
+//   // from context - REMOVE cache-related functions
+//   const {
+//     setFacilities,
+//     coords,
+//     setCoords,
+//     locationName,
+//     setLocationName,
+//     setIsLoading: setContextIsLoading,
+//     setError: setContextError,
+//     setTotal,
+//     recommendations,
+//     setRecommendations,
+//     refetchFacilities // ✅ Use context's refetch function instead
+//   } = useFacilities();
+
+//   const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews` || "https://app.carenav.io/api/facilities/with-reviews";
+
+//   // ❌ REMOVE ALL CACHE FUNCTIONS FROM HERE
+//   // Remove: getPage1CacheKey, getTotalCacheKey, getRecommendationsCacheKey
+//   // Remove: saveToLocationCache, clearLocationCache
+
+//   // Helper: Fetch Top Recommendations
+//   const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
+//     if (!state || !city) return [];
+//     const token = localStorage.getItem("token") || "";
+//     const url = `http://localhost:8000/top-facilities?state=${state}&city=${city}&top_n=${top_n}`;
+//     try {
+//       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+//       if (!res.ok) return [];
+//       const data = await res.json();
+//       return data || [];
+//     } catch {
+//       return [];
+//     }
+//   };
+
+//   // Extract state and city from query
+//   const parseQueryToStateCity = (query: string | undefined) => {
+//     if (!query) return { state: "", city: "" };
+
+//     const parts = query.split(",").map((p) => p.trim());
+//     if (parts.length === 2) {
+//       return { city: parts[0], state: parts[1] };
+//     } else if (parts.length === 1) {
+//       return { city: "", state: parts[0] };
+//     } else {
+//       return { city: "", state: "" };
+//     }
+//   };
+    
+//   const fetchFacilities = async (
+//     currentSearchQuery: string,
+//     currentCoords: Coords | null
+//   ) => {
+//     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+//     if (!token) {
+//       toast.error("Please log in to search facilities");
+//       return;
+//     }
+
+//     // ✅ Validate empty input
+//     if (
+//       (!currentSearchQuery || currentSearchQuery.trim() === "") &&
+//       (!currentCoords?.lat || !currentCoords?.lng)
+//     ) {
+//       toast.error("Please enter a city, state, or ZIP code");
+//       return;
+//     }
+
+//     setIsLoading(true);
+//     setContextIsLoading && setContextIsLoading(true);
+//     setError(null);
+//     setContextError && setContextError(null);
+
+//     try {
+//       // ✅ Build query params
+//       const params = new URLSearchParams();
+
+//       if (currentSearchQuery && !currentCoords) {
+//         const normalizedQuery = currentSearchQuery
+//           .trim()
+//           .toLowerCase()
+//           .replace(/\s+/g, "_");
+//         params.append("q", normalizedQuery);
+//       }
+
+//       if (currentCoords?.lat && currentCoords?.lng) {
+//         params.append("lat", currentCoords.lat.toString());
+//         params.append("lng", currentCoords.lng.toString());
+//       }
+
+//       params.append("page", "1");
+//       params.append("limit", "8");
+
+//       const url = `${API_URL}?${params.toString()}`;
+//       console.log("🔹 Fetching page 1:", url);
+
+//       const res = await fetch(url, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "application/json",
+//         },
+//       });
+
+//       if (!res.ok) {
+//         const errorData = await res.json();
+//         throw new Error(errorData?.error || `HTTP ${res.status}`);
+//       }
+      
+//       const data = await res.json();
+
+//       const rawFacilitiesList = Array.isArray(data.data)
+//         ? data.data
+//         : data?.facilities || [];
+
+//       // ✅ Map to usable structure
+//       const facilitiesList = rawFacilitiesList.map((raw: any) =>
+//         mapRawFacilityToCard(raw, currentCoords)
+//       );
+
+//       // ✅ Store only first page + meta
+//       setFacilities(facilitiesList);
+//       setCoords(currentCoords);
+//       setLocationName(currentSearchQuery || "");
+//       setTotal(data.total || 0);
+
+//       // ✅ Fetch Top Recommendations based on state/city
+//       const { state, city } = parseQueryToStateCity(currentSearchQuery);
+//       console.log("🔹 Fetching top recommendations for:", state, city);
+//       const topFacilities = await fetchTopRecommendations(state, city, 5);
+//       setRecommendations(topFacilities);
+
+//       // ❌ REMOVE: saveToLocationCache call - Context will handle caching
+
+//       // ✅ Save to localStorage for backward compatibility
+//       localStorage.setItem(
+//         FACILITIES_STORAGE_KEY,
+//         JSON.stringify(facilitiesList)
+//       );
+//       localStorage.setItem(
+//         COORDS_STORAGE_KEY,
+//         JSON.stringify(currentCoords || null)
+//       );
+//       localStorage.setItem(
+//         LOCATION_NAME_STORAGE_KEY,
+//         JSON.stringify(
+//           currentSearchQuery
+//             ? currentSearchQuery.trim().replace(/\s+/g, "_").toLowerCase()
+//             : ""
+//         )
+//       );
+
+//       console.log(
+//         `✅ Loaded page 1 facilities (${facilitiesList.length}) for "${currentSearchQuery}"`,
+//         `Top Recommendations: ${topFacilities.length}`
+//       );
+
+//       toast.success("Facilities loaded successfully!");
+//       router.push("/facility-search");
+
+//     } catch (err: any) {
+//       console.error("❌ Fetch failed:", err);
+//       toast.error(err.message || "Failed to load facilities");
+//       setError(err.message || "Unknown error");
+//       setContextError && setContextError(err.message || "Unknown error");
+
+//       // 🔹 Clear stale cache on error
+//       setFacilities([]);
+//       setCoords(null);
+//       setLocationName("");
+//       setRecommendations([]);
+
+//       // ❌ REMOVE: clearLocationCache call - Context will handle cache clearing
+
+//       localStorage.removeItem(FACILITIES_STORAGE_KEY);
+//       localStorage.removeItem(COORDS_STORAGE_KEY);
+//       localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
+
+//     } finally {
+//       setIsLoading(false);
+//       setContextIsLoading && setContextIsLoading(false);
+//     }
+//   };
+
+
+
+
+//   // ------------------------------------
+//   // HANDLERS
+//   // ------------------------------------
+
+//   // use current location
+//   const handleUseLocation = () => {
+//     if (!localStorage.getItem("token")) {
+//       toast.error("Please log in to use this feature");
+//       return;
+//     }
+
+//     setActive(true);
+//     // Clear any text search before using location
+//     setSearchQuery("");
+
+//     if (navigator.geolocation) {
+//       navigator.geolocation.getCurrentPosition(
+//         async (position) => {
+//           const lat = position.coords.latitude;
+//           const lng = position.coords.longitude;
+
+//           // Setting coords will trigger the useEffect to fetch
+//           setCoords({ lat, lng });
+
+//           try {
+//             // Reverse geocode
+//             const rev = await fetch(
+//               `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+//             );
+//             const data = await rev.json();
+//             const city = data.address.city || data.address.town || data.address.village || "";
+//             const state = data.address.state || "";
+//             const postcode = data.address.postcode || "";
+//             const fullName = `${city} ${state} ${postcode}`.trim();
+
+//             setLocationName(fullName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+//             toast.success("Location detected successfully!");
+//           } catch (err) {
+//             console.error("Reverse geocode error:", err);
+//             toast.error("Could not determine location name.");
+//           }
+//         },
+//         (err: GeolocationPositionError) => {
+//           console.error("Geolocation error:", err);
+//           toast.error(`Geolocation Error`);
+//           setActive(false);
+//         }
+//       );
+//     } else {
+//       toast.error("Geolocation not supported by this browser.");
+//       setActive(false);
+//     }
+//   };
+
+//   // Main search submission handler (for text input and popular searches)
+//   const handleSubmit = (e?: React.FormEvent, cityQuery?: string) => {
+//     e?.preventDefault();
+
+//     const rawQuery = cityQuery || locationName;
+
+//     if (!localStorage.getItem("token")) {
+//       toast.error("Please log in to search facilities");
+//       return;
+//     }
+
+//     if (!rawQuery.trim()) {
+//       toast.error("Please enter a city or location name.");
+//       return;
+//     }
+//     const finalQuery = rawQuery.includes(',')
+//       ? rawQuery.split(',')[0].trim()
+//       : rawQuery.trim();
+
+//     // Reset coordinates as we are searching by name/city now
+//     setCoords(null);
+//     setLocationName(finalQuery);
+//     setSearchQuery(finalQuery); // Sync state if popular search was used
+
+//     // Fetch facilities using the city name
+//     fetchFacilities(finalQuery, null);
+//   };
+
+//   const handlePopularSearchClick = (state: string) => {
+//     setLocationName(state);
+//     setSearchQuery(state);
+//     // fetchFacilities(state, null);
+//   };
+
+
+//   useEffect(() => {
+//     if (coords?.lat && coords.lng && locationName && active) {
+//       fetchFacilities(locationName, coords);
+//       setActive(false);
+//     }
+//   }, [coords, locationName]);
+//   useEffect(() => {
+//     if ((coords && coords.lat) || searchQuery) {
+//     }
+//   }, [coords, searchQuery]);
 const HeroSection = memo(function HeroSection() {  
   const popularSearches = ["New York", " New Jersey", "Connecticut", "Pennsylvania"];
   const router = useRouter();
@@ -192,60 +489,18 @@ const HeroSection = memo(function HeroSection() {
   const [error, setError] = useState<string | null>(null);
   const [currentCoords, setCurrentCoords] = React.useState<{ lat: number; lng: number } | null>(null);
 
-  // from context - REMOVE cache-related functions
+  // ✅ FIXED: Use context's fetchFacilitiesWithReviews function
   const {
-    setFacilities,
-    coords,
+    fetchFacilitiesWithReviews, // ✅ This handles caching and recommendations automatically
     setCoords,
     locationName,
     setLocationName,
     setIsLoading: setContextIsLoading,
     setError: setContextError,
-    setTotal,
-    recommendations,
-    setRecommendations,
-    refetchFacilities // ✅ Use context's refetch function instead
   } = useFacilities();
 
-  const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews` || "https://app.carenav.io/api/facilities/with-reviews";
-
-  // ❌ REMOVE ALL CACHE FUNCTIONS FROM HERE
-  // Remove: getPage1CacheKey, getTotalCacheKey, getRecommendationsCacheKey
-  // Remove: saveToLocationCache, clearLocationCache
-
-  // Helper: Fetch Top Recommendations
-  const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
-    if (!state || !city) return [];
-    const token = localStorage.getItem("token") || "";
-    const url = `http://localhost:8000/top-facilities?state=${state}&city=${city}&top_n=${top_n}`;
-    try {
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) return [];
-      const data = await res.json();
-      return data || [];
-    } catch {
-      return [];
-    }
-  };
-
-  // Extract state and city from query
-  const parseQueryToStateCity = (query: string | undefined) => {
-    if (!query) return { state: "", city: "" };
-
-    const parts = query.split(",").map((p) => p.trim());
-    if (parts.length === 2) {
-      return { city: parts[0], state: parts[1] };
-    } else if (parts.length === 1) {
-      return { city: "", state: parts[0] };
-    } else {
-      return { city: "", state: "" };
-    }
-  };
-    
-  const fetchFacilities = async (
-    currentSearchQuery: string,
-    currentCoords: Coords | null
-  ) => {
+  // ✅ FIXED: Simple search handler that uses context function
+  const handleSearch = async (searchQuery: string, coords: Coords | null) => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
     if (!token) {
@@ -253,11 +508,7 @@ const HeroSection = memo(function HeroSection() {
       return;
     }
 
-    // ✅ Validate empty input
-    if (
-      (!currentSearchQuery || currentSearchQuery.trim() === "") &&
-      (!currentCoords?.lat || !currentCoords?.lng)
-    ) {
+    if ((!searchQuery || searchQuery.trim() === "") && (!coords?.lat || !coords?.lng)) {
       toast.error("Please enter a city, state, or ZIP code");
       return;
     }
@@ -268,121 +519,23 @@ const HeroSection = memo(function HeroSection() {
     setContextError && setContextError(null);
 
     try {
-      // ✅ Build query params
-      const params = new URLSearchParams();
-
-      if (currentSearchQuery && !currentCoords) {
-        const normalizedQuery = currentSearchQuery
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, "_");
-        params.append("q", normalizedQuery);
-      }
-
-      if (currentCoords?.lat && currentCoords?.lng) {
-        params.append("lat", currentCoords.lat.toString());
-        params.append("lng", currentCoords.lng.toString());
-      }
-
-      params.append("page", "1");
-      params.append("limit", "8");
-
-      const url = `${API_URL}?${params.toString()}`;
-      console.log("🔹 Fetching page 1:", url);
-
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData?.error || `HTTP ${res.status}`);
-      }
+      // ✅ FIXED: Use context function which handles caching and recommendations automatically
+      await fetchFacilitiesWithReviews(searchQuery, coords);
       
-      const data = await res.json();
-
-      const rawFacilitiesList = Array.isArray(data.data)
-        ? data.data
-        : data?.facilities || [];
-
-      // ✅ Map to usable structure
-      const facilitiesList = rawFacilitiesList.map((raw: any) =>
-        mapRawFacilityToCard(raw, currentCoords)
-      );
-
-      // ✅ Store only first page + meta
-      setFacilities(facilitiesList);
-      setCoords(currentCoords);
-      setLocationName(currentSearchQuery || "");
-      setTotal(data.total || 0);
-
-      // ✅ Fetch Top Recommendations based on state/city
-      const { state, city } = parseQueryToStateCity(currentSearchQuery);
-      console.log("🔹 Fetching top recommendations for:", state, city);
-      const topFacilities = await fetchTopRecommendations(state, city, 5);
-      setRecommendations(topFacilities);
-
-      // ❌ REMOVE: saveToLocationCache call - Context will handle caching
-
-      // ✅ Save to localStorage for backward compatibility
-      localStorage.setItem(
-        FACILITIES_STORAGE_KEY,
-        JSON.stringify(facilitiesList)
-      );
-      localStorage.setItem(
-        COORDS_STORAGE_KEY,
-        JSON.stringify(currentCoords || null)
-      );
-      localStorage.setItem(
-        LOCATION_NAME_STORAGE_KEY,
-        JSON.stringify(
-          currentSearchQuery
-            ? currentSearchQuery.trim().replace(/\s+/g, "_").toLowerCase()
-            : ""
-        )
-      );
-
-      console.log(
-        `✅ Loaded page 1 facilities (${facilitiesList.length}) for "${currentSearchQuery}"`,
-        `Top Recommendations: ${topFacilities.length}`
-      );
-
+      console.log(`✅ Search completed for "${searchQuery}"`);
       toast.success("Facilities loaded successfully!");
       router.push("/facility-search");
 
     } catch (err: any) {
-      console.error("❌ Fetch failed:", err);
+      console.error("❌ Search failed:", err);
       toast.error(err.message || "Failed to load facilities");
       setError(err.message || "Unknown error");
       setContextError && setContextError(err.message || "Unknown error");
-
-      // 🔹 Clear stale cache on error
-      setFacilities([]);
-      setCoords(null);
-      setLocationName("");
-      setRecommendations([]);
-
-      // ❌ REMOVE: clearLocationCache call - Context will handle cache clearing
-
-      localStorage.removeItem(FACILITIES_STORAGE_KEY);
-      localStorage.removeItem(COORDS_STORAGE_KEY);
-      localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
-
     } finally {
       setIsLoading(false);
       setContextIsLoading && setContextIsLoading(false);
     }
   };
-
-
-
-
-  // ------------------------------------
-  // HANDLERS
-  // ------------------------------------
 
   // use current location
   const handleUseLocation = () => {
@@ -403,6 +556,7 @@ const HeroSection = memo(function HeroSection() {
 
           // Setting coords will trigger the useEffect to fetch
           setCoords({ lat, lng });
+          setCurrentCoords({ lat, lng });
 
           try {
             // Reverse geocode
@@ -434,11 +588,11 @@ const HeroSection = memo(function HeroSection() {
     }
   };
 
-  // Main search submission handler (for text input and popular searches)
+  // Main search submission handler
   const handleSubmit = (e?: React.FormEvent, cityQuery?: string) => {
     e?.preventDefault();
 
-    const rawQuery = cityQuery || locationName;
+    const rawQuery = cityQuery || locationName || searchQuery;
 
     if (!localStorage.getItem("token")) {
       toast.error("Please log in to search facilities");
@@ -449,36 +603,34 @@ const HeroSection = memo(function HeroSection() {
       toast.error("Please enter a city or location name.");
       return;
     }
+
     const finalQuery = rawQuery.includes(',')
       ? rawQuery.split(',')[0].trim()
       : rawQuery.trim();
 
     // Reset coordinates as we are searching by name/city now
     setCoords(null);
+    setCurrentCoords(null);
     setLocationName(finalQuery);
-    setSearchQuery(finalQuery); // Sync state if popular search was used
+    setSearchQuery(finalQuery);
 
-    // Fetch facilities using the city name
-    fetchFacilities(finalQuery, null);
+    // ✅ FIXED: Use the context function instead of local fetch
+    handleSearch(finalQuery, null);
   };
 
   const handlePopularSearchClick = (state: string) => {
     setLocationName(state);
     setSearchQuery(state);
-    // fetchFacilities(state, null);
+    handleSearch(state, null);
   };
 
-
+  // Handle location-based search when coords are available
   useEffect(() => {
-    if (coords?.lat && coords.lng && locationName && active) {
-      fetchFacilities(locationName, coords);
+    if (currentCoords?.lat && currentCoords.lng && locationName && active) {
+      handleSearch(locationName, currentCoords);
       setActive(false);
     }
-  }, [coords, locationName]);
-  useEffect(() => {
-    if ((coords && coords.lat) || searchQuery) {
-    }
-  }, [coords, searchQuery]);
+  }, [currentCoords, locationName, active]);
 
 
     return (
