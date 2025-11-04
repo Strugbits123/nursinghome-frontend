@@ -9,13 +9,14 @@ import { useFacilities, Facility } from "../context/FacilitiesContext";
 import MapView from '../components/MapView';
 import FacilityReviewSkeleton from '../components/ReviewSkeleton';
 import { FilterButton } from '../components/FilterButton';
-import { motion } from "framer-motion";
 import { SearchNursing } from '../components/SearchNursing';
 import { Footer } from '../components/Footer';
 import AdUnit from "../components/AdUnit";
 import { mapRawFacilityToCard, RawFacility } from '../utils/facilityMapper';
 import Link from "next/link";
 import HeaderFacility from '../components/HeaderFacility';
+import { motion, AnimatePresence } from "framer-motion";
+import RecommendationModal from '../components/RecommendationModal';
 
 
 const API_URL = "${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews";
@@ -138,9 +139,10 @@ export default function FacilitySearchPage() {
 
   const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>([]);
   const [hasRestoredFromCache, setHasRestoredFromCache] = useState(false);
+  const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
-
-  console.log('recommendations', recommendations);
 // =====================
 // 💾 Restore from cache on mount - FIXED VERSION
 // =====================
@@ -375,14 +377,36 @@ useEffect(() => {
 
 
 
-
-
 const handleViewDetails = async (facility: any) => {
-  setLoadingFacilityId(facility.id);
-  const facilitySlug = slugify(facility.name);
-  router.push(`/facility/${facility.id}/${facilitySlug}`);
+    setLoadingFacilityId(facility.id);
+    const facilitySlug = facility.name
+      ?.toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]+/g, "");
+    router.push(`/facility/${facility.id}/${facilitySlug}`);
+  };
 
-};
+  
+// const handleRecommandDetails = async (facility: any) => {
+//   try {
+//     setLoadingFacilityId(facility.id);
+    
+//     // Generate facility slug
+//     const facilityName = facility.name || facility.legal_business_name || "unknown-facility";
+//     const facilitySlug = slugify(facilityName);
+    
+//     // Optional: Add some delay for better UX
+//     await new Promise(resolve => setTimeout(resolve, 300));
+    
+//     // Navigate to facility page
+    
+//   } catch (error) {
+//     console.error('Error navigating to facility details:', error);
+//     // Optional: Show error toast/message to user
+//   } finally {
+//     setLoadingFacilityId(null);
+//   }
+// };
 
 const apiKey = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews`;
  
@@ -775,12 +799,16 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   }
 };
 
-// Scroll to recommendations once loaded
-useEffect(() => {
-  if (recommendations.length) {
-    document.getElementById("recommendations")?.scrollIntoView({ behavior: "smooth" });
-  }
-}, [recommendations]);
+
+ console.log("Recommendations:", recommendations);
+  // Show modal 5 seconds after load if recommendations exist
+  useEffect(() => {
+    if (recommendations?.length > 0) {
+      const timer = setTimeout(() => setShowModal(true), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [recommendations]);
+
 
 
 const mapCenter = useMemo(
@@ -914,48 +942,119 @@ const facilityCoords = useMemo(
         </div>
       </section>
 
+      <RecommendationModal recommendations={recommendations} />
+
       {/* --------------------- Top Recommendations --------------------- */}
-      {/* <section className="w-full p-4 sm:p-6 bg-white" id="recommendations">
-        <h2 className="text-2xl font-bold mb-4">Top Recommendations</h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recommendations.slice(0, 3).map((facility) => (
-            <motion.div
-              key={facility.id}
-              layout
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="cursor-pointer border rounded-lg shadow hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-              onClick={() => handleCardClick(facility)}
-            >
-              <div className="relative h-40 w-full bg-gray-200">
-                {facility.photo ? (
-                  <img
-                    src={facility.photo}
-                    alt={facility.provider_name}
-                    className="object-cover w-full h-full"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    No Image
-                  </div>
-                )}
+      
+       {/* <AnimatePresence>
+        {showModal && recommendations?.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, x: 200, y: -100 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={{ opacity: 0, x: 200, y: -100 }}
+            transition={{ type: "spring", stiffness: 80, damping: 12 }}
+            className="fixed top-6 right-6 z-50 bg-white shadow-2xl border border-gray-200 rounded-2xl w-80 max-h-[85vh] flex flex-col"
+          >
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-800">
+                🌟 Top Recommendations
+              </h2>
+              <div className="flex gap-2 items-center">
+                <button
+                  onClick={() => setExpanded((prev) => !prev)}
+                  className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition"
+                >
+                  {expanded ? "▲" : "▼"}
+                </button>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition"
+                >
+                  ✕
+                </button>
               </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold truncate">{facility.provider_name}</h3>
-                <p className="text-gray-600 text-sm truncate">{facility.city_town}, {facility.state}</p>
-                {facility.rating && (
-                  <div className="flex items-center mt-2">
-                    <span className="text-yellow-500 mr-1">★</span>
-                    <span className="text-gray-800">{facility.rating}</span>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section> */}
+            </div>
 
+            <div className="p-4 border-b border-gray-200">
+              <p className="text-sm text-gray-600">
+                Based on your search and preferences:
+              </p>
+            </div>
+
+            <AnimatePresence>
+              {expanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex-1 overflow-hidden"
+                >
+                  <div className="space-y-2 p-4 max-h-64 overflow-y-auto">
+                    {recommendations.slice(0, 6).map((facility, index) => (
+                      <motion.div
+                        key={facility.id || index}
+                        whileHover={{ scale: 1.02 }}
+                        className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition cursor-pointer bg-white"
+                      >
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-800 truncate">
+                              {facility.name}
+                            </p>
+                            <p className="text-sm text-gray-500 truncate mt-1">
+                              {facility.city_town}, {facility.state}
+                            </p>
+                            {facility.type && (
+                              <p className="text-xs text-gray-400 mt-1">
+                                {facility.type}
+                              </p>
+                            )}
+                          </div>
+                          {facility.rating && (
+                            <div className="flex items-center text-yellow-500 text-sm whitespace-nowrap">
+                              ★
+                              <span className="ml-1 text-gray-700 font-medium">
+                                {facility.rating}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-3 flex justify-end">
+                          <button
+                            onClick={() => handleViewDetails(facility)}
+                            disabled={loadingFacilityId === facility.id}
+                            className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed min-w-20"
+                          >
+                            {loadingFacilityId === facility.id ? (
+                              <span className="flex items-center justify-center">
+                                <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Loading...
+                              </span>
+                            ) : (
+                              "View Details"
+                            )}
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!expanded && (
+              <div className="p-4 text-center text-gray-500 text-sm">
+                Click ↓ to view recommendations
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence> */}
 
       <section className="w-full min-h-[148px] mx-auto bg-white flex flex-col justify-center px-4 sm:px-6 py-4 ">
         <div className="flex flex-col md:flex-col md:items-start w-full mb-4 gap-4">

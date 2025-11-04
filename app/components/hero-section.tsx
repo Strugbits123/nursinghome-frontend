@@ -167,23 +167,21 @@ const parseQueryToStateCity = (query: string | undefined) => {
   if (parts.length === 1) return { city: "", state: parts[0] };
   return { city: "", state: "" };
 };
-
-// Fetch top recommendations from FastAPI
 const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
-  if (!state || !city) return [];
+  if (!state && !city) return [];
   const token = localStorage.getItem("token") || "";
-  const url = `http://localhost:8000/top-facilities?state=${state}&city=${city}&top_n=${top_n}`;
+  const url = `http://localhost:8000/recommendations/top?state=${encodeURIComponent(state)}&city=${encodeURIComponent(city)}&limit=${top_n}`;
   try {
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (!res.ok) return [];
     const data = await res.json();
-    return data || [];
-  } catch {
+    return data.recommendations || [];
+  } catch (err) {
+    console.error("Failed to fetch top recommendations:", err);
     return [];
   }
-
-
 };
+
 const HeroSection = memo(function HeroSection() {  
   const popularSearches = ["New York", " New Jersey", "Connecticut", "Pennsylvania"];
   const router = useRouter();
@@ -318,6 +316,7 @@ const HeroSection = memo(function HeroSection() {
 
      // ✅ Fetch Top Recommendations based on state/city
     const { state, city } = parseQueryToStateCity(currentSearchQuery); // Helper to extract state/city
+    console.log("🔹 Fetching top recommendations for:", state, city);
     const topFacilities = await fetchTopRecommendations(state, city, 5);
     setRecommendations(topFacilities); // Save to recommendations state
 
@@ -458,7 +457,7 @@ const HeroSection = memo(function HeroSection() {
 
 
     return (
-        <section className="min-h-[900px] overflow-hidden relative">
+        <section className="min-h-[900px] overflow-hidden  relative">
         
             
             {/* Three.js Background */}
@@ -632,17 +631,7 @@ const HeroSection = memo(function HeroSection() {
 
 
       </div>
-        {/* ✅ Responsive Ads Below "Popular Searches" */}
-        <div className="w-full flex flex-col items-center justify-center  z-10 mt-2">
-         
-
-          {/* Medium & large screens → banner ad */}
-          <div className="hidden sm:flex w-full justify-start px-4 sm:px-8 md:px-22 lg:px-24 xl:px-82">
-            <div className="w-full sm:w-[700px] md:w-[1250px] lg:w-[1250px] xl:w-[1250px] h-[90px] lg:mx-8">
-              <AdUnit adSlot="1234567890" layout="banner" />
-            </div>
-          </div>
-      </div>
+        
     </section>
     )
 });

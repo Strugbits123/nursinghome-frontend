@@ -16,7 +16,7 @@ type Feature = {
   suffix?: string;
 };
 
-// 🌌 Floating Particle Background Component
+// 🔴 Red-Themed Floating Particle Background Component
 function FloatingParticles() {
   const mountRef = useRef<HTMLDivElement>(null);
 
@@ -30,40 +30,55 @@ function FloatingParticles() {
       0.1,
       1000
     );
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ 
+      alpha: true, 
+      antialias: true 
+    });
 
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
     renderer.setClearColor(0x000000, 0);
     mountRef.current.appendChild(renderer.domElement);
 
-    // Create floating particles
-    const particleCount = 250;
+    // Create red-themed floating particles
+    const particleCount = 300;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * 20;
-      positions[i3 + 1] = (Math.random() - 0.5) * 10;
-      positions[i3 + 2] = (Math.random() - 0.5) * 5;
+      positions[i3] = (Math.random() - 0.5) * 25;
+      positions[i3 + 1] = (Math.random() - 0.5) * 15;
+      positions[i3 + 2] = (Math.random() - 0.5) * 10;
 
-      const r = 0.8 + Math.random() * 0.2;
-      const g = 0.8 + Math.random() * 0.2;
-      const b = 0.9;
-      colors[i3] = r;
-      colors[i3 + 1] = g;
-      colors[i3 + 2] = b;
+      // Red color palette variations
+      const colorVariation = Math.random();
+      if (colorVariation < 0.6) {
+        // Primary red tones
+        colors[i3] = 0.9 + Math.random() * 0.1;     // R
+        colors[i3 + 1] = 0.2 + Math.random() * 0.3; // G
+        colors[i3 + 2] = 0.2 + Math.random() * 0.3; // B
+      } else if (colorVariation < 0.8) {
+        // Pink/rose tones
+        colors[i3] = 0.9 + Math.random() * 0.1;     // R
+        colors[i3 + 1] = 0.4 + Math.random() * 0.3; // G
+        colors[i3 + 2] = 0.5 + Math.random() * 0.3; // B
+      } else {
+        // Orange-red tones
+        colors[i3] = 0.9 + Math.random() * 0.1;     // R
+        colors[i3 + 1] = 0.3 + Math.random() * 0.4; // G
+        colors[i3 + 2] = 0.1 + Math.random() * 0.2; // B
+      }
     }
 
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 0.04,
+      size: 0.05,
       vertexColors: true,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.7,
       sizeAttenuation: true,
       blending: THREE.AdditiveBlending,
     });
@@ -71,7 +86,7 @@ function FloatingParticles() {
     const particles = new THREE.Points(geometry, material);
     scene.add(particles);
 
-    camera.position.z = 6;
+    camera.position.z = 8;
 
     const clock = new THREE.Clock();
     let animationFrameId: number;
@@ -79,8 +94,12 @@ function FloatingParticles() {
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       const elapsed = clock.getElapsedTime();
-      particles.rotation.x = elapsed * 0.1;
-      particles.rotation.y = elapsed * 0.05;
+      
+      // Gentle floating animation
+      particles.rotation.x = elapsed * 0.08;
+      particles.rotation.y = elapsed * 0.04;
+      particles.position.y = Math.sin(elapsed * 0.3) * 0.2;
+      
       renderer.render(scene, camera);
     };
 
@@ -112,7 +131,7 @@ function FloatingParticles() {
   return (
     <div
       ref={mountRef}
-      className="absolute inset-0 pointer-events-none opacity-30"
+      className="absolute inset-0 pointer-events-none opacity-40"
       style={{ zIndex: 0 }}
     />
   );
@@ -124,7 +143,7 @@ function AnimatedCard({
 }: {
   feature: Feature;
   index: number;
-  sectionRef: React.RefObject<HTMLDivElement>;
+  sectionRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const IconComponent = feature.icon;
   const countUpDelay = 0.6 + index * 0.2;
@@ -174,7 +193,7 @@ function AnimatedCard({
   );
 }
 
-// 🌟 Trusted Section (Final Layout)
+// 🌟 Trusted Section (Red-Themed Layout)
 export function TrustedSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -218,8 +237,11 @@ export function TrustedSection() {
       className="relative py-16 px-4 bg-white overflow-hidden"
       ref={sectionRef}
     >
-      {/* Three.js Floating Particles */}
+      {/* Red-Themed Three.js Floating Particles */}
       <FloatingParticles />
+
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.02]" />
 
       <div className="relative max-w-6xl mx-auto z-10">
         <div className="text-center mb-12">
@@ -237,7 +259,7 @@ export function TrustedSection() {
               />
             </span>
           </h2>
-          <p className="text-lg max-w-2xl mx-auto text-[#212121] opacity-80">
+          <p className="text-lg max-w-2xl mx-auto text-[#212121] opacity-90">
             Our comprehensive database includes verified information from CMS,
             real family reviews, and AI-powered insights.
           </p>

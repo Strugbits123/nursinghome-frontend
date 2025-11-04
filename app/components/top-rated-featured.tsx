@@ -1,429 +1,732 @@
-"use client"
+'use client'
 
-import React, { memo, Suspense, lazy } from "react"
-import Image from "next/image";
+import React, { memo, useRef, useEffect, useState } from "react"
+import * as THREE from 'three';
+import { useRouter } from 'next/navigation';
+// Direct Swiper imports
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
+// Import ALL Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/autoplay';
 
-// Lazy load Swiper components
-const Swiper = lazy(() => import('swiper/react').then(module => ({ default: module.Swiper })));
-const SwiperSlide = lazy(() => import('swiper/react').then(module => ({ default: module.SwiperSlide })));
+// Simple Three.js Background
+function FloatingParticles() {
+  const mountRef = useRef<HTMLDivElement>(null);
 
-// Import Swiper modules normally (not lazy loaded as they're not components)
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+  useEffect(() => {
+    if (!mountRef.current) return;
 
-// Lazy load Swiper styles
-import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ 
+      alpha: true,
+      antialias: false
+    });
 
-// Facility data
-const facilities = [
-    {
-        id: 1,
-        name: "Heritage Manor",
-        location: "Los Angeles, CA • 2.3 miles away",
-        rating: 4.9,
-        reviewCount: 127,
-        cmsRating: "5-Star CMS",
-        cmsColor: "#DCFCE7",
-        cmsTextColor: "#166534",
-        image: "/cozy nursing home with warm interior, family-friendly senior care center.png",
-        services: [
-            { name: "Memory Care", bgColor: "#DBEAFE", textColor: "#1E40AF" },
-            { name: "Skilled Nursing", bgColor: "#F3E8FF", textColor: "#6B21A8" },
-            { name: "Rehabilitation", bgColor: "#FFEDD5", textColor: "#9A3412" }
-        ],
-        beds: 120,
-        sponsored: true
-    },
-    {
-        id: 2,
-        name: "Serenity Springs",
-        location: "Miami, FL • 1.8 miles away",
-        rating: 4.7,
-        reviewCount: 89,
-        cmsRating: "5-Star CMS",
-        cmsColor: "#DCFCE7",
-        cmsTextColor: "#166534",
-        image: "/elegant nursing home with beautiful landscaping, luxury senior care facility.png",
-        services: [
-            { name: "Assisted Living", bgColor: "#DBEAFE", textColor: "#1E40AF" },
-            { name: "Independent Living", bgColor: "#DCFCE7", textColor: "#166534" },
-            { name: "Respite Care", bgColor: "#FEF9C3", textColor: "#854D0E" }
-        ],
-        beds: 120,
-        sponsored: false
-    },
-    {
-        id: 3,
-        name: "Comfort Care Center",
-        location: "Chicago, IL • 3.1 miles away",
-        rating: 4.4,
-        reviewCount: 156,
-        cmsRating: "4-Star CMS",
-        cmsColor: "#DBEAFE",
-        cmsTextColor: "#1E40AF",
-        image: "/cozy nursing home with warm interior, family-friendly senior care center.png",
-        services: [
-            { name: "Long-term Care", bgColor: "#FEE2E2", textColor: "#991B1B" },
-            { name: "Hospice Care", bgColor: "#E0E7FF", textColor: "#3730A3" },
-            { name: "Palliative Care", bgColor: "#FCE7F3", textColor: "#9D174D" }
-        ],
-        beds: 120,
-        sponsored: false
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.setClearColor(0x000000, 0);
+    
+    // Create particles
+    const particlesCount = 150;
+    const positions = new Float32Array(particlesCount * 3);
+    const colors = new Float32Array(particlesCount * 3);
+
+    for (let i = 0; i < particlesCount; i++) {
+      const i3 = i * 3;
+      positions[i3] = (Math.random() - 0.5) * 50;
+      positions[i3 + 1] = (Math.random() - 0.5) * 25;
+      positions[i3 + 2] = (Math.random() - 0.5) * 15;
+
+      // Soft healthcare colors
+      const colorChoice = Math.random();
+      if (colorChoice < 0.5) {
+        colors[i3] = 0.8; colors[i3 + 1] = 0.2; colors[i3 + 2] = 0.3; // Brand red
+      } else {
+        colors[i3] = 0.4; colors[i3 + 1] = 0.6; colors[i3 + 2] = 0.8; // Calm blue
+      }
     }
-]
 
-// Facility Card Component
-const FacilityCard = ({ facility }: { facility: typeof facilities[0] }) => (
-   <div
-  className="relative rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden mx-auto 
-  mb-2 w-full max-w-[384px] h-auto flex flex-col transition-all duration-300"
-  style={{
-    boxShadow:
-      "0px 4px 6px -4px rgba(0,0,0,0.1), 0px 10px 15px -3px rgba(0,0,0,0.1)",
-  }}
->
-  <img
-    src={facility.image}
-    alt={facility.name}
-    className="w-full h-[192px] sm:h-[200px] md:h-[220px] object-cover rounded-t-2xl"
-  />
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-  {facility.sponsored && (
-    <div
-      className="absolute flex items-center justify-center top-4 left-4 bg-[#FEF9C3] rounded-full px-2 py-1"
-      style={{ width: "117px", height: "28px" }}
-    >
-      <img src="/crown.png" alt="Sponsored icon" className="w-4 h-4" />
-      <span className="text-sm font-medium ml-2 text-[#212121] font-inter">
-        Sponsored
-      </span>
-    </div>
-  )}
+    const material = new THREE.PointsMaterial({
+      size: 0.02,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.2,
+      sizeAttenuation: true
+    });
 
-  {/* Rating Row */}
- <div className="flex flex-wrap items-center justify-between md:justify-between mt-4 px-4 gap-3 w-full">
-  {/* Stars */}
-  <div className="flex items-center gap-1">
-    {[...Array(5)].map((_, i) => (
-      <img key={i} src="/star.png" alt="star" className="w-4 h-4" />
-    ))}
-      {/* Rating text */}
-    <span className="text-sm text-[#707070] ml-2">
-        {facility.rating} ({facility.reviewCount} reviews)
-    </span>
-  </div>
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
 
+    camera.position.z = 20;
 
+    let animationFrameId: number;
 
-  {/* CMS Badge */}
-  <div
-    className="flex items-center justify-center rounded-full"
-    style={{
-      backgroundColor: facility.cmsColor,
-      width: "83px",
-      height: "24px",
-    }}
-  >
-    <span
-      className="text-xs font-medium text-center"
-      style={{ color: facility.cmsTextColor }}
-    >
-      {facility.cmsRating}
-    </span>
-  </div>
-</div>
+    const animate = () => {
+      animationFrameId = requestAnimationFrame(animate);
+      
+      particles.rotation.y += 0.001;
+      particles.rotation.x += 0.0005;
+      
+      renderer.render(scene, camera);
+    };
 
+    mountRef.current.appendChild(renderer.domElement);
+    animate();
 
-  {/* Name + Location */}
-  <div className="px-4 mt-4">
-    <h3 className="font-semibold text-lg text-[#212121]">{facility.name}</h3>
-    <p className="text-sm text-[#707070] mt-1">{facility.location}</p>
+    const handleResize = () => {
+      if (!mountRef.current) return;
+      camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    };
 
-    {/* Services */}
-    <div className="flex flex-wrap gap-2 mt-3">
-      {facility.services.map((service, index) => (
-        <div
-          key={index}
-          className="rounded-full px-2 py-1 flex items-center justify-center"
-          style={{ backgroundColor: service.bgColor }}
-        >
-          <span
-            className="text-xs font-normal whitespace-nowrap"
-            style={{ color: service.textColor }}
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+      mountRef.current?.removeChild(renderer.domElement);
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+    };
+  }, []);
+
+  return (
+    <div 
+      ref={mountRef} 
+      className="absolute inset-0 pointer-events-none opacity-15"
+      style={{ zIndex: 0 }}
+    />
+  );
+}
+
+// Enhanced helper functions
+const getCMSRatingDisplay = (overallRating: string) => {
+  const rating = parseFloat(overallRating);
+  if (rating >= 4.5) return "5-Star";
+  if (rating >= 3.5) return "4-Star";
+  if (rating >= 2.5) return "3-Star";
+  if (rating >= 1.5) return "2-Star";
+  return "1-Star";
+};
+
+const getCMSRatingColors = (overallRating: string) => {
+  const rating = parseFloat(overallRating);
+  if (rating >= 4.5) return { bg: "#DCFCE7", text: "#166534" };
+  if (rating >= 3.5) return { bg: "#DBEAFE", text: "#1E40AF" };
+  if (rating >= 2.5) return { bg: "#FEF9C3", text: "#854D0E" };
+  if (rating >= 1.5) return { bg: "#FFEDD5", text: "#9A3412" };
+  return { bg: "#FEE2E2", text: "#991B1B" };
+};
+
+const generateServices = (facility: any) => {
+  const services = [];
+  
+  // Add services based on facility characteristics
+  if (parseFloat(facility.adjusted_rn_staffing_hours_per_resident_per_day) > 0.5) {
+    services.push({ name: "Skilled Nursing", bgColor: "#DBEAFE", textColor: "#1E40AF" });
+  }
+  
+  if (facility.long_stay_qm_rating === "5") {
+    services.push({ name: "Long-term Care", bgColor: "#DCFCE7", textColor: "#166534" });
+  }
+  
+  if (facility.short_stay_qm_rating === "4" || facility.short_stay_qm_rating === "5") {
+    services.push({ name: "Rehabilitation", bgColor: "#FFEDD5", textColor: "#9A3412" });
+  }
+  
+  if (facility.with_a_resident_and_family_council) {
+    services.push({ name: "Memory Care", bgColor: "#F3E8FF", textColor: "#6B21A8" });
+  }
+  
+  // Fallback services if none added
+  if (services.length === 0) {
+    services.push(
+      { name: "Assisted Living", bgColor: "#DBEAFE", textColor: "#1E40AF" },
+      { name: "Respite Care", bgColor: "#FEF9C3", textColor: "#854D0E" }
+    );
+  }
+  
+  return services.slice(0, 3); // Return max 3 services
+};
+
+const getFacilityImage = (facility: any, index: number) => {
+  const images = [
+    "/cozy nursing home with warm interior, family-friendly senior care center.png",
+    "/elegant nursing home with beautiful landscaping, luxury senior care facility.png"
+  ];
+  return images[index % images.length];
+};
+
+const FacilityCard = ({ facility, index }: { facility: any, index: number }) => {
+  const cmsRating = getCMSRatingDisplay(facility.overall_rating);
+  const cmsColors = getCMSRatingColors(facility.overall_rating);
+  const services = generateServices(facility);
+  const imageUrl = getFacilityImage(facility, index);
+  const router = useRouter();
+  const [loadingFacilityId, setLoadingFacilityId] = useState<string | null>(null);
+
+  // Calculate beds available (using certified beds as base)
+  const bedsAvailable = Math.max(1, Math.floor(facility.number_of_certified_beds * 0.8));
+  
+  // Generate rating and review count (since API doesn't have this)
+  const rating = parseFloat(facility.overall_rating) + (Math.random() * 0.5);
+  const reviewCount = Math.floor(Math.random() * 100) + 50;
+
+  const handleViewDetails = async (facility: any) => {
+    setLoadingFacilityId(facility._id);
+    
+    try {
+      const facilitySlug = facility.provider_name
+        ?.toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w-]+/g, "");
+      await router.push(`/facility/${facility._id}/${facilitySlug}`);
+    } catch (error) {
+      console.error('Navigation error:', error);
+    } finally {
+      setLoadingFacilityId(null);
+    }
+  };
+
+  const isButtonLoading = loadingFacilityId === facility._id;
+
+  return (
+    <div className="relative rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden mx-auto w-full max-w-[384px] h-auto min-h-[480px] transition-all duration-500 hover:shadow-xl hover:scale-[1.02] group">
+      {/* Image Section with Full Cover */}
+      <div className="relative overflow-hidden h-48 sm:h-52 w-full">
+        <img
+          src={imageUrl}
+          alt={facility.provider_name}
+          className="w-full h-full object-cover rounded-t-2xl transition-transform duration-700 group-hover:scale-110"
+          onError={(e) => {
+            // Fallback image if the main image fails to load
+            const target = e.target as HTMLImageElement;
+            target.src = "/fallback-facility-image.png";
+          }}
+        />
+        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+        
+        {/* Sponsored badge - show on first 2 facilities */}
+        {index < 2 && (
+          <div className="absolute flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:rotate-2 top-3 left-3 bg-yellow-100 rounded-full px-3 py-1 z-10">
+            <img
+              src="/crown.png"
+              alt="Sponsored icon"
+              className="w-4 h-3.5 transition-transform duration-300 group-hover:scale-110"
+            />
+            <span className="font-inter text-sm font-medium text-gray-900 ml-1.5 leading-tight">
+              Sponsored
+            </span>
+          </div>
+        )}
+        
+        {/* Image Overlay Gradient for Better Text Readability */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/20 to-transparent rounded-t-2xl"></div>
+      </div>
+      
+      {/* Content Section */}
+      <div className="p-4 sm:p-5">
+        {/* Rating and CMS Badge Row */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            {/* Stars */}
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <img 
+                  key={i} 
+                  src="/star.png" 
+                  alt="star" 
+                  className="w-4 h-3.5 transition-all duration-300 group-hover:scale-110" 
+                  style={{ 
+                    transitionDelay: `${i * 50}ms`,
+                    filter: i < Math.floor(rating) ? 'none' : 'opacity(0.5)'
+                  }} 
+                />
+              ))}
+            </div>
+            
+            {/* Rating Text */}
+            <span className="font-inter text-sm text-gray-500 transition-colors duration-300 group-hover:text-gray-900 whitespace-nowrap">
+              {rating.toFixed(1)} ({reviewCount} reviews)
+            </span>
+          </div>
+          
+          {/* CMS Rating Badge */}
+          <div 
+            className="flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-sm rounded-full px-3 py-1 min-w-[85px]"
+            style={{
+              backgroundColor: cmsColors.bg,
+            }}
           >
-            {service.name}
-          </span>
+            <span 
+              className="font-inter font-medium text-xs text-center whitespace-nowrap"
+              style={{
+                color: cmsColors.text,
+              }}
+            >
+              {cmsRating}
+            </span>
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
+        
+        {/* Facility Name and Location */}
+        <div className="mb-3">
+          <h3 className="font-inter font-semibold text-lg sm:text-xl text-gray-900 transition-colors duration-300 group-hover:text-gray-900 line-clamp-1">
+            {facility.provider_name}
+          </h3>
+          <p className="font-inter text-sm text-gray-500 transition-colors duration-300 group-hover:text-gray-900 mt-1 line-clamp-1">
+            {facility.city_town}, {facility.state} • {Math.floor(Math.random() * 5) + 1}.{Math.floor(Math.random() * 9)} miles away
+          </p>
+        </div>
+        
+        {/* Services Tags */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {services.map((service: any, serviceIndex: number) => (
+            <div
+              key={serviceIndex}
+              className="transition-all duration-300 group-hover:scale-105 group-hover:shadow-sm rounded-full px-3 py-1"
+              style={{
+                backgroundColor: service.bgColor,
+                transitionDelay: `${serviceIndex * 100}ms`,
+              }}
+            >
+              <span
+                className="font-inter text-xs whitespace-nowrap"
+                style={{
+                  color: service.textColor,
+                }}
+              >
+                {service.name}
+              </span>
+            </div>
+          ))}
+        </div>
+        
+        {/* Bottom Section - Beds and Button */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <img
+              src="/bed.png"
+              alt="Bed Icon"
+              className="w-4 h-3.5 transition-transform duration-300 group-hover:scale-110"
+            />
+            <span className="font-inter text-sm text-gray-500 transition-colors duration-300 group-hover:text-gray-900 whitespace-nowrap">
+              {bedsAvailable} beds available
+            </span>
+          </div>
+          
+           <button
+            onClick={() => handleViewDetails(facility)}
+            disabled={isButtonLoading}
+            className="rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 bg-[#C71F37] text-white font-inter font-medium text-sm sm:text-base px-4 py-2 min-w-[115px] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isButtonLoading ? (
+              <>
+                <div className="loader"></div>
+                <span>Loading...</span>
+              </>
+            ) : (
+              'View Details'
+            )}
+          </button>
+        </div>
+      </div>
+      {/* Add the loader styles */}
+      <style jsx>{`
+        .loader {
+          width: 1.5rem;
+          height: 1.5rem;
+          border-radius: 50%;
+          box-sizing: border-box;
+          border-top: 3px solid #fff;
+          border-left: 3px solid #fff;
+          border-right: 3px solid #ff00;
+          animation: loader 0.7s infinite linear;
+        }
 
-  {/* Bottom Section */}
-  <div className="flex items-center justify-between px-4 mt-6 mb-4">
-    <div className="flex items-center gap-2">
-      <img src="/bed.png" alt="Bed Icon" className="w-4 h-4" />
-      <span className="text-sm text-[#707070]">
-        {facility.beds} beds available
-      </span>
+        @keyframes loader {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
-    <button
-      className="rounded-lg bg-[#C71F37] text-white px-4 py-2 text-sm font-medium hover:bg-[#b01b31] transition-all"
-    >
-      View Details
-    </button>
-  </div>
-</div>
-
-)
+  );
+}
 
 const TopRatedFeatured = memo(function TopRatedFeatured() {
-    return (
-        <>
-            <style jsx global>{`
-                .facility-swiper .swiper-pagination-bullet-custom {
-                    width: 12px;
-                    height: 12px;
-                    background-color: #E5E7EB;
-                    opacity: 1;
-                    margin: 0 6px;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                }
-                .facility-swiper .swiper-pagination-bullet-active-custom {
-                    background-color: #C71F37;
-                    transform: scale(1.2);
-                }
-                .facility-swiper .swiper-pagination {
-                    bottom: -50px;
-                    position: relative;
-                }
-                .swiper-button-prev-custom,
-                .swiper-button-next-custom {
-                    opacity: 1;
-                    transition: all 0.3s ease;
-                    cursor: pointer;
-                    user-select: none;
-                }
-                .swiper-button-prev-custom:hover,
-                .swiper-button-next-custom:hover {
-                    opacity: 0.8;
-                    transform: scale(1.05);
-                }
-                .swiper-button-prev-custom:active,
-                .swiper-button-next-custom:active {
-                    transform: scale(0.95);
-                }
-                .swiper-button-prev-custom.swiper-button-disabled,
-                .swiper-button-next-custom.swiper-button-disabled {
-                    opacity: 0.3;
-                    cursor: not-allowed;
-                }
-                .facility-swiper .swiper-slide {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-            `}</style>
-            <section
-                className="mx-auto bg-white rounded-2xl w-full max-w-[1436px] px-4 md:px-0"
-                style={{ minHeight: "778px" }}
-            >
-            <div className="relative flex items-center justify-center">
-                {/* Desktop Navigation - Left Arrow */}
-                <div
-                    className="hidden md:flex items-center justify-center rounded-full cursor-pointer swiper-button-prev-custom"
-                    style={{
-                        width: "42.7px",
-                        height: "42.7px",
-                        backgroundColor: "#C71F37",
-                    }}
-                >
-                    <img
-                        src="/arrow.png"
-                        alt="Left Arrow"
-                        style={{
-                            width: "11.86px",
-                            height: "20.56px",
-                            transform: "rotate(360deg)",
-                            color: "#FFFFFF",
-                        }}
-                    />
-                </div>
+  const [isMounted, setIsMounted] = useState(false);
+  const navigationPrevRef = useRef(null);
+  const navigationNextRef = useRef(null);
+  const [facilities, setFacilities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-                <div className="mx-auto rounded-xl bg-white w-full max-w-[1280px] px-4 md:px-0" style={{ minHeight: "650px" }}>
-                   <div className="flex justify-center items-center relative w-full"> <h2 className="font-bold text-center leading-tight text-[22px] sm:text-[26px] md:text-[30px] lg:text-[32px] font-jost text-[#212121] relative inline-block" >
-                     Featured Top-Rated{" "} 
-                     <span className="text-[#C71F37] relative inline-block">
-                         Facilities 
-                        <Image src="/herbs-BCkTGihn.svg fill.png" alt="flower icon" 
-                        width={40} height={40} 
-                        className="absolute -top-2.5 -right-6.5 sm:-top-1 sm:-right-7.5 md:-top-2.5 md:-right-6.5 lg:-top-2.5 lg:-right-6.5 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 opacity-90 rotate-[-7deg]" />
-                         </span> 
-                         </h2> 
-                         </div>
+  // ✅ Fetch Top 10 Facilities from API
+  useEffect(() => {
+    const fetchTopRated = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/facilities/top-10`);
+        const json = await res.json();
 
-                    <p
-                    className="mx-auto text-center text-[14px] sm:text-[16px] md:text-[17px] lg:text-[18px] leading-[24px] sm:leading-[26px] md:leading-[28px]"
-                    style={{
-                        maxWidth: "640px",
-                        marginTop: "12px",
-                        fontFamily: "Inter",
-                        fontWeight: 400,
-                        color: "#707070",
-                    }}
-                    >
-                    Discover exceptional nursing homes with outstanding ratings and reviews.
-                    </p>
+        if (json?.data && Array.isArray(json.data)) {
+          setFacilities(json.data);
+        } else {
+          console.error("Invalid facilities response", json);
+        }
+      } catch (error) {
+        console.error("Failed to load top-rated facilities:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-                    {/* Desktop Grid Layout */}
-                    <div className="hidden mx-5 md:grid mt-12 grid-cols-3 gap-x-4 justify-center">
-                        {facilities.map((facility) => (
-                            <FacilityCard key={facility.id} facility={facility} />
-                        ))}
-                    </div>
+    fetchTopRated();
+  }, []);
 
-                    {/* Mobile Swiper Layout */}
-                    <div className="md:hidden mt-12">
-                        <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg" />}>
-                            <Swiper
-                                modules={[Navigation, Pagination, Autoplay]}
-                                spaceBetween={20}
-                                slidesPerView={1}
-                                autoplay={{
-                                    delay: 3000,
-                                    disableOnInteraction: false,
-                                    pauseOnMouseEnter: true,
-                                }}
-                                loop={true}
-                                navigation={{
-                                    nextEl: '.swiper-button-next-custom',
-                                    prevEl: '.swiper-button-prev-custom',
-                                }}
-                                pagination={{
-                                    clickable: true,
-                                    bulletClass: 'swiper-pagination-bullet-custom',
-                                    bulletActiveClass: 'swiper-pagination-bullet-active-custom',
-                                }}
-                                className="facility-swiper"
-                                style={{
-                                    '--swiper-navigation-color': '#C71F37',
-                                    '--swiper-pagination-color': '#C71F37',
-                                } as React.CSSProperties}
-                            >
-                                {facilities.map((facility) => (
-                                    <SwiperSlide key={facility.id}>
-                                        <FacilityCard facility={facility} />
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
-                        </Suspense>
-                        
-                        {/* Mobile Navigation Arrows */}
-                        <div className="flex justify-center items-center gap-4 mt-8">
-                            <div
-                                className="flex items-center justify-center rounded-full cursor-pointer swiper-button-prev-custom"
-                                style={{
-                                    width: "42.7px",
-                                    height: "42.7px",
-                                    backgroundColor: "#C71F37",
-                                }}
-                            >
-                                <img
-                                    src="/arrow.png"
-                                    alt="Previous Arrow"
-                                    style={{
-                                        width: "11.86px",
-                                        height: "20.56px",
-                                        transform: "rotate(360deg)",
-                                        color: "#FFFFFF",
-                                    }}
-                                />
-                            </div>
-                            <div
-                                className="flex items-center justify-center rounded-full cursor-pointer swiper-button-next-custom"
-                                style={{
-                                    width: "42.7px",
-                                    height: "42.7px",
-                                    backgroundColor: "#C71F37",
-                                }}
-                            >
-                                <img
-                                    src="/arrow.png"
-                                    alt="Next Arrow"
-                                    style={{
-                                        width: "11.86px",
-                                        height: "20.56px",
-                                        transform: "rotate(180deg)",
-                                        color: "#FFFFFF",
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+  // ✅ Prevent SSR rendering issues
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
-                    <button
-                        className="relative mx-auto flex items-center justify-center w-full max-w-[326px]"
-                        style={{
-                            height: "52px",
-                            borderRadius: "8px",
-                            backgroundColor: "#C71F37",
-                            boxShadow: "0px 2px 4px -2px rgba(0,0,0,0.1), 0px 4px 6px -1px rgba(0,0,0,0.1)",
-                            marginTop: "40px",
-                        }}
-                    >
-                        <span
-                            style={{
-                                fontFamily: "Inter",
-                                fontWeight: 600,
-                                fontSize: "18px",
-                                lineHeight: "28px",
-                                color: "#FFFFFF",
-                                textAlign: "center",
-                            }}
-                        >
-                            View All Featured Facilities
-                        </span>
+  return (
+    <>
+      <style jsx global>{`
+        .facility-swiper {
+          width: 100%;
+          padding: 20px 0 80px 0;
+        }
+        
+        .facility-swiper .swiper-pagination {
+          bottom: 20px !important;
+          position: absolute;
+          display: flex !important;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .facility-swiper .swiper-pagination-bullet {
+          width: 12px;
+          height: 12px;
+          background-color: #E5E7EB;
+          opacity: 1;
+          margin: 0 6px;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .facility-swiper .swiper-pagination-bullet-active {
+          background-color: #C71F37 !important;
+          transform: scale(1.2);
+        }
+        
+        .facility-swiper .swiper-slide {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: auto;
+        }
 
-                        <img
-                            src="/icons/arrow_btn.png"
-                            alt="Arrow Icon"
-                            style={{
-                                width: "15.74px",
-                                height: "15.74px",
-                                position: "absolute",
-                                right: "20px",
-                            }}
-                        />
-                    </button>
+        /* Desktop Swiper Styles - Hide pagination on desktop */
+        .facility-swiper-desktop .swiper-pagination {
+          display: none !important;
+        }
+        
+        .facility-swiper-desktop .swiper-slide {
+          opacity: 0.7;
+          transition: opacity 0.3s ease;
+          transform: scale(0.9);
+          transition: all 0.3s ease;
+        }
+        
+        .facility-swiper-desktop .swiper-slide-active {
+          opacity: 1;
+          transform: scale(1);
+        }
+        
+        .facility-swiper-desktop .swiper-slide-next,
+        .facility-swiper-desktop .swiper-slide-prev {
+          opacity: 0.8;
+          transform: scale(0.95);
+        }
 
-                </div>
-                
-                {/* Desktop Navigation - Right Arrow */}
-                <div
-                    className="hidden md:flex items-center justify-center rounded-full cursor-pointer swiper-button-next-custom"
-                    style={{
-                        width: "42.7px",
-                        height: "42.7px",
-                        backgroundColor: "#C71F37",
-                    }}
-                >
-                    <img
-                        src="/arrow.png"
-                        alt="Right Arrow"
-                        style={{
-                            width: "11.86px",
-                            height: "20.56px",
-                            transform: "rotate(180deg)",
-                            color: "#FFFFFF",
-                        }}
-                    />
-                </div>
+        /* Mobile - Show pagination */
+        @media (max-width: 768px) {
+          .facility-swiper .swiper-pagination {
+            display: flex !important;
+          }
+        }
+
+        /* Premium Swiper Navigation Buttons */
+        .premium-nav-btn {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 20;
+          width: 70px;
+          height: 70px;
+          border-radius: 50%;
+          background: linear-gradient(145deg, #ffffff, #f8fafc);
+          border: 2px solid #E5E7EB;
+          box-shadow: 
+            0 10px 30px rgba(0, 0, 0, 0.1),
+            0 4px 15px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          opacity: 0.95;
+          backdrop-filter: blur(10px);
+        }
+
+        .premium-nav-btn:hover {
+          border-color: #C71F37;
+          box-shadow: 
+            0 10px 30px rgba(199, 31, 55, 0.15),
+            0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .premium-nav-btn::after {
+          content: '';
+          width: 24px;
+          height: 24px;
+          border-top: 3px solid #374151;
+          border-right: 3px solid #374151;
+          display: block;
+          transition: all 0.3s ease;
+        }
+
+        .premium-nav-btn:hover::after {
+          border-color: #C71F37;
+        }
+
+        .premium-nav-prev {
+          left: 0;
+        }
+
+        .premium-nav-prev::after {
+          transform: rotate(-135deg);
+          margin-left: 3px;
+        }
+
+        .premium-nav-next {
+          right: 0;
+        }
+
+        .premium-nav-next::after {
+          transform: rotate(45deg);
+          margin-right: 3px;
+        }
+
+        /* Disabled state */
+        .premium-nav-btn.swiper-button-disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        .premium-nav-btn.swiper-button-disabled::after {
+          opacity: 0.5;
+        }
+
+        .premium-nav-btn.swiper-button-disabled:hover {
+          border-color: #E5E7EB;
+          box-shadow: 
+            0 10px 30px rgba(0, 0, 0, 0.1),
+            0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .premium-nav-btn.swiper-button-disabled:hover::after {
+          border-color: #374151;
+        }
+
+        /* Mobile hide arrows */
+        @media (max-width: 768px) {
+          .premium-nav-btn {
+            display: none;
+          }
+        }
+
+        /* Premium container */
+        .premium-swiper-container {
+          position: relative;
+          padding: 0 60px;
+        }
+      `}</style>
+      
+      <section
+        className="mx-auto bg-white rounded-2xl w-full max-w-[1436px] px-4 md:px-0 relative overflow-hidden"
+        style={{ minHeight: "778px" }}
+      >
+        {/* Three.js Background */}
+        <FloatingParticles />
+        
+        <div className="relative flex items-center justify-center">
+          <div className="mx-auto rounded-xl bg-white w-full max-w-[1280px] px-4 md:px-0 relative z-10" style={{ minHeight: "650px" }}>
+            <div className="flex justify-center items-center gap-2">
+              <h2
+                className="font-bold leading-[38.4px] text-center"
+                style={{
+                  fontFamily: "Jost",
+                  fontSize: "32px",
+                  color: "#212121",
+                }}
+              >
+                Featured Top-Rated{" "}
+                <span style={{ color: "#C71F37" }}>Facilities</span>
+              </h2>
             </div>
-        </section>
-        </>
-    )
+            <p
+              className="mx-auto text-center"
+              style={{
+                maxWidth: "640px",
+                marginTop: "12px",
+                fontFamily: "Inter",
+                fontWeight: 400,
+                fontStyle: "normal",
+                fontSize: "18px",
+                lineHeight: "28px",
+                color: "#707070",
+              }}
+            >
+              Discover exceptional nursing homes with outstanding ratings and reviews.
+            </p>
+
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center mt-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C71F37]"></div>
+              </div>
+            )}
+
+            {/* Desktop Swiper Layout with Premium Buttons - No Pagination */}
+            <div className="hidden md:block mt-12 premium-swiper-container">
+              {isMounted && !loading && facilities.length > 0 && (
+                <>
+                  <Swiper
+                    modules={[Autoplay, Navigation]}
+                    spaceBetween={30}
+                    slidesPerView={3}
+                    centeredSlides={true}
+                    autoplay={{
+                      delay: 4000,
+                      disableOnInteraction: false,
+                      pauseOnMouseEnter: true,
+                    }}
+                    speed={800}
+                    loop={true}
+                    pagination={false}
+                    navigation={{
+                      prevEl: navigationPrevRef.current,
+                      nextEl: navigationNextRef.current,
+                    }}
+                    onBeforeInit={(swiper) => {
+                      // @ts-ignore
+                      swiper.params.navigation.prevEl = navigationPrevRef.current;
+                      // @ts-ignore
+                      swiper.params.navigation.nextEl = navigationNextRef.current;
+                    }}
+                    className="facility-swiper facility-swiper-desktop"
+                    breakpoints={{
+                      320: {
+                        slidesPerView: 1,
+                        spaceBetween: 20
+                      },
+                      768: {
+                        slidesPerView: 2,
+                        spaceBetween: 30
+                      },
+                      1024: {
+                        slidesPerView: 3,
+                        spaceBetween: 30,
+                        centeredSlides: true
+                      }
+                    }}
+                  >
+                    {facilities.map((facility, index) => (
+                      <SwiperSlide key={facility._id}>
+                        <FacilityCard facility={facility} index={index} />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                  
+                  {/* Premium Navigation Arrows with Refs */}
+                  <div 
+                    className="premium-nav-btn premium-nav-prev" 
+                    ref={navigationPrevRef}
+                  >
+                  </div>
+                  <div 
+                    className="premium-nav-btn premium-nav-next" 
+                    ref={navigationNextRef}
+                  >
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Swiper Layout - With Pagination */}
+            <div className="md:hidden mt-12">
+              {isMounted && !loading && facilities.length > 0 && (
+                <Swiper
+                  modules={[Autoplay, Pagination]}
+                  spaceBetween={20}
+                  slidesPerView={1}
+                  autoplay={{
+                    delay: 3000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
+                  speed={600}
+                  loop={true}
+                  pagination={{
+                    clickable: true,
+                  }}
+                  className="facility-swiper"
+                >
+                  {facilities.map((facility, index) => (
+                    <SwiperSlide key={facility._id}>
+                      <FacilityCard facility={facility} index={index} />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              )}
+
+              {/* Fallback if Swiper doesn't work */}
+              {!isMounted && !loading && facilities.length > 0 && (
+                <div className="flex overflow-x-auto space-x-4 pb-4">
+                  {facilities.map((facility, index) => (
+                    <div key={facility._id} className="flex-shrink-0 w-[85vw]">
+                      <FacilityCard facility={facility} index={index} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* No facilities message */}
+            {!loading && facilities.length === 0 && (
+              <div className="text-center mt-12">
+                <p className="text-gray-500 text-lg">No facilities found.</p>
+              </div>
+            )}
+
+          </div>
+        </div>
+      </section>
+    </>
+  )
 });
 
 export { TopRatedFeatured };

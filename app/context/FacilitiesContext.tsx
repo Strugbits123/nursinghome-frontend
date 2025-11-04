@@ -172,12 +172,6 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     getInitialState(COORDS_STORAGE_KEY, null)
   );
 
-  // const [locationName, setLocationName] = useState<string>(() => {
-  //   const saved = getInitialState(LOCATION_NAME_STORAGE_KEY, "");
-  //   return typeof saved === "string" && saved.trim()
-  //     ? saved.trim().replace(/\s+/g, "_").toLowerCase()
-  //     : "";
-  // });
   const [locationName, setLocationName] = useState<string>("");
   const [normalizedLocation, setNormalizedLocation] = useState<string>("");
 
@@ -212,9 +206,9 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
             if (parsed?.Value) {
               try {
                 const inner = JSON.parse(parsed.Value);
-                parsed = inner?.Value ?? inner; // inner.Value = "New York"
+                parsed = inner?.Value ?? inner; 
               } catch {
-                parsed = parsed.Value; // fallback
+                parsed = parsed.Value;
               }
             }
 
