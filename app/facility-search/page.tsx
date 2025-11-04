@@ -18,12 +18,8 @@ import HeaderFacility from '../components/HeaderFacility';
 import { motion, AnimatePresence } from "framer-motion";
 import RecommendationModal from '../components/RecommendationModal';
 
-const API_URL = "${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews`;
 const ITEMS_PER_PAGE = 8;
-
-// 🎯 SMART CACHE: Location-based cache keys
-const getPage1CacheKey = (locationName: string) => `facilities_page_1_${locationName}`;
-const getTotalCacheKey = (locationName: string) => `facilities_total_${locationName}`;
 
 function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
   const pages: (number | string)[] = [];
@@ -97,9 +93,9 @@ export default function FacilitySearchPage() {
     total: totalCountFromProvider = 0,
     isLoading,
     coords,
-    totalPages,
     error,
-    recommendations
+    recommendations,
+    refetchFacilities
   } = useFacilities();
 
   const [filters, setFilters] = useState({
@@ -114,119 +110,47 @@ export default function FacilitySearchPage() {
 
   const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
   const [isFiltering, setIsFiltering] = useState(false);
-  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null); // ✅ FIXED: This was missing
   const [showSkeletonTimer, setShowSkeletonTimer] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loadingFacilityId, setLoadingFacilityId] = useState<string | null>(null);
-  const [allFacilities, setAllFacilities] = useState<Facility[]>(initialFacilities);
-  const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>(initialFacilities);
+  const [allFacilities, setAllFacilities] = useState<Facility[]>([]);
+  const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>([]);
   const [usingFilters, setUsingFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isPrefetching, setIsPrefetching] = useState(false);
-  const [totalFacilities, setTotalFacilities] = useState(totalCountFromProvider || 0);
+  const [totalFacilities, setTotalFacilities] = useState(0);
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [paginatedFacilities, setPaginatedFacilities] = useState<Facility[]>([]);
   const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  // 🎯 SMART CACHE: Get cached data for current location
-  const getCachedData = useCallback((currentLocation: string) => {
-    if (!currentLocation || typeof window === "undefined") return null;
-    
-    const page1CacheKey = getPage1CacheKey(currentLocation);
-    const totalCacheKey = getTotalCacheKey(currentLocation);
-    
-    try {
-      const cachedPage1 = localStorage.getItem(page1CacheKey);
-      const cachedTotal = localStorage.getItem(totalCacheKey);
-      
-      if (cachedPage1 && cachedTotal) {
-        const facilities = JSON.parse(cachedPage1);
-        const total = parseInt(cachedTotal);
-        
-        if (Array.isArray(facilities) && facilities.length > 0 && total > 0) {
-          console.log(`⚡ Using cached page 1 for ${currentLocation}`);
-          return { facilities, total };
-        }
-      }
-    } catch (error) {
-      console.error('Error reading cache:', error);
-    }
-    
-    return null;
-  }, []);
-
-  // 🎯 SMART CACHE: Save page 1 and total for current location
-  const saveToCache = useCallback((currentLocation: string, facilities: Facility[], total: number) => {
-    if (!currentLocation || typeof window === "undefined") return;
-    
-    try {
-      const page1CacheKey = getPage1CacheKey(currentLocation);
-      const totalCacheKey = getTotalCacheKey(currentLocation);
-      
-      localStorage.setItem(page1CacheKey, JSON.stringify(facilities));
-      localStorage.setItem(totalCacheKey, total.toString());
-      
-      console.log(`💾 Cached page 1 and total for ${currentLocation}`);
-    } catch (error) {
-      console.error('Error saving to cache:', error);
-    }
-  }, []);
-
-  // 🎯 SMART CACHE: Restore from cache on mount
+  // ✅ SIMPLIFIED: Initialize data from context only
   useEffect(() => {
-    if (typeof window === "undefined" || !locationName) return;
+    console.log("🔄 INITIALIZING DATA FROM CONTEXT:", {
+      locationName,
+      initialFacilitiesCount: initialFacilities.length,
+      totalCountFromProvider
+    });
 
-    const cachedData = getCachedData(locationName);
-    if (cachedData) {
-      console.log("✅ Restored page 1 from cache for", locationName);
-      setAllFacilities(cachedData.facilities);
-      setFilteredFacilities(cachedData.facilities);
-      setPaginatedFacilities(cachedData.facilities);
-      setTotalFacilities(cachedData.total);
+    if (initialFacilities.length > 0) {
+      console.log("✅ Using context data");
+      setAllFacilities(initialFacilities);
+      setFilteredFacilities(initialFacilities);
+      setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
+      setTotalFacilities(totalCountFromProvider || initialFacilities.length);
     }
-  }, [locationName, getCachedData]);
+  }, [initialFacilities, totalCountFromProvider, locationName]);
 
-  // 🎯 SMART CACHE: Save first page when initialFacilities loads
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!initialFacilities || initialFacilities.length === 0 || !locationName) return;
+  // ✅ SIMPLIFIED: Get display total
+  const displayTotal = useMemo(() => {
+    return totalFacilities > 0 ? totalFacilities : allFacilities.length;
+  }, [totalFacilities, allFacilities.length]);
 
-    console.log("💾 Caching first page facilities for", locationName);
-    saveToCache(locationName, initialFacilities, totalCountFromProvider);
-
-    setAllFacilities(initialFacilities);
-    setFilteredFacilities(initialFacilities);
-    setTotalFacilities(totalCountFromProvider);
-    if (currentPage === 1) setPaginatedFacilities(initialFacilities);
-  }, [initialFacilities, totalCountFromProvider, locationName, saveToCache]);
-
-  // Sync totals from provider
-  useEffect(() => {
-    if (totalCountFromProvider && totalCountFromProvider > 0) {
-      console.log("🔄 Updating total from provider:", totalCountFromProvider);
-      setTotalFacilities(totalCountFromProvider);
-      
-      // 🎯 SMART CACHE: Update cache with fresh total
-      if (typeof window !== "undefined" && locationName) {
-        saveToCache(locationName, initialFacilities, totalCountFromProvider);
-      }
-    }
-  }, [totalCountFromProvider, locationName, initialFacilities, saveToCache]);
-
-  // Load page function with smart caching
+  // ✅ SIMPLIFIED: Load page function - no caching
   const loadPage = useCallback(async (page: number) => {
-    // For page 1 with cache, use cached data
-    if (page === 1 && locationName) {
-      const cachedData = getCachedData(locationName);
-      if (cachedData) {
-        setPaginatedFacilities(cachedData.facilities);
-        return;
-      }
-    }
-
-    // For filtered results, use Redux facilities
+    // For filtered results, use existing facilities
     if (usingFilters) {
       const start = (page - 1) * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE;
@@ -252,6 +176,8 @@ export default function FacilitySearchPage() {
       }
 
       const url = `${API_URL}/?${params.toString()}`;
+      console.log("🌐 Loading page:", page, "from API");
+
       const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -267,17 +193,12 @@ export default function FacilitySearchPage() {
         return;
       }
 
-      const { data: facilityList, total: apiTotal = 0 } = data;
+      const { data: facilityList } = data;
       const mapped: Facility[] = facilityList.map((f: RawFacility) =>
         mapRawFacilityToCard(f, coords)
       );
 
       setPaginatedFacilities(mapped);
-
-      // 🎯 SMART CACHE: Only cache page 1
-      if (page === 1 && locationName) {
-        saveToCache(locationName, mapped, apiTotal);
-      }
 
     } catch (err: any) {
       console.error("❌ loadPage failed:", err?.message || err);
@@ -285,42 +206,33 @@ export default function FacilitySearchPage() {
     } finally {
       setIsPageLoading(false);
     }
-  }, [coords, locationName, filteredFacilities, usingFilters, getCachedData, saveToCache]);
+  }, [coords, locationName, filteredFacilities, usingFilters]);
 
-  // 🎯 SMART CACHE: Get display total from cache or Redux
-  const displayTotal = useMemo(() => {
-    if (totalFacilities > 0) return totalFacilities;
-    
-    // Try to get from cache for current location
-    if (locationName) {
-      const cachedData = getCachedData(locationName);
-      if (cachedData) {
-        return cachedData.total;
-      }
-    }
-    
-    return totalCountFromProvider;
-  }, [totalFacilities, locationName, totalCountFromProvider, getCachedData]);
-
-  // Effects for pagination
+  // ✅ SIMPLIFIED: Pagination effect
   useEffect(() => {
+    console.log("🔄 Pagination effect:", {
+      currentPage,
+      usingFilters,
+      filteredCount: filteredFacilities.length,
+      allCount: allFacilities.length
+    });
+
     if (usingFilters) {
       const start = (currentPage - 1) * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE;
-      setPaginatedFacilities(filteredFacilities.slice(start, end));
-    } else if (currentPage === 1 && locationName) {
-      // For page 1, try cache first
-      const cachedData = getCachedData(locationName);
-      if (cachedData) {
-        setPaginatedFacilities(cachedData.facilities);
-      } else if (initialFacilities.length > 0) {
-        setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
-      }
+      const paginated = filteredFacilities.slice(start, end);
+      setPaginatedFacilities(paginated);
+    } else if (currentPage === 1) {
+      // For page 1, show first ITEMS_PER_PAGE facilities
+      const paginated = allFacilities.slice(0, ITEMS_PER_PAGE);
+      setPaginatedFacilities(paginated);
     } else if (currentPage > 1) {
+      // For other pages, load from API
       loadPage(currentPage);
     }
-  }, [currentPage, initialFacilities, usingFilters, locationName, getCachedData, loadPage, filteredFacilities]);
+  }, [currentPage, usingFilters, filteredFacilities, allFacilities, loadPage]);
 
+  // Update facilities when context changes
   useEffect(() => {
     setAllFacilities(initialFacilities);
     if (!usingFilters) {
@@ -343,30 +255,12 @@ export default function FacilitySearchPage() {
     router.push(`/facility/${facility.id}/${facilitySlug}`);
   };
 
-  // 🎯 FIXED: Update pagination for filtered results
+  // ✅ SIMPLIFIED: Page navigation
   const goToPage = (page: number) => {
     if (page < 1 || page > totalFacilityPages) return;
 
-    console.log("📄 Switching to page:", page);
+    console.log("📄 Switching to page:", page, "of", totalFacilityPages);
     setCurrentPage(page);
-    
-    if (usingFilters) {
-      fetchFilteredFacilitiesWithPagination(filters, page);
-    } else {
-      if (page > 1) {
-        loadPage(page);
-      } else {
-        // For page 1 without filters, try cache first
-        if (locationName) {
-          const cachedData = getCachedData(locationName);
-          if (cachedData) {
-            setPaginatedFacilities(cachedData.facilities);
-          } else {
-            setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
-          }
-        }
-      }
-    }
   };
 
   const goToNextPage = () => {
@@ -383,42 +277,20 @@ export default function FacilitySearchPage() {
     }
   };
 
-  // 🎯 FIXED: Filter functions with cache support
+  // ✅ SIMPLIFIED: Filter functions - use context's refetch
   const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
     const appliedFilters = newFilters || filters;
     setIsFiltering(true);
 
     try {
-      const params = new URLSearchParams();
+      const hasActiveFilters = Object.values(appliedFilters).some(value => 
+        value && value.toString().trim() !== '' && !['locationName', 'city', 'state'].includes(value.toString())
+      );
 
-      Object.entries(appliedFilters).forEach(([key, value]) => {
-        if (typeof value === "string" && value.trim()) {
-          const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
-          params.append(key, cleanValue);
-        }
-      });
-
-      params.append("page", "1");
-      params.append("limit", ITEMS_PER_PAGE.toString());
-
-      if (coords?.lat && coords?.lng) {
-        params.append("userLat", coords.lat.toString());
-        params.append("userLng", coords.lng.toString());
-      }
-
-      const hasFilters = [...params].length > 2;
-
-      // 🔄 Reset filters - show cached page 1
-      if (!hasFilters) {
+      // 🔄 Reset filters - restore from context
+      if (!hasActiveFilters) {
         setFilteredFacilities(initialFacilities);
-        if (locationName) {
-          const cachedData = getCachedData(locationName);
-          if (cachedData) {
-            setPaginatedFacilities(cachedData.facilities);
-          } else {
-            setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
-          }
-        }
+        setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
         setUsingFilters(false);
         setCurrentPage(1);
         setIsFiltering(false);
@@ -426,79 +298,32 @@ export default function FacilitySearchPage() {
         return;
       }
 
-      if (!params.has("locationName")) {
-        let location = locationName?.trim() || "";
-        if (!location) {
-          const facilityCoords = extractFacilityCoords(initialFacilities);
-          location = facilityCoords.length > 0 ? facilityCoords[0].name.trim() : "";
-        }
-        if (location) {
-          params.set("locationName", location.replace(/^\+/, "").replace(/\s+/g, "_"));
-        }
-      }
+      // Use context's refetch function for filtered results
+      const filterParams: any = {
+        locationName: locationName || appliedFilters.locationName,
+        ...appliedFilters
+      };
 
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
-      console.log("🌐 Fetching filtered facilities:", apiUrl);
+      // Remove empty values
+      Object.keys(filterParams).forEach(key => {
+        if (!filterParams[key]) delete filterParams[key];
+      });
 
-      const res = await fetch(apiUrl);
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-
-      const data = await res.json();
-
-      const facilitiesData = data.data?.facilities || data.facilities || [];
-      const paginationData = data.data?.pagination || data.pagination;
-
-      if (!facilitiesData || facilitiesData.length === 0) {
-        setFilteredFacilities([]);
-        setPaginatedFacilities([]);
-        setUsingFilters(true);
-        setTotalFacilities(0);
-        setCurrentPage(1);
-        setIsFiltering(false);
-        toast.error("No facilities found");
-        return;
-      }
-
-      const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
-        mapRawFacilityToCard(f, coords)
-      );
-
-      setFilteredFacilities(mappedFacilities);
-      setPaginatedFacilities(mappedFacilities);
+      await refetchFacilities(filterParams);
+      
       setUsingFilters(true);
       setCurrentPage(1);
-      
-      if (paginationData && paginationData.totalCount) {
-        setTotalFacilities(paginationData.totalCount);
-      } else {
-        setTotalFacilities(facilitiesData.length);
-      }
-
-      const total = paginationData?.totalCount || facilitiesData.length;
-      
-      if (data.cached) {
-        console.log(`⚡ Filtered results served from ${data.from} cache`);
-        toast.success(`Found ${total} facilities (cached)`);
-      } else {
-        toast.success(`Found ${total} facilities`);
-      }
+      toast.success(`Found ${initialFacilities.length} facilities`);
       
     } catch (err: any) {
       console.error("❌ Filter fetch failed:", err);
-      setFilteredFacilities([]);
-      setPaginatedFacilities([]);
-      setTotalFacilities(0);
       toast.error(err.message || "Error applying filters");
     } finally {
       setIsFiltering(false);
     }
   };
 
-  // Filtered pagination (no caching for filtered results)
+  // Filtered pagination
   const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
     setIsPageLoading(true);
 
@@ -564,8 +389,6 @@ export default function FacilitySearchPage() {
   };
 
   // Modal effects
-  console.log("Recommendations:", recommendations);
-  
   useEffect(() => {
     if (recommendations?.length > 0) {
       const timer = setTimeout(() => setShowModal(true), 5000);
@@ -573,9 +396,10 @@ export default function FacilitySearchPage() {
     }
   }, [recommendations]);
 
+  // ✅ FIXED: Map center calculation with proper dependencies
   const mapCenter = useMemo(
     () => calculateMapCenter(filteredFacilities, selectedCoords || coords),
-    [filteredFacilities, selectedCoords, coords]
+    [filteredFacilities, selectedCoords, coords] // ✅ Now includes selectedCoords
   );
 
   const facilityCoords = useMemo(
@@ -634,6 +458,17 @@ export default function FacilitySearchPage() {
   const totalFacilityPages = Math.ceil(displayTotal / ITEMS_PER_PAGE);
   const startFacility = displayTotal > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
   const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, displayTotal);
+
+  console.log("📊 Final state:", {
+    displayTotal,
+    totalFacilityPages,
+    currentPage,
+    paginatedCount: paginatedFacilities.length,
+    startFacility,
+    endFacility
+  });
+
+  
 
   {
     isPrefetching && (

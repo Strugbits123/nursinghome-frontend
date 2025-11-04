@@ -192,7 +192,7 @@ const HeroSection = memo(function HeroSection() {
   const [error, setError] = useState<string | null>(null);
   const [currentCoords, setCurrentCoords] = React.useState<{ lat: number; lng: number } | null>(null);
 
-  // from context
+  // from context - REMOVE cache-related functions
   const {
     setFacilities,
     coords,
@@ -203,54 +203,15 @@ const HeroSection = memo(function HeroSection() {
     setError: setContextError,
     setTotal,
     recommendations,
-    setRecommendations
+    setRecommendations,
+    refetchFacilities // ✅ Use context's refetch function instead
   } = useFacilities();
 
-  
   const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews` || "https://app.carenav.io/api/facilities/with-reviews";
 
-  // 🎯 SMART CACHE: Location-based cache keys
-  const getPage1CacheKey = (locationName: string) => `facilities_page_1_${locationName}`;
-  const getTotalCacheKey = (locationName: string) => `facilities_total_${locationName}`;
-  const getRecommendationsCacheKey = (locationName: string) => `recommendations_${locationName}`;
-
-  // 🎯 SMART CACHE: Save data for location
-  const saveToLocationCache = useCallback((currentLocation: string, facilities: any[], total: number, recommendations: any[] = []) => {
-    if (!currentLocation || typeof window === "undefined") return;
-    
-    try {
-      const page1CacheKey = getPage1CacheKey(currentLocation);
-      const totalCacheKey = getTotalCacheKey(currentLocation);
-      const recommendationsCacheKey = getRecommendationsCacheKey(currentLocation);
-      
-      localStorage.setItem(page1CacheKey, JSON.stringify(facilities));
-      localStorage.setItem(totalCacheKey, total.toString());
-      localStorage.setItem(recommendationsCacheKey, JSON.stringify(recommendations));
-      
-      console.log(`💾 Cached data for ${currentLocation}`);
-    } catch (error) {
-      console.error('Error saving to cache:', error);
-    }
-  }, []);
-
-  // 🎯 SMART CACHE: Clear cache for a specific location
-  const clearLocationCache = useCallback((locationToClear: string) => {
-    if (typeof window === "undefined") return;
-    
-    try {
-      const page1CacheKey = getPage1CacheKey(locationToClear);
-      const totalCacheKey = getTotalCacheKey(locationToClear);
-      const recommendationsCacheKey = getRecommendationsCacheKey(locationToClear);
-      
-      localStorage.removeItem(page1CacheKey);
-      localStorage.removeItem(totalCacheKey);
-      localStorage.removeItem(recommendationsCacheKey);
-      
-      console.log(`🗑️ Cleared cache for ${locationToClear}`);
-    } catch (error) {
-      console.error('Error clearing cache:', error);
-    }
-  }, []);
+  // ❌ REMOVE ALL CACHE FUNCTIONS FROM HERE
+  // Remove: getPage1CacheKey, getTotalCacheKey, getRecommendationsCacheKey
+  // Remove: saveToLocationCache, clearLocationCache
 
   // Helper: Fetch Top Recommendations
   const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
@@ -364,10 +325,7 @@ const HeroSection = memo(function HeroSection() {
       const topFacilities = await fetchTopRecommendations(state, city, 5);
       setRecommendations(topFacilities);
 
-      // 🎯 SMART CACHE: Save to location-based cache
-      if (currentSearchQuery) {
-        saveToLocationCache(currentSearchQuery, facilitiesList, data.total || 0, topFacilities);
-      }
+      // ❌ REMOVE: saveToLocationCache call - Context will handle caching
 
       // ✅ Save to localStorage for backward compatibility
       localStorage.setItem(
@@ -386,9 +344,6 @@ const HeroSection = memo(function HeroSection() {
             : ""
         )
       );
-      if (data.total) {
-        localStorage.setItem("facilities_total_count", String(data.total));
-      }
 
       console.log(
         `✅ Loaded page 1 facilities (${facilitiesList.length}) for "${currentSearchQuery}"`,
@@ -410,10 +365,7 @@ const HeroSection = memo(function HeroSection() {
       setLocationName("");
       setRecommendations([]);
 
-      // 🎯 SMART CACHE: Clear location cache on error
-      if (searchQuery) {
-        clearLocationCache(searchQuery);
-      }
+      // ❌ REMOVE: clearLocationCache call - Context will handle cache clearing
 
       localStorage.removeItem(FACILITIES_STORAGE_KEY);
       localStorage.removeItem(COORDS_STORAGE_KEY);
@@ -424,7 +376,6 @@ const HeroSection = memo(function HeroSection() {
       setContextIsLoading && setContextIsLoading(false);
     }
   };
-
 
 
 
