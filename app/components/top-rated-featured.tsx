@@ -104,8 +104,7 @@ function FloatingParticles() {
   return (
     <div 
       ref={mountRef} 
-      className="absolute inset-0 pointer-events-none opacity-15"
-      style={{ zIndex: 0 }}
+      className={styles.backgroundContainer}
     />
   );
 }
@@ -202,52 +201,52 @@ const FacilityCard = ({ facility, index }: { facility: any, index: number }) => 
   const isButtonLoading = loadingFacilityId === facility._id;
 
   return (
-    <div className="relative rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden mx-auto w-full max-w-[384px] h-auto min-h-[480px] transition-all duration-500 hover:shadow-xl hover:scale-[1.02] group">
+    <div className={styles.facilityCard}>
       {/* Image Section with Full Cover */}
-      <div className="relative overflow-hidden h-48 sm:h-52 w-full">
+      <div className={styles.imageContainer}>
         <img
           src={imageUrl}
           alt={facility.provider_name}
-          className="w-full h-full object-cover rounded-t-2xl transition-transform duration-700 group-hover:scale-110"
+          className={styles.facilityImage}
           onError={(e) => {
             // Fallback image if the main image fails to load
             const target = e.target as HTMLImageElement;
             target.src = "/fallback-facility-image.png";
           }}
         />
-        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+        <div className={styles.imageOverlay}></div>
         
         {/* Sponsored badge - show on first 2 facilities */}
         {index < 2 && (
-          <div className="absolute flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:rotate-2 top-3 left-3 bg-yellow-100 rounded-full px-3 py-1 z-10">
+          <div className={styles.sponsoredBadge}>
             <img
               src="/crown.png"
               alt="Sponsored icon"
-              className="w-4 h-3.5 transition-transform duration-300 group-hover:scale-110"
+              className={styles.sponsoredIcon}
             />
-            <span className="font-inter text-sm font-medium text-gray-900 ml-1.5 leading-tight">
+            <span className={styles.sponsoredText}>
               Sponsored
             </span>
           </div>
         )}
         
         {/* Image Overlay Gradient for Better Text Readability */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/20 to-transparent rounded-t-2xl"></div>
+        <div className={styles.imageGradient}></div>
       </div>
       
       {/* Content Section */}
-      <div className="p-4 sm:p-5">
+      <div className={styles.cardContent}>
         {/* Rating and CMS Badge Row */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+        <div className={styles.ratingRow}>
+          <div className={styles.ratingContainer}>
             {/* Stars */}
-            <div className="flex items-center gap-0.5">
+            <div className={styles.starsContainer}>
               {[...Array(5)].map((_, i) => (
                 <img 
                   key={i} 
                   src="/star.png" 
                   alt="star" 
-                  className="w-4 h-3.5 transition-all duration-300 group-hover:scale-110" 
+                  className={styles.starIcon}
                   style={{ 
                     transitionDelay: `${i * 50}ms`,
                     filter: i < Math.floor(rating) ? 'none' : 'opacity(0.5)'
@@ -257,20 +256,20 @@ const FacilityCard = ({ facility, index }: { facility: any, index: number }) => 
             </div>
             
             {/* Rating Text */}
-            <span className="font-inter text-sm text-gray-500 transition-colors duration-300 group-hover:text-gray-900 whitespace-nowrap">
+            <span className={styles.ratingText}>
               {rating.toFixed(1)} ({reviewCount} reviews)
             </span>
           </div>
           
           {/* CMS Rating Badge */}
           <div 
-            className="flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-sm rounded-full px-3 py-1 min-w-[85px]"
+            className={styles.cmsBadge}
             style={{
               backgroundColor: cmsColors.bg,
             }}
           >
             <span 
-              className="font-inter font-medium text-xs text-center whitespace-nowrap"
+              className={styles.cmsBadgeText}
               style={{
                 color: cmsColors.text,
               }}
@@ -281,28 +280,28 @@ const FacilityCard = ({ facility, index }: { facility: any, index: number }) => 
         </div>
         
         {/* Facility Name and Location */}
-        <div className="mb-3">
-          <h3 className="font-inter font-semibold text-lg sm:text-xl text-gray-900 transition-colors duration-300 group-hover:text-gray-900 line-clamp-1">
+        <div className={styles.facilityInfo}>
+          <h3 className={styles.facilityName}>
             {facility.provider_name}
           </h3>
-          <p className="font-inter text-sm text-gray-500 transition-colors duration-300 group-hover:text-gray-900 mt-1 line-clamp-1">
+          <p className={styles.locationText}>
             {facility.city_town}, {facility.state} • {Math.floor(Math.random() * 5) + 1}.{Math.floor(Math.random() * 9)} miles away
           </p>
         </div>
         
         {/* Services Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className={styles.servicesContainer}>
           {services.map((service: any, serviceIndex: number) => (
             <div
               key={serviceIndex}
-              className="transition-all duration-300 group-hover:scale-105 group-hover:shadow-sm rounded-full px-3 py-1"
+              className={styles.serviceTag}
               style={{
                 backgroundColor: service.bgColor,
                 transitionDelay: `${serviceIndex * 100}ms`,
               }}
             >
               <span
-                className="font-inter text-xs whitespace-nowrap"
+                className={styles.serviceTagText}
                 style={{
                   color: service.textColor,
                 }}
@@ -314,14 +313,14 @@ const FacilityCard = ({ facility, index }: { facility: any, index: number }) => 
         </div>
         
         {/* Bottom Section - Beds and Button */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center gap-2">
+        <div className={styles.bottomSection}>
+          <div className={styles.bedsInfo}>
             <img
               src="/bed.png"
               alt="Bed Icon"
-              className="w-4 h-3.5 transition-transform duration-300 group-hover:scale-110"
+              className={styles.bedIcon}
             />
-            <span className="font-inter text-sm text-gray-500 transition-colors duration-300 group-hover:text-gray-900 whitespace-nowrap">
+            <span className={styles.bedsText}>
               {bedsAvailable} beds available
             </span>
           </div>
@@ -329,11 +328,11 @@ const FacilityCard = ({ facility, index }: { facility: any, index: number }) => 
            <button
             onClick={() => handleViewDetails(facility)}
             disabled={isButtonLoading}
-            className="rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 bg-[#C71F37] text-white font-inter font-medium text-sm sm:text-base px-4 py-2 min-w-[115px] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            className={styles.viewDetailsBtn}
           >
             {isButtonLoading ? (
               <>
-                <div className="loader"></div>
+                <div className={styles.loader}></div>
                 <span>Loading...</span>
               </>
             ) : (
@@ -342,25 +341,6 @@ const FacilityCard = ({ facility, index }: { facility: any, index: number }) => 
           </button>
         </div>
       </div>
-      {/* Add the loader styles */}
-      <style jsx>{`
-        .loader {
-          width: 1.5rem;
-          height: 1.5rem;
-          border-radius: 50%;
-          box-sizing: border-box;
-          border-top: 3px solid #fff;
-          border-left: 3px solid #fff;
-          border-right: 3px solid #ff00;
-          animation: loader 0.7s infinite linear;
-        }
-
-        @keyframes loader {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   );
 }
@@ -376,7 +356,7 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
   useEffect(() => {
     const fetchTopRated = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/facilities/top-10`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/facilities/top-10`);
         const json = await res.json();
 
         if (json?.data && Array.isArray(json.data)) {
@@ -403,53 +383,31 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
     <>
       
       
-      <section
-        className="mx-auto bg-white rounded-2xl w-full max-w-[1436px] px-4 md:px-0 relative overflow-hidden"
-        style={{ minHeight: "778px" }}
-      >
+      <section className={styles.mainSection}>
         {/* Three.js Background */}
         <FloatingParticles />
         
-        <div className="relative flex items-center justify-center">
-          <div className="mx-auto rounded-xl bg-white w-full max-w-[1280px] px-4 md:px-0 relative z-10" style={{ minHeight: "650px" }}>
-            <div className="flex justify-center items-center gap-2">
-              <h2
-                className="font-bold leading-[38.4px] text-center"
-                style={{
-                  fontFamily: "Jost",
-                  fontSize: "32px",
-                  color: "#212121",
-                }}
-              >
+        <div className={styles.contentWrapper}>
+          <div className={styles.innerContainer}>
+            <div className={styles.headerWrapper}>
+              <h2 className={styles.mainTitle}>
                 Featured Top-Rated{" "}
-                <span style={{ color: "#C71F37" }}>Facilities</span>
+                <span className={styles.titleHighlight}>Facilities</span>
               </h2>
             </div>
-            <p
-              className="mx-auto text-center"
-              style={{
-                maxWidth: "640px",
-                marginTop: "12px",
-                fontFamily: "Inter",
-                fontWeight: 400,
-                fontStyle: "normal",
-                fontSize: "18px",
-                lineHeight: "28px",
-                color: "#707070",
-              }}
-            >
+            <p className={styles.description}>
               Discover exceptional nursing homes with outstanding ratings and reviews.
             </p>
 
             {/* Loading State */}
             {loading && (
-              <div className="flex justify-center items-center mt-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C71F37]"></div>
+              <div className={styles.loadingContainer}>
+                <div className={styles.loadingSpinner}></div>
               </div>
             )}
 
             {/* Desktop Swiper Layout with Premium Buttons - No Pagination */}
-            <div className={`hidden md:block mt-12 ${styles.premiumSwiperContainer}`}>
+            <div className={`${styles.desktopSwiper} ${styles.premiumSwiperContainer}`}>
               {isMounted && !loading && facilities.length > 0 && (
                 <>
                   <Swiper
@@ -504,18 +462,20 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
                     className={`${styles.premiumNavBtn} ${styles.premiumNavPrev}`}
                     ref={navigationPrevRef}
                   >
+                    <span className={styles.srOnly}>Previous</span>
                   </div>
-                  <div 
+                  <button
                     className={`${styles.premiumNavBtn} ${styles.premiumNavNext}`}
                     ref={navigationNextRef}
                   >
-                  </div>
+                    <span className={styles.srOnly}>Next</span>
+                  </button>
                 </>
               )}
             </div>
 
             {/* Mobile Swiper Layout - With Pagination */}
-            <div className="md:hidden mt-12">
+            <div className={styles.mobileSwiper}>
               {isMounted && !loading && facilities.length > 0 && (
                 <Swiper
                   modules={[Autoplay, Pagination]}
@@ -543,9 +503,9 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
 
               {/* Fallback if Swiper doesn't work */}
               {!isMounted && !loading && facilities.length > 0 && (
-                <div className="flex overflow-x-auto space-x-4 pb-4">
+                <div className={styles.mobileFallback}>
                   {facilities.map((facility, index) => (
-                    <div key={facility._id} className="flex-shrink-0 w-[85vw]">
+                    <div key={facility._id} className={styles.mobileFallbackItem}>
                       <FacilityCard facility={facility} index={index} />
                     </div>
                   ))}
@@ -555,8 +515,8 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
 
             {/* No facilities message */}
             {!loading && facilities.length === 0 && (
-              <div className="text-center mt-12">
-                <p className="text-gray-500 text-lg">No facilities found.</p>
+              <div className={styles.noFacilities}>
+                <p className={styles.noFacilitiesText}>No facilities found.</p>
               </div>
             )}
 
