@@ -16,126 +16,126 @@ type Feature = {
   suffix?: string;
 };
 
-// 🔴 Red-Themed Floating Particle Background Component
-function FloatingParticles() {
-  const mountRef = useRef<HTMLDivElement>(null);
+// // 🔴 Red-Themed Floating Particle Background Component
+// function FloatingParticles() {
+//   const mountRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!mountRef.current) return;
+//   useEffect(() => {
+//     if (!mountRef.current) return;
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
-      0.1,
-      1000
-    );
-    const renderer = new THREE.WebGLRenderer({ 
-      alpha: true, 
-      antialias: true 
-    });
+//     const scene = new THREE.Scene();
+//     const camera = new THREE.PerspectiveCamera(
+//       75,
+//       mountRef.current.clientWidth / mountRef.current.clientHeight,
+//       0.1,
+//       1000
+//     );
+//     const renderer = new THREE.WebGLRenderer({ 
+//       alpha: true, 
+//       antialias: true 
+//     });
 
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    renderer.setClearColor(0x000000, 0);
-    mountRef.current.appendChild(renderer.domElement);
+//     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+//     renderer.setClearColor(0x000000, 0);
+//     mountRef.current.appendChild(renderer.domElement);
 
-    // Create red-themed floating particles
-    const particleCount = 300;
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
+//     // Create red-themed floating particles
+//     const particleCount = 300;
+//     const geometry = new THREE.BufferGeometry();
+//     const positions = new Float32Array(particleCount * 3);
+//     const colors = new Float32Array(particleCount * 3);
 
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * 25;
-      positions[i3 + 1] = (Math.random() - 0.5) * 15;
-      positions[i3 + 2] = (Math.random() - 0.5) * 10;
+//     for (let i = 0; i < particleCount; i++) {
+//       const i3 = i * 3;
+//       positions[i3] = (Math.random() - 0.5) * 25;
+//       positions[i3 + 1] = (Math.random() - 0.5) * 15;
+//       positions[i3 + 2] = (Math.random() - 0.5) * 10;
 
-      // Red color palette variations
-      const colorVariation = Math.random();
-      if (colorVariation < 0.6) {
-        // Primary red tones
-        colors[i3] = 0.9 + Math.random() * 0.1;     // R
-        colors[i3 + 1] = 0.2 + Math.random() * 0.3; // G
-        colors[i3 + 2] = 0.2 + Math.random() * 0.3; // B
-      } else if (colorVariation < 0.8) {
-        // Pink/rose tones
-        colors[i3] = 0.9 + Math.random() * 0.1;     // R
-        colors[i3 + 1] = 0.4 + Math.random() * 0.3; // G
-        colors[i3 + 2] = 0.5 + Math.random() * 0.3; // B
-      } else {
-        // Orange-red tones
-        colors[i3] = 0.9 + Math.random() * 0.1;     // R
-        colors[i3 + 1] = 0.3 + Math.random() * 0.4; // G
-        colors[i3 + 2] = 0.1 + Math.random() * 0.2; // B
-      }
-    }
+//       // Red color palette variations
+//       const colorVariation = Math.random();
+//       if (colorVariation < 0.6) {
+//         // Primary red tones
+//         colors[i3] = 0.9 + Math.random() * 0.1;     // R
+//         colors[i3 + 1] = 0.2 + Math.random() * 0.3; // G
+//         colors[i3 + 2] = 0.2 + Math.random() * 0.3; // B
+//       } else if (colorVariation < 0.8) {
+//         // Pink/rose tones
+//         colors[i3] = 0.9 + Math.random() * 0.1;     // R
+//         colors[i3 + 1] = 0.4 + Math.random() * 0.3; // G
+//         colors[i3 + 2] = 0.5 + Math.random() * 0.3; // B
+//       } else {
+//         // Orange-red tones
+//         colors[i3] = 0.9 + Math.random() * 0.1;     // R
+//         colors[i3 + 1] = 0.3 + Math.random() * 0.4; // G
+//         colors[i3 + 2] = 0.1 + Math.random() * 0.2; // B
+//       }
+//     }
 
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+//     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+//     geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
-    const material = new THREE.PointsMaterial({
-      size: 0.05,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.7,
-      sizeAttenuation: true,
-      blending: THREE.AdditiveBlending,
-    });
+//     const material = new THREE.PointsMaterial({
+//       size: 0.05,
+//       vertexColors: true,
+//       transparent: true,
+//       opacity: 0.7,
+//       sizeAttenuation: true,
+//       blending: THREE.AdditiveBlending,
+//     });
 
-    const particles = new THREE.Points(geometry, material);
-    scene.add(particles);
+//     const particles = new THREE.Points(geometry, material);
+//     scene.add(particles);
 
-    camera.position.z = 8;
+//     camera.position.z = 8;
 
-    const clock = new THREE.Clock();
-    let animationFrameId: number;
+//     const clock = new THREE.Clock();
+//     let animationFrameId: number;
 
-    const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
+//     const animate = () => {
+//       animationFrameId = requestAnimationFrame(animate);
+//       const elapsed = clock.getElapsedTime();
       
-      // Gentle floating animation
-      particles.rotation.x = elapsed * 0.08;
-      particles.rotation.y = elapsed * 0.04;
-      particles.position.y = Math.sin(elapsed * 0.3) * 0.2;
+//       // Gentle floating animation
+//       particles.rotation.x = elapsed * 0.08;
+//       particles.rotation.y = elapsed * 0.04;
+//       particles.position.y = Math.sin(elapsed * 0.3) * 0.2;
       
-      renderer.render(scene, camera);
-    };
+//       renderer.render(scene, camera);
+//     };
 
-    animate();
+//     animate();
 
-    const handleResize = () => {
-      if (!mountRef.current) return;
-      camera.aspect =
-        mountRef.current.clientWidth / mountRef.current.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(
-        mountRef.current.clientWidth,
-        mountRef.current.clientHeight
-      );
-    };
+//     const handleResize = () => {
+//       if (!mountRef.current) return;
+//       camera.aspect =
+//         mountRef.current.clientWidth / mountRef.current.clientHeight;
+//       camera.updateProjectionMatrix();
+//       renderer.setSize(
+//         mountRef.current.clientWidth,
+//         mountRef.current.clientHeight
+//       );
+//     };
 
-    window.addEventListener("resize", handleResize);
+//     window.addEventListener("resize", handleResize);
 
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("resize", handleResize);
-      mountRef.current?.removeChild(renderer.domElement);
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
-    };
-  }, []);
+//     return () => {
+//       cancelAnimationFrame(animationFrameId);
+//       window.removeEventListener("resize", handleResize);
+//       mountRef.current?.removeChild(renderer.domElement);
+//       geometry.dispose();
+//       material.dispose();
+//       renderer.dispose();
+//     };
+//   }, []);
 
-  return (
-    <div
-      ref={mountRef}
-      className="absolute inset-0 pointer-events-none opacity-40"
-      style={{ zIndex: 0 }}
-    />
-  );
-}
+//   return (
+//     <div
+//       ref={mountRef}
+//       className="absolute inset-0 pointer-events-none opacity-40"
+//       style={{ zIndex: 0 }}
+//     />
+//   );
+// }
 function AnimatedCard({
   feature,
   index,
@@ -238,7 +238,7 @@ export function TrustedSection() {
       ref={sectionRef}
     >
       {/* Red-Themed Three.js Floating Particles */}
-      <FloatingParticles />
+      {/* <FloatingParticles /> */}
 
       {/* Subtle background pattern */}
       <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.02]" />

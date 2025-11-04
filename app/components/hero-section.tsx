@@ -457,7 +457,7 @@ const HeroSection = memo(function HeroSection() {
 
 
     return (
-        <section className="min-h-[900px] overflow-hidden  relative">
+        <section className="min-h-[900px]  relative">
         
             
             {/* Three.js Background */}
