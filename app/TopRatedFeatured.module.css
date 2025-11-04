@@ -1,0 +1,164 @@
+/* TopRatedFeatured.module.css */
+.facilitySwiper {
+  width: 100%;
+  padding: 20px 0 80px 0;
+}
+
+/* Use :global to target Swiper classes with higher specificity */
+.facilitySwiper :global(.swiper-pagination) {
+  bottom: 20px !important;
+  position: absolute !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.facilitySwiper :global(.swiper-pagination-bullet) {
+  width: 12px !important;
+  height: 12px !important;
+  background-color: #E5E7EB !important;
+  opacity: 1 !important;
+  margin: 0 6px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.facilitySwiper :global(.swiper-pagination-bullet-active) {
+  background-color: #C71F37 !important;
+  transform: scale(1.2) !important;
+}
+
+.facilitySwiper :global(.swiper-slide) {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  height: auto !important;
+}
+
+/* Desktop Swiper Styles */
+.facilitySwiperDesktop :global(.swiper-pagination) {
+  display: none !important;
+}
+
+.facilitySwiperDesktop :global(.swiper-slide) {
+  opacity: 0.7 !important;
+  transition: opacity 0.3s ease !important;
+  transform: scale(0.9) !important;
+}
+
+.facilitySwiperDesktop :global(.swiper-slide-active) {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.facilitySwiperDesktop :global(.swiper-slide-next),
+.facilitySwiperDesktop :global(.swiper-slide-prev) {
+  opacity: 0.8 !important;
+  transform: scale(0.95) !important;
+}
+
+/* Premium Navigation */
+.premiumNavBtn {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 20 !important;
+  width: 70px !important;
+  height: 70px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(145deg, #ffffff, #f8fafc) !important;
+  border: 2px solid #E5E7EB !important;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 4px 15px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  opacity: 0.95 !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.premiumNavBtn:hover {
+  border-color: #C71F37 !important;
+  box-shadow: 
+    0 10px 30px rgba(199, 31, 55, 0.15),
+    0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.premiumNavBtn::after {
+  content: '' !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-top: 3px solid #374151 !important;
+  border-right: 3px solid #374151 !important;
+  display: block !important;
+  transition: all 0.3s ease !important;
+}
+
+.premiumNavBtn:hover::after {
+  border-color: #C71F37 !important;
+}
+
+.premiumNavPrev {
+  left: 0 !important;
+}
+
+.premiumNavPrev::after {
+  transform: rotate(-135deg) !important;
+  margin-left: 3px !important;
+}
+
+.premiumNavNext {
+  right: 0 !important;
+}
+
+.premiumNavNext::after {
+  transform: rotate(45deg) !important;
+  margin-right: 3px !important;
+}
+
+/* Disabled state */
+.premiumNavBtn :global(.swiper-button-disabled) {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+.premiumNavBtn :global(.swiper-button-disabled)::after {
+  opacity: 0.5 !important;
+}
+
+.premiumNavBtn :global(.swiper-button-disabled):hover {
+  border-color: #E5E7EB !important;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+.premiumNavBtn :global(.swiper-button-disabled):hover::after {
+  border-color: #374151 !important;
+}
+
+/* Premium container */
+.premiumSwiperContainer {
+  position: relative !important;
+  padding: 0 60px !important;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .facilitySwiper :global(.swiper-pagination) {
+    display: flex !important;
+  }
+  
+  .premiumNavBtn {
+    display: none !important;
+  }
+  
+  .premiumSwiperContainer {
+    padding: 0 20px !important;
+  }
+}

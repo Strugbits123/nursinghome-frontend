@@ -11,6 +11,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
+import styles from '../../app/TopRatedFeatured.module.css';
 
 // Simple Three.js Background
 function FloatingParticles() {
@@ -400,170 +401,7 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
 
   return (
     <>
-      <style jsx global>{`
-        .facility-swiper {
-          width: 100%;
-          padding: 20px 0 80px 0;
-        }
-        
-        .facility-swiper .swiper-pagination {
-          bottom: 20px !important;
-          position: absolute;
-          display: flex !important;
-          justify-content: center;
-          align-items: center;
-        }
-        
-        .facility-swiper .swiper-pagination-bullet {
-          width: 12px;
-          height: 12px;
-          background-color: #E5E7EB;
-          opacity: 1;
-          margin: 0 6px;
-          border-radius: 50%;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-        
-        .facility-swiper .swiper-pagination-bullet-active {
-          background-color: #C71F37 !important;
-          transform: scale(1.2);
-        }
-        
-        .facility-swiper .swiper-slide {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: auto;
-        }
-
-        /* Desktop Swiper Styles - Hide pagination on desktop */
-        .facility-swiper-desktop .swiper-pagination {
-          display: none !important;
-        }
-        
-        .facility-swiper-desktop .swiper-slide {
-          opacity: 0.7;
-          transition: opacity 0.3s ease;
-          transform: scale(0.9);
-          transition: all 0.3s ease;
-        }
-        
-        .facility-swiper-desktop .swiper-slide-active {
-          opacity: 1;
-          transform: scale(1);
-        }
-        
-        .facility-swiper-desktop .swiper-slide-next,
-        .facility-swiper-desktop .swiper-slide-prev {
-          opacity: 0.8;
-          transform: scale(0.95);
-        }
-
-        /* Mobile - Show pagination */
-        @media (max-width: 768px) {
-          .facility-swiper .swiper-pagination {
-            display: flex !important;
-          }
-        }
-
-        /* Premium Swiper Navigation Buttons */
-        .premium-nav-btn {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 20;
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          background: linear-gradient(145deg, #ffffff, #f8fafc);
-          border: 2px solid #E5E7EB;
-          box-shadow: 
-            0 10px 30px rgba(0, 0, 0, 0.1),
-            0 4px 15px rgba(0, 0, 0, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          opacity: 0.95;
-          backdrop-filter: blur(10px);
-        }
-
-        .premium-nav-btn:hover {
-          border-color: #C71F37;
-          box-shadow: 
-            0 10px 30px rgba(199, 31, 55, 0.15),
-            0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .premium-nav-btn::after {
-          content: '';
-          width: 24px;
-          height: 24px;
-          border-top: 3px solid #374151;
-          border-right: 3px solid #374151;
-          display: block;
-          transition: all 0.3s ease;
-        }
-
-        .premium-nav-btn:hover::after {
-          border-color: #C71F37;
-        }
-
-        .premium-nav-prev {
-          left: 0;
-        }
-
-        .premium-nav-prev::after {
-          transform: rotate(-135deg);
-          margin-left: 3px;
-        }
-
-        .premium-nav-next {
-          right: 0;
-        }
-
-        .premium-nav-next::after {
-          transform: rotate(45deg);
-          margin-right: 3px;
-        }
-
-        /* Disabled state */
-        .premium-nav-btn.swiper-button-disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .premium-nav-btn.swiper-button-disabled::after {
-          opacity: 0.5;
-        }
-
-        .premium-nav-btn.swiper-button-disabled:hover {
-          border-color: #E5E7EB;
-          box-shadow: 
-            0 10px 30px rgba(0, 0, 0, 0.1),
-            0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .premium-nav-btn.swiper-button-disabled:hover::after {
-          border-color: #374151;
-        }
-
-        /* Mobile hide arrows */
-        @media (max-width: 768px) {
-          .premium-nav-btn {
-            display: none;
-          }
-        }
-
-        /* Premium container */
-        .premium-swiper-container {
-          position: relative;
-          padding: 0 60px;
-        }
-      `}</style>
+      
       
       <section
         className="mx-auto bg-white rounded-2xl w-full max-w-[1436px] px-4 md:px-0 relative overflow-hidden"
@@ -611,7 +449,7 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
             )}
 
             {/* Desktop Swiper Layout with Premium Buttons - No Pagination */}
-            <div className="hidden md:block mt-12 premium-swiper-container">
+            <div className={`hidden md:block mt-12 ${styles.premiumSwiperContainer}`}>
               {isMounted && !loading && facilities.length > 0 && (
                 <>
                   <Swiper
@@ -637,7 +475,7 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
                       // @ts-ignore
                       swiper.params.navigation.nextEl = navigationNextRef.current;
                     }}
-                    className="facility-swiper facility-swiper-desktop"
+                    className={`${styles.facilitySwiper} ${styles.facilitySwiperDesktop}`}
                     breakpoints={{
                       320: {
                         slidesPerView: 1,
@@ -663,12 +501,12 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
                   
                   {/* Premium Navigation Arrows with Refs */}
                   <div 
-                    className="premium-nav-btn premium-nav-prev" 
+                    className={`${styles.premiumNavBtn} ${styles.premiumNavPrev}`}
                     ref={navigationPrevRef}
                   >
                   </div>
                   <div 
-                    className="premium-nav-btn premium-nav-next" 
+                    className={`${styles.premiumNavBtn} ${styles.premiumNavNext}`}
                     ref={navigationNextRef}
                   >
                   </div>
@@ -693,7 +531,7 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
                   pagination={{
                     clickable: true,
                   }}
-                  className="facility-swiper"
+                  className={styles.facilitySwiper}
                 >
                   {facilities.map((facility, index) => (
                     <SwiperSlide key={facility._id}>
