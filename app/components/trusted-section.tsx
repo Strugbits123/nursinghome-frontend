@@ -154,18 +154,18 @@ function AnimatedCard({
   );
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border border-transparent shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden group rounded-2xl">
-      {/* Gradient background hover effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-gray-50/30 group-hover:from-[#fff5f6] group-hover:to-[#fdeef0] transition-all duration-500" />
+    <Card className="bg-white/95 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group rounded-2xl">
+      {/* White gradient overlay for better readability */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-white/80 group-hover:from-white group-hover:via-white/95 group-hover:to-white/90 transition-all duration-500" />
 
-      {/* Animated border glow (red tint) */}
-      <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-[#C71F37]/40 transition-all duration-500 shadow-[0_0_25px_-5px_rgba(199,31,55,0)] group-hover:shadow-[0_0_25px_-5px_rgba(199,31,55,0.4)]" />
+      {/* Subtle red border glow */}
+      <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-[#C71F37]/20 transition-all duration-500 shadow-[0_0_30px_-10px_rgba(199,31,55,0.1)] group-hover:shadow-[0_0_40px_-15px_rgba(199,31,55,0.3)]" />
 
       <CardContent className="p-5 sm:p-6 text-center relative z-10">
         {/* Icon */}
         <div className="flex justify-center mb-3 sm:mb-4">
           <div
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center bg-[#FAE8EB] group-hover:bg-[#C71F37] transition-all duration-500 shadow-inner"
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center bg-[#FAE8EB] group-hover:bg-[#C71F37] transition-all duration-500 shadow-lg group-hover:shadow-xl group-hover:shadow-[#C71F37]/20"
           >
             <IconComponent
               className="w-6 h-6 sm:w-7 sm:h-7 text-[#C71F37] group-hover:text-white transition-all duration-500 transform group-hover:scale-110"
@@ -179,12 +179,12 @@ function AnimatedCard({
         </h3>
 
         {/* Description */}
-        <p className="text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed text-[#212121] opacity-70 group-hover:opacity-90 transition-all duration-500">
+        <p className="text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed text-[#212121] opacity-80 group-hover:opacity-100 transition-all duration-500">
           {feature.description}
         </p>
 
         {/* Count number */}
-        <div className="text-2xl sm:text-3xl font-bold text-[#C71F37] group-hover:scale-110 transition-transform duration-500">
+        <div className="text-2xl sm:text-3xl font-bold text-[#C71F37] group-hover:scale-110 transition-transform duration-500 drop-shadow-sm">
           <span ref={numberRef}>0</span>
           {feature.suffix}
         </div>
