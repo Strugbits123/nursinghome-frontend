@@ -178,9 +178,13 @@ const FacilityCard = ({ facility, index }: { facility: any, index: number }) => 
   // Calculate beds available (using certified beds as base)
   const bedsAvailable = Math.max(1, Math.floor(facility.number_of_certified_beds * 0.8));
   
-  // Generate rating and review count (since API doesn't have this)
-  const rating = parseFloat(facility.overall_rating) + (Math.random() * 0.5);
-  const reviewCount = Math.floor(Math.random() * 100) + 50;
+  // Generate consistent rating and review count based on facility ID (to avoid hydration mismatch)
+  const facilityIdHash = facility._id ? facility._id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
+  const rating = Math.min(5, parseFloat(facility.overall_rating) + ((facilityIdHash % 50) / 100));
+  const reviewCount = 50 + (facilityIdHash % 100);
+  
+  // Generate consistent distance based on facility
+  const distance = `${Math.floor((facilityIdHash % 5) + 1)}.${Math.floor((facilityIdHash % 9) + 1)}`;
 
   const handleViewDetails = async (facility: any) => {
     setLoadingFacilityId(facility._id);
@@ -285,7 +289,7 @@ const FacilityCard = ({ facility, index }: { facility: any, index: number }) => 
             {facility.provider_name}
           </h3>
           <p className={styles.locationText}>
-            {facility.city_town}, {facility.state} • {Math.floor(Math.random() * 5) + 1}.{Math.floor(Math.random() * 9)} miles away
+            {facility.city_town}, {facility.state} • {distance} miles away
           </p>
         </div>
         
@@ -408,69 +412,71 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
 
             {/* Desktop Swiper Layout with Premium Buttons - No Pagination */}
             <div className={`${styles.desktopSwiper} ${styles.premiumSwiperContainer}`}>
+              {/* Premium Navigation Arrows with Refs - Must be outside conditional render */}
+              <button 
+                className={`${styles.premiumNavBtn} ${styles.premiumNavPrev}`}
+                ref={navigationPrevRef}
+                type="button"
+                aria-label="Previous slide"
+              >
+                <span className={styles.srOnly}>Previous</span>
+              </button>
+              <button
+                className={`${styles.premiumNavBtn} ${styles.premiumNavNext}`}
+                ref={navigationNextRef}
+                type="button"
+                aria-label="Next slide"
+              >
+                <span className={styles.srOnly}>Next</span>
+              </button>
+              
               {isMounted && !loading && facilities.length > 0 && (
-                <>
-                  <Swiper
-                    modules={[Autoplay, Navigation]}
-                    spaceBetween={30}
-                    slidesPerView={3}
-                    centeredSlides={true}
-                    autoplay={{
-                      delay: 4000,
-                      disableOnInteraction: false,
-                      pauseOnMouseEnter: true,
-                    }}
-                    speed={800}
-                    loop={true}
-                    pagination={false}
-                    navigation={{
-                      prevEl: navigationPrevRef.current,
-                      nextEl: navigationNextRef.current,
-                    }}
-                    onBeforeInit={(swiper) => {
-                      // @ts-ignore
-                      swiper.params.navigation.prevEl = navigationPrevRef.current;
-                      // @ts-ignore
-                      swiper.params.navigation.nextEl = navigationNextRef.current;
-                    }}
-                    className={`${styles.facilitySwiper} ${styles.facilitySwiperDesktop}`}
-                    breakpoints={{
-                      320: {
-                        slidesPerView: 1,
-                        spaceBetween: 20
-                      },
-                      768: {
-                        slidesPerView: 2,
-                        spaceBetween: 30
-                      },
-                      1024: {
-                        slidesPerView: 3,
-                        spaceBetween: 30,
-                        centeredSlides: true
-                      }
-                    }}
-                  >
-                    {facilities.map((facility, index) => (
-                      <SwiperSlide key={facility._id}>
-                        <FacilityCard facility={facility} index={index} />
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                  
-                  {/* Premium Navigation Arrows with Refs */}
-                  <div 
-                    className={`${styles.premiumNavBtn} ${styles.premiumNavPrev}`}
-                    ref={navigationPrevRef}
-                  >
-                    <span className={styles.srOnly}>Previous</span>
-                  </div>
-                  <button
-                    className={`${styles.premiumNavBtn} ${styles.premiumNavNext}`}
-                    ref={navigationNextRef}
-                  >
-                    <span className={styles.srOnly}>Next</span>
-                  </button>
-                </>
+                <Swiper
+                  modules={[Autoplay, Navigation]}
+                  spaceBetween={30}
+                  slidesPerView={3}
+                  centeredSlides={true}
+                  autoplay={{
+                    delay: 4000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
+                  speed={800}
+                  loop={true}
+                  pagination={false}
+                  navigation={{
+                    prevEl: navigationPrevRef.current,
+                    nextEl: navigationNextRef.current,
+                  }}
+                  onBeforeInit={(swiper) => {
+                    // @ts-ignore
+                    swiper.params.navigation.prevEl = navigationPrevRef.current;
+                    // @ts-ignore
+                    swiper.params.navigation.nextEl = navigationNextRef.current;
+                  }}
+                  className={`${styles.facilitySwiper} ${styles.facilitySwiperDesktop}`}
+                  breakpoints={{
+                    320: {
+                      slidesPerView: 1,
+                      spaceBetween: 20
+                    },
+                    768: {
+                      slidesPerView: 2,
+                      spaceBetween: 30
+                    },
+                    1024: {
+                      slidesPerView: 3,
+                      spaceBetween: 30,
+                      centeredSlides: true
+                    }
+                  }}
+                >
+                  {facilities.map((facility, index) => (
+                    <SwiperSlide key={facility._id}>
+                      <FacilityCard facility={facility} index={index} />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
               )}
             </div>
 
