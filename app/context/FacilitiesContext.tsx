@@ -16,6 +16,11 @@ export const COORDS_STORAGE_KEY = "coords";
 export const LOCATION_NAME_STORAGE_KEY = "locationName";
 export const FILTERS_STORAGE_KEY = "filters";
 
+// 🎯 SMART CACHE: Location-based cache keys
+const getPage1CacheKey = (locationName: string) => `facilities_page_1_${locationName}`;
+const getTotalCacheKey = (locationName: string) => `facilities_total_${locationName}`;
+const getRecommendationsCacheKey = (locationName: string) => `recommendations_${locationName}`;
+
 // API Base URL
 const API_BASE_URL = "${process.env.NEXT_PUBLIC_API_URL}/api/facilities";
 
@@ -50,6 +55,7 @@ function getInitialState<T>(key: string, defaultValue: T): T {
   }
   return defaultValue;
 }
+
 /**
  * Extract state and city from a query string.
  * Example:
@@ -68,8 +74,6 @@ const parseQueryToStateCity = (query: string | undefined) => {
     return { city: "", state: "" };
   }
 };
-
-
 
 // --- Interfaces ---
 export interface Coords {
@@ -133,15 +137,14 @@ export interface Facility {
 interface FacilitiesContextType {
   facilities: Facility[];
   setFacilities: React.Dispatch<React.SetStateAction<Facility[]>>;
-  recommendations: Facility[]; // ✅ Add recommendations
-  setRecommendations: React.Dispatch<React.SetStateAction<Facility[]>>; // ✅ Add setter
+  recommendations: Facility[];
+  setRecommendations: React.Dispatch<React.SetStateAction<Facility[]>>;
   coords: Coords | null;
   setCoords: React.Dispatch<React.SetStateAction<Coords | null>>;
   locationName: string;
   setLocationName: React.Dispatch<React.SetStateAction<string>>;
   total: number;
   setTotal: (total: number) => void;
-
   currentPage: number;
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
   totalPages: number;
@@ -162,22 +165,12 @@ const FacilitiesContext = createContext<FacilitiesContextType | undefined>(
 export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [facilities, setFacilities] = useState<Facility[]>(() =>
-    getInitialState(FACILITIES_STORAGE_KEY, [])
-  );
-
-  const [recommendations, setRecommendations] = useState<Facility[]>([]); // ✅ Add this
-
-  const [coords, setCoords] = useState<Coords | null>(() =>
-    getInitialState(COORDS_STORAGE_KEY, null)
-  );
-
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [recommendations, setRecommendations] = useState<Facility[]>([]);
+  const [coords, setCoords] = useState<Coords | null>(null);
   const [locationName, setLocationName] = useState<string>("");
   const [normalizedLocation, setNormalizedLocation] = useState<string>("");
-
-  const [filters, setFilters] = useState<FilterState>(() =>
-    getInitialState(FILTERS_STORAGE_KEY, {})
-  );
+  const [filters, setFilters] = useState<FilterState>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
@@ -187,12 +180,73 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   const pageSize = 8;
   const totalPages = Math.ceil(total / pageSize);
 
-  // Cache key based on filters + location
-  const cacheKey = useMemo(
-    () =>
-      `${FACILITIES_STORAGE_KEY}_${JSON.stringify(filters)}_${locationName}`,
-    [filters, locationName]
-  );
+  // 🎯 SMART CACHE: Get cached data for current location
+  const getCachedData = useCallback((currentLocation: string) => {
+    if (!currentLocation || typeof window === "undefined") return null;
+    
+    const page1CacheKey = getPage1CacheKey(currentLocation);
+    const totalCacheKey = getTotalCacheKey(currentLocation);
+    const recommendationsCacheKey = getRecommendationsCacheKey(currentLocation);
+    
+    try {
+      const cachedPage1 = localStorage.getItem(page1CacheKey);
+      const cachedTotal = localStorage.getItem(totalCacheKey);
+      const cachedRecommendations = localStorage.getItem(recommendationsCacheKey);
+      
+      if (cachedPage1 && cachedTotal) {
+        const facilities = JSON.parse(cachedPage1);
+        const total = parseInt(cachedTotal);
+        const recommendations = cachedRecommendations ? JSON.parse(cachedRecommendations) : [];
+        
+        if (Array.isArray(facilities) && facilities.length > 0 && total > 0) {
+          console.log(`⚡ Using cached data for ${currentLocation}`);
+          return { facilities, total, recommendations };
+        }
+      }
+    } catch (error) {
+      console.error('Error reading cache:', error);
+    }
+    
+    return null;
+  }, []);
+
+  // 🎯 SMART CACHE: Save data for current location
+  const saveToLocationCache = useCallback((currentLocation: string, facilities: Facility[], total: number, recommendations: Facility[] = []) => {
+    if (!currentLocation || typeof window === "undefined") return;
+    
+    try {
+      const page1CacheKey = getPage1CacheKey(currentLocation);
+      const totalCacheKey = getTotalCacheKey(currentLocation);
+      const recommendationsCacheKey = getRecommendationsCacheKey(currentLocation);
+      
+      localStorage.setItem(page1CacheKey, JSON.stringify(facilities));
+      localStorage.setItem(totalCacheKey, total.toString());
+      localStorage.setItem(recommendationsCacheKey, JSON.stringify(recommendations));
+      
+      console.log(`💾 Cached data for ${currentLocation}`);
+    } catch (error) {
+      console.error('Error saving to cache:', error);
+    }
+  }, []);
+
+  // 🎯 SMART CACHE: Clear cache for a specific location
+  const clearLocationCache = useCallback((locationToClear: string) => {
+    if (typeof window === "undefined") return;
+    
+    try {
+      const page1CacheKey = getPage1CacheKey(locationToClear);
+      const totalCacheKey = getTotalCacheKey(locationToClear);
+      const recommendationsCacheKey = getRecommendationsCacheKey(locationToClear);
+      
+      localStorage.removeItem(page1CacheKey);
+      localStorage.removeItem(totalCacheKey);
+      localStorage.removeItem(recommendationsCacheKey);
+      
+      console.log(`🗑️ Cleared cache for ${locationToClear}`);
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    }
+  }, []);
 
   // --- Rehydrate locationName after mount ---
   useEffect(() => {
@@ -215,6 +269,14 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
             if (typeof parsed === "string") {
               setLocationName(parsed);
               setNormalizedLocation(parsed.trim().replace(/\s+/g, "_").toLowerCase());
+              
+              // 🎯 SMART CACHE: Load cached data for this location
+              const cachedData = getCachedData(parsed);
+              if (cachedData) {
+                setFacilities(cachedData.facilities);
+                setTotal(cachedData.total);
+                setRecommendations(cachedData.recommendations);
+              }
             } else {
               console.warn("Unexpected structure for location data:", parsed);
             }
@@ -222,7 +284,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       } catch (err) {
       console.error("Failed to restore locationName:", err);
     }
-  }, []);
+  }, [getCachedData]);
 
   // --- Helper: Fetch Top Recommendations ---
   const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
@@ -239,7 +301,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  // --- Fetch Facilities (with cache) ---
+  // --- Fetch Facilities (with smart caching) ---
   const fetchFacilities = useCallback(
     async (currentFilters: FilterState) => {
       const params = new URLSearchParams();
@@ -254,19 +316,17 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       setError(null);
 
       try {
-        // Check cache first
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            console.log("⚡ Loaded facilities from cache");
-            setFacilities(data.facilities || []);
-            setCoords(data.centerCoords || null);
-            setTotal(data.total || data.totalCount || data.facilities?.length || 0);
-            setRecommendations(data.recommendations || []); // ✅ load cached recommendations
-            setIsLoading(false);
-            return;
-          }
+        // 🎯 SMART CACHE: Check for cached data first
+        const cachedData = getCachedData(locationName);
+        if (cachedData && !Object.keys(currentFilters).some(key => 
+          key !== 'locationName' && currentFilters[key]
+        )) {
+          console.log("⚡ Loaded facilities from location cache");
+          setFacilities(cachedData.facilities);
+          setTotal(cachedData.total);
+          setRecommendations(cachedData.recommendations);
+          setIsLoading(false);
+          return;
         }
 
         // --- API call for main facilities ---
@@ -277,41 +337,45 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         if (!response.ok) throw new Error("Failed to fetch facilities");
 
         const data = await response.json();
-        setFacilities(data.facilities || []);
-        setTotal(data.total || data.totalCount || data.facilities?.length || 0);
+        const facilitiesData = data.facilities || [];
+        const totalCount = data.total || data.totalCount || facilitiesData.length;
+
+        setFacilities(facilitiesData);
+        setTotal(totalCount);
 
         if (data.centerCoords?.lat && data.centerCoords?.lng) {
           setCoords(data.centerCoords);
         }
 
         // --- Fetch Top Recommendations from FastAPI ---
-        const { state, city } = parseQueryToStateCity(filters.locationName || locationName);
-        const topFacilities = await fetchTopRecommendations(state, city, 5);
+        const { state, city } = parseQueryToStateCity(currentFilters.locationName || locationName);
+        let topFacilities: Facility[] = [];
+        
+        if (state && city) {
+          topFacilities = await fetchTopRecommendations(state, city, 5);
+        }
+        
         setRecommendations(topFacilities);
 
-        // --- Save in cache including recommendations ---
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({
-            data: {
-              ...data,
-              recommendations: topFacilities,
-            },
-            timestamp: Date.now(),
-          })
-        );
+        // 🎯 SMART CACHE: Only cache page 1 data for this location (no filter cache)
+        if (!Object.keys(currentFilters).some(key => 
+          key !== 'locationName' && currentFilters[key]
+        )) {
+          saveToLocationCache(locationName, facilitiesData, totalCount, topFacilities);
+        }
 
-        console.log(`✅ Cached ${data.facilities?.length || 0} facilities and ${topFacilities.length} recommendations`);
+        console.log(`✅ Loaded ${facilitiesData.length} facilities and ${topFacilities.length} recommendations`);
+
       } catch (err: any) {
         console.error("❌ Fetch error:", err);
         setError(err.message);
         setFacilities([]);
-        setRecommendations([]); // ✅ clear recommendations on error
+        setRecommendations([]);
       } finally {
         setIsLoading(false);
       }
     },
-    [cacheKey, filters, locationName]
+    [locationName, getCachedData, saveToLocationCache]
   );
 
   // --- Refetch wrapper ---
@@ -338,18 +402,26 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   // --- Persist states ---
   useEffect(() => {
     if (!locationName) return;
-        saveToStorage(LOCATION_NAME_STORAGE_KEY, locationName);
-        setNormalizedLocation(locationName.trim().replace(/\s+/g, "_").toLowerCase());
-  }, [locationName]);
-  useEffect(() => saveToStorage(FACILITIES_STORAGE_KEY, facilities), [facilities]);
-  useEffect(() => saveToStorage(COORDS_STORAGE_KEY, coords), [coords]);
-  // useEffect(() => saveToStorage(LOCATION_NAME_STORAGE_KEY, locationName), [locationName]);
+    
+    // 🎯 SMART CACHE: Clear old cache when location changes
+    const previousLocation = localStorage.getItem(LOCATION_NAME_STORAGE_KEY);
+    if (previousLocation && previousLocation !== locationName) {
+      clearLocationCache(previousLocation);
+    }
+    
+    saveToStorage(LOCATION_NAME_STORAGE_KEY, locationName);
+    setNormalizedLocation(locationName.trim().replace(/\s+/g, "_").toLowerCase());
+  }, [locationName, clearLocationCache]);
+
   useEffect(() => saveToStorage(FILTERS_STORAGE_KEY, filters), [filters]);
 
   // --- Auto-fetch if cache empty ---
   useEffect(() => {
     if (facilities.length === 0 && locationName) {
-      fetchFacilities(filters);
+      const cachedData = getCachedData(locationName);
+      if (!cachedData) {
+        fetchFacilities(filters);
+      }
     }
   }, [locationName]);
 

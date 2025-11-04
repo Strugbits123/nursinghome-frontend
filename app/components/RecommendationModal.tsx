@@ -151,7 +151,7 @@ const RecommendationModal: React.FC<RecommendationModalProps> = ({ recommendatio
           <div className="flex justify-between items-center p-4 border-b border-gray-200">
             <div>
               <h2 className="text-lg font-bold text-gray-800">
-                🌟 Top Recommendations
+                Top Recommendations
               </h2>
               <p className="text-xs text-gray-500 mt-1">
                 {recommendations.length} facilities found

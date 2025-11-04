@@ -192,7 +192,6 @@ const HeroSection = memo(function HeroSection() {
   const [error, setError] = useState<string | null>(null);
   const [currentCoords, setCurrentCoords] = React.useState<{ lat: number; lng: number } | null>(null);
 
-
   // from context
   const {
     setFacilities,
@@ -209,17 +208,88 @@ const HeroSection = memo(function HeroSection() {
 
   
   const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews` || "https://app.carenav.io/api/facilities/with-reviews";
+
+  // 🎯 SMART CACHE: Location-based cache keys
+  const getPage1CacheKey = (locationName: string) => `facilities_page_1_${locationName}`;
+  const getTotalCacheKey = (locationName: string) => `facilities_total_${locationName}`;
+  const getRecommendationsCacheKey = (locationName: string) => `recommendations_${locationName}`;
+
+  // 🎯 SMART CACHE: Save data for location
+  const saveToLocationCache = useCallback((currentLocation: string, facilities: any[], total: number, recommendations: any[] = []) => {
+    if (!currentLocation || typeof window === "undefined") return;
+    
+    try {
+      const page1CacheKey = getPage1CacheKey(currentLocation);
+      const totalCacheKey = getTotalCacheKey(currentLocation);
+      const recommendationsCacheKey = getRecommendationsCacheKey(currentLocation);
+      
+      localStorage.setItem(page1CacheKey, JSON.stringify(facilities));
+      localStorage.setItem(totalCacheKey, total.toString());
+      localStorage.setItem(recommendationsCacheKey, JSON.stringify(recommendations));
+      
+      console.log(`💾 Cached data for ${currentLocation}`);
+    } catch (error) {
+      console.error('Error saving to cache:', error);
+    }
+  }, []);
+
+  // 🎯 SMART CACHE: Clear cache for a specific location
+  const clearLocationCache = useCallback((locationToClear: string) => {
+    if (typeof window === "undefined") return;
+    
+    try {
+      const page1CacheKey = getPage1CacheKey(locationToClear);
+      const totalCacheKey = getTotalCacheKey(locationToClear);
+      const recommendationsCacheKey = getRecommendationsCacheKey(locationToClear);
+      
+      localStorage.removeItem(page1CacheKey);
+      localStorage.removeItem(totalCacheKey);
+      localStorage.removeItem(recommendationsCacheKey);
+      
+      console.log(`🗑️ Cleared cache for ${locationToClear}`);
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    }
+  }, []);
+
+  // Helper: Fetch Top Recommendations
+  const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
+    if (!state || !city) return [];
+    const token = localStorage.getItem("token") || "";
+    const url = `http://localhost:8000/top-facilities?state=${state}&city=${city}&top_n=${top_n}`;
+    try {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data || [];
+    } catch {
+      return [];
+    }
+  };
+
+  // Extract state and city from query
+  const parseQueryToStateCity = (query: string | undefined) => {
+    if (!query) return { state: "", city: "" };
+
+    const parts = query.split(",").map((p) => p.trim());
+    if (parts.length === 2) {
+      return { city: parts[0], state: parts[1] };
+    } else if (parts.length === 1) {
+      return { city: "", state: parts[0] };
+    } else {
+      return { city: "", state: "" };
+    }
+  };
     
   const fetchFacilities = async (
     currentSearchQuery: string,
     currentCoords: Coords | null
-    ) => {
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  ) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
     if (!token) {
-    toast.error("Please log in to search facilities");
-    return;
+      toast.error("Please log in to search facilities");
+      return;
     }
 
     // ✅ Validate empty input
@@ -237,119 +307,123 @@ const HeroSection = memo(function HeroSection() {
     setContextError && setContextError(null);
 
     try {
-    // ✅ Build query params
-    const params = new URLSearchParams();
+      // ✅ Build query params
+      const params = new URLSearchParams();
 
-    if (currentSearchQuery && !currentCoords) {
-       const normalizedQuery = currentSearchQuery
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "_");
-      // const normalizedQuery = currentSearchQuery.trim().replace(/\s+/g, "_");
-      params.append("q", normalizedQuery);
-    }
+      if (currentSearchQuery && !currentCoords) {
+        const normalizedQuery = currentSearchQuery
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, "_");
+        params.append("q", normalizedQuery);
+      }
 
-    if (currentCoords?.lat && currentCoords?.lng) {
-      params.append("lat", currentCoords.lat.toString());
-      params.append("lng", currentCoords.lng.toString());
-    }
+      if (currentCoords?.lat && currentCoords?.lng) {
+        params.append("lat", currentCoords.lat.toString());
+        params.append("lng", currentCoords.lng.toString());
+      }
 
-    params.append("page", "1");
-    params.append("limit", "8");
+      params.append("page", "1");
+      params.append("limit", "8");
 
-    const url = `${API_URL}?${params.toString()}`;
-    console.log("🔹 Fetching page 1:", url);
+      const url = `${API_URL}?${params.toString()}`;
+      console.log("🔹 Fetching page 1:", url);
 
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      // if (res.status === 400 && errorData.error) {
-      //   toast.error(errorData.error); // Show alert for unsupported states
-      // } else {
-      //   toast.error(`HTTP ${res.status}: ${errorData?.error || "Unknown error"}`);
-      // }
-      throw new Error(errorData?.error || `HTTP ${res.status}`);
-    }
-    const data = await res.json();
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData?.error || `HTTP ${res.status}`);
+      }
+      
+      const data = await res.json();
 
-    const rawFacilitiesList = Array.isArray(data.data)
-      ? data.data
-      : data?.facilities || [];
+      const rawFacilitiesList = Array.isArray(data.data)
+        ? data.data
+        : data?.facilities || [];
 
-    // ✅ Map to usable structure
-    const facilitiesList = rawFacilitiesList.map((raw: any) =>
-      mapRawFacilityToCard(raw, currentCoords)
-    );
+      // ✅ Map to usable structure
+      const facilitiesList = rawFacilitiesList.map((raw: any) =>
+        mapRawFacilityToCard(raw, currentCoords)
+      );
 
-    // ✅ Store only first page + meta
-    setFacilities(facilitiesList);
-    setCoords(currentCoords);
-    setLocationName(currentSearchQuery || "");
-    setTotal(data.total || 0);
+      // ✅ Store only first page + meta
+      setFacilities(facilitiesList);
+      setCoords(currentCoords);
+      setLocationName(currentSearchQuery || "");
+      setTotal(data.total || 0);
 
-    // ✅ Save to localStorage
-    localStorage.setItem(
-      FACILITIES_STORAGE_KEY,
-      JSON.stringify(facilitiesList)
-    );
-    localStorage.setItem(
-      COORDS_STORAGE_KEY,
-      JSON.stringify(currentCoords || null)
-    );
-    localStorage.setItem(
-      LOCATION_NAME_STORAGE_KEY,
-      JSON.stringify(
-        currentSearchQuery
-          ? currentSearchQuery.trim().replace(/\s+/g, "_").toLowerCase()
-          : ""
-      )
-    );
-    if (data.total) {
-      localStorage.setItem("facilities_total_count", String(data.total));
-    }
+      // ✅ Fetch Top Recommendations based on state/city
+      const { state, city } = parseQueryToStateCity(currentSearchQuery);
+      console.log("🔹 Fetching top recommendations for:", state, city);
+      const topFacilities = await fetchTopRecommendations(state, city, 5);
+      setRecommendations(topFacilities);
 
-     // ✅ Fetch Top Recommendations based on state/city
-    const { state, city } = parseQueryToStateCity(currentSearchQuery); // Helper to extract state/city
-    console.log("🔹 Fetching top recommendations for:", state, city);
-    const topFacilities = await fetchTopRecommendations(state, city, 5);
-    setRecommendations(topFacilities); // Save to recommendations state
+      // 🎯 SMART CACHE: Save to location-based cache
+      if (currentSearchQuery) {
+        saveToLocationCache(currentSearchQuery, facilitiesList, data.total || 0, topFacilities);
+      }
 
-    console.log(
-      `✅ Loaded page 1 facilities (${facilitiesList.length}) for "${currentSearchQuery}"`,
-      `Top Recommendations: ${topFacilities.length}`
-    );
+      // ✅ Save to localStorage for backward compatibility
+      localStorage.setItem(
+        FACILITIES_STORAGE_KEY,
+        JSON.stringify(facilitiesList)
+      );
+      localStorage.setItem(
+        COORDS_STORAGE_KEY,
+        JSON.stringify(currentCoords || null)
+      );
+      localStorage.setItem(
+        LOCATION_NAME_STORAGE_KEY,
+        JSON.stringify(
+          currentSearchQuery
+            ? currentSearchQuery.trim().replace(/\s+/g, "_").toLowerCase()
+            : ""
+        )
+      );
+      if (data.total) {
+        localStorage.setItem("facilities_total_count", String(data.total));
+      }
 
-    toast.success("Facilities loaded successfully!");
+      console.log(
+        `✅ Loaded page 1 facilities (${facilitiesList.length}) for "${currentSearchQuery}"`,
+        `Top Recommendations: ${topFacilities.length}`
+      );
 
-    router.push("/facility-search");
-
+      toast.success("Facilities loaded successfully!");
+      router.push("/facility-search");
 
     } catch (err: any) {
-    console.error("❌ Fetch failed:", err);
-    toast.error(err.message || "Failed to load facilities");
-    setError(err.message || "Unknown error");
-    setContextError && setContextError(err.message || "Unknown error");
+      console.error("❌ Fetch failed:", err);
+      toast.error(err.message || "Failed to load facilities");
+      setError(err.message || "Unknown error");
+      setContextError && setContextError(err.message || "Unknown error");
 
-    // 🔹 Clear stale cache on error
-    setFacilities([]);
-    setCoords(null);
-    setLocationName("");
-    localStorage.removeItem(FACILITIES_STORAGE_KEY);
-    localStorage.removeItem(COORDS_STORAGE_KEY);
-    localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
-    setRecommendations([]);
+      // 🔹 Clear stale cache on error
+      setFacilities([]);
+      setCoords(null);
+      setLocationName("");
+      setRecommendations([]);
+
+      // 🎯 SMART CACHE: Clear location cache on error
+      if (searchQuery) {
+        clearLocationCache(searchQuery);
+      }
+
+      localStorage.removeItem(FACILITIES_STORAGE_KEY);
+      localStorage.removeItem(COORDS_STORAGE_KEY);
+      localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
 
     } finally {
-    setIsLoading(false);
-    setContextIsLoading && setContextIsLoading(false);
+      setIsLoading(false);
+      setContextIsLoading && setContextIsLoading(false);
     }
-    };
+  };
 
 
 

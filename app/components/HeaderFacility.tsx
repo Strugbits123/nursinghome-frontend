@@ -30,7 +30,7 @@ export default function HeaderFacility() {
             alt="NursingHome Logo"
             width={176}
             height={47}
-            className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] sm:ml-[60px] md:mx-38 lg:mx-42"
+            className="w-[120px] h-[32px] sm:w-[176px] sm:h-[47px] sm:ml-[60px] md:mx-37 lg:mx-37"
           />
         </Link>
 
