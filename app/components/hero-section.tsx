@@ -740,7 +740,7 @@ const HeroSection = memo(function HeroSection() {
                   />
 
                 <button
-                    onClick={() => fetchFacilities(locationName, coords)}
+                    onClick={() => handleSearch(locationName, currentCoords)}
                     disabled={isLoading}
                     className="
                         w-full sm:w-[180px] md:w-[190px] h-[56px]

@@ -157,18 +157,22 @@ useEffect(() => {
   }
 }, [initialFacilities, totalCountFromProvider, locationName, usingFilters, filterApplied, currentPage]);
 
-  // ✅ FIXED: Get display total - use filtered count when filters are active
+ // ✅ FIXED: Get display total - use API total when available
   const displayTotal = useMemo(() => {
-    if (usingFilters) {
-      // When filters are active, show the filtered facilities count
-      return filteredFacilities.length;
+    if (usingFilters && filterApplied) {
+      // When filters are active, show the total from API response
+      console.log("📊 Using filtered total:", totalFacilities);
+      return totalFacilities;
     } else {
       // When no filters, show the total from provider or all facilities count
-      return totalFacilities > 0 ? totalFacilities : allFacilities.length;
+      const total = totalCountFromProvider > 0 ? totalCountFromProvider : allFacilities.length;
+      console.log("📊 Using original total:", total);
+      return total;
     }
-  }, [usingFilters, filteredFacilities.length, totalFacilities, allFacilities.length]);
+  }, [usingFilters, filterApplied, totalFacilities, totalCountFromProvider, allFacilities.length]);
 
-  // ✅ FIXED: Load page function with proper cache handling
+
+  // ✅ FIXED: Load page function with proper total handling
 const loadPage = useCallback(async (page: number) => {
   // For filtered results, use existing facilities
   if (usingFilters && filterApplied) {
@@ -219,6 +223,11 @@ const loadPage = useCallback(async (page: number) => {
     );
 
     setPaginatedFacilities(mapped);
+    
+    // ✅ FIXED: Update total from API response for paginated results
+    if (data.total !== undefined) {
+      setTotalFacilities(data.total);
+    }
 
   } catch (err: any) {
     console.error("❌ loadPage failed:", err);
@@ -368,7 +377,7 @@ useEffect(() => {
 
 
   // ✅ FIXED: Filter functions - properly track filtered count
-  // ✅ FIXED: Filter functions - use clearFilters for consistency
+ // ✅ FIXED: Filter functions with proper total count handling
 const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   const appliedFilters = newFilters || filters;
   setIsFiltering(true);
@@ -380,21 +389,30 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
 
     // 🔄 Reset filters - use clearFilters for consistency
     if (!hasActiveFilters) {
-      clearFilters(); // Use the centralized clear function
+      clearFilters();
       setIsFiltering(false);
       return;
     }
 
-    // Use context's refetch function for filtered results
+    // ✅ FIXED: Build filter params without duplication
     const filterParams: any = {
-      locationName: locationName || appliedFilters.locationName,
-      ...appliedFilters
+      // Always use context locationName as primary
+      locationName: locationName || appliedFilters.locationName || '',
     };
 
-    // Remove empty values
-    Object.keys(filterParams).forEach(key => {
-      if (!filterParams[key]) delete filterParams[key];
+    // Add other filters from appliedFilters, excluding locationName to avoid duplication
+    Object.entries(appliedFilters).forEach(([key, value]) => {
+      if (key !== 'locationName' && value && value.toString().trim() !== '') {
+        filterParams[key] = value;
+      }
     });
+
+    // Remove empty locationName if no location is available
+    if (!filterParams.locationName) {
+      delete filterParams.locationName;
+    }
+
+    console.log("🔍 Filtering with params:", filterParams);
 
     // Get filtered facilities from context
     await refetchFacilities(filterParams);
@@ -404,8 +422,15 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
     setFilteredFacilities(initialFacilities);
     setUsingFilters(true);
     setFilterApplied(true);
-    setCurrentPage(1);
+    setCurrentPage(1); // ✅ Reset to page 1 when filters applied
     setTotalFacilities(filteredCount);
+    
+    console.log("✅ Filters applied:", {
+      filteredCount,
+      locationName: filterParams.locationName,
+      activeFilters: filterParams
+    });
+    
     toast.success(`Found ${filteredCount} facilities`);
     
   } catch (err: any) {
@@ -416,70 +441,89 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   }
 };
 
-  // Filtered pagination
-  const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
-    setIsPageLoading(true);
+  // ✅ FIXED: Filtered pagination with proper total count handling
+const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
+  setIsPageLoading(true);
 
-    try {
-      const params = new URLSearchParams();
-      params.append("page", page.toString());
-      params.append("limit", ITEMS_PER_PAGE.toString());
+  try {
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("limit", ITEMS_PER_PAGE.toString());
 
-      Object.entries(appliedFilters).forEach(([key, value]) => {
-        if (typeof value === "string" && value.trim()) {
-          const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
-          params.append(key, cleanValue);
-        }
-      });
-
-      if (coords?.lat && coords?.lng) {
-        params.append("userLat", coords.lat.toString());
-        params.append("userLng", coords.lng.toString());
-      }
-
-      if (!params.has("locationName")) {
-        let location = locationName?.trim() || "";
-        if (!location) {
-          const facilityCoords = extractFacilityCoords(initialFacilities);
-          location = facilityCoords.length > 0 ? facilityCoords[0].name.trim() : "";
-        }
-        if (location) {
-          params.set("locationName", location.replace(/^\+/, "").replace(/\s+/g, "_"));
-        }
-      }
-
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
-      console.log("🌐 Fetching filtered facilities page:", page);
-
-      const res = await fetch(apiUrl);
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-
-      const data = await res.json();
-      const facilitiesData = data.data?.facilities || data.facilities || [];
-      
-      if (!facilitiesData || facilitiesData.length === 0) {
-        setPaginatedFacilities([]);
-        setIsPageLoading(false);
-        return;
-      }
-
-      const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
-        mapRawFacilityToCard(f, coords)
-      );
-
-      setPaginatedFacilities(mappedFacilities);
-      
-    } catch (err: any) {
-      console.error("❌ Filter pagination failed:", err);
-      setPaginatedFacilities([]);
-    } finally {
-      setIsPageLoading(false);
+    // ✅ FIXED: Use context locationName first, then fallback
+    let location = locationName?.trim() || appliedFilters.locationName?.trim() || "";
+    if (location) {
+      const cleanLocation = location.replace(/^\+/, "").replace(/\s+/g, "_");
+      params.append("locationName", cleanLocation);
+      console.log("📍 Using locationName:", cleanLocation);
     }
-  };
+
+    // Add other filters, excluding locationName to avoid duplication
+    Object.entries(appliedFilters).forEach(([key, value]) => {
+      if (key !== 'locationName' && typeof value === "string" && value.trim()) {
+        const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+        params.append(key, cleanValue);
+      }
+    });
+
+    // Add coordinates if available
+    if (coords?.lat && coords?.lng) {
+      params.append("userLat", coords.lat.toString());
+      params.append("userLng", coords.lng.toString());
+    }
+
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
+    console.log("🌐 Fetching filtered facilities:", {
+      page,
+      locationName: params.get('locationName'),
+      params: params.toString()
+    });
+
+    const res = await fetch(apiUrl);
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+
+    const data = await res.json();
+    const facilitiesData = data.data?.facilities || data.facilities || [];
+    
+    // ✅ FIXED: Use the total from API response, not the facilitiesData length
+    const totalFromAPI = data.total || data.totalCount || facilitiesData.length;
+    
+    if (!facilitiesData || facilitiesData.length === 0) {
+      setPaginatedFacilities([]);
+      setTotalFacilities(0);
+      setIsPageLoading(false);
+      return;
+    }
+
+    const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
+      mapRawFacilityToCard(f, coords)
+    );
+
+    setPaginatedFacilities(mappedFacilities);
+    
+    // ✅ FIXED: Use the total count from API response, not the paginated count
+    setTotalFacilities(totalFromAPI);
+    
+    console.log("✅ Filtered pagination response:", {
+      page,
+      totalFromAPI,
+      paginatedCount: mappedFacilities.length,
+      facilitiesDataCount: facilitiesData.length
+    });
+    
+  } catch (err: any) {
+    console.error("❌ Filter pagination failed:", err);
+    setPaginatedFacilities([]);
+    setTotalFacilities(0);
+  } finally {
+    setIsPageLoading(false);
+  }
+};
+
 
   // Modal effects
   useEffect(() => {
@@ -554,7 +598,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
     );
   }
 
-  // Calculate derived values
+  // ✅ FIXED: Calculate total pages based on displayTotal
   const totalFacilityPages = Math.ceil(displayTotal / ITEMS_PER_PAGE);
   const startFacility = displayTotal > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
   const endFacility = Math.min(startFacility + ITEMS_PER_PAGE - 1, displayTotal);
@@ -653,11 +697,26 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
             {/* Info Section */}
             <div className="flex flex-col items-start flex-wrap gap-x-0 sm:gap-x-4 ml-0 md:ml-[90px] md:flex-1 md:min-w-[150px] lg:min-w-[250px]">
               <span className="font-inter font-medium text-[15px] sm:text-[17px] leading-[22px] sm:leading-[26px] text-[#111827] ml-2 sm:ml-[55px]">
-                {displayTotal} Facilities Found in{" "}
-                {locationName &&
-                  locationName
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (char) => char.toUpperCase())}
+               {usingFilters && filterApplied ? (
+                  <>
+                    {displayTotal} Filtered Facilities Found
+                    {locationName && (
+                      <> in{" "}
+                        {locationName
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {displayTotal} Facilities Found in{" "}
+                    {locationName &&
+                      locationName
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (char) => char.toUpperCase())}
+                  </>
+                )}
 
                 {/* {locationName?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())} */}
               </span>
@@ -725,7 +784,6 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
                 <AdUnit adSlot="1234567890" layout="banner" />
               </div>
             </div>
-
           </div>
 
         </div>
@@ -762,7 +820,15 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
               onClear={() => {
                 const newFilters = { ...filters, ratingMin: "" };
                 setFilters(newFilters);
-                fetchFilteredFacilities(newFilters);
+                // ✅ FIXED: Only clear this specific filter, check if all filters are empty
+                const hasOtherFilters = Object.entries(newFilters).some(
+                  ([key, value]) => key !== 'ratingMin' && value && value.toString().trim() !== ''
+                );
+                if (!hasOtherFilters) {
+                  clearFilters(); // Clear all if no other filters
+                } else {
+                  fetchFilteredFacilities(newFilters); // Just update this filter
+                }
               }}
               className="flex items-center justify-center gap-2 w-[130px] h-[43px] rounded-[9.56px] bg-[#D02B38] px-3 font-inter font-medium text-[16.72px] leading-[23.89px] text-white"
               textWhite
@@ -778,16 +844,23 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
               label="Distance Km"
               options={["1", "5", "10", "20", "50"]}
               value={filters.distance}
-              onSelect={(val) => {
-                const newFilters = { ...filters, distance: val.toString() };
-                setFilters(newFilters);
-                fetchFilteredFacilities(newFilters);
-              }}
-              onClear={() => {
-                const newFilters = { ...filters, distance: "" };
-                setFilters(newFilters);
-                fetchFilteredFacilities(newFilters);
-              }}
+               onSelect={(val) => {
+          const newFilters = { ...filters, distance: val.toString() };
+          setFilters(newFilters);
+          fetchFilteredFacilities(newFilters);
+        }}
+        onClear={() => {
+          const newFilters = { ...filters, distance: "" };
+          setFilters(newFilters);
+          const hasOtherFilters = Object.entries(newFilters).some(
+            ([key, value]) => key !== 'distance' && value && value.toString().trim() !== ''
+          );
+          if (!hasOtherFilters) {
+            clearFilters();
+          } else {
+            fetchFilteredFacilities(newFilters);
+          }
+        }}
               iconLeftWidth="14px"
               iconLeftHeight="18px"
               iconRightWidth="12px"
@@ -809,7 +882,14 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
               onClear={() => {
                 const newFilters = { ...filters, beds: "" };
                 setFilters(newFilters);
-                fetchFilteredFacilities(newFilters);
+                const hasOtherFilters = Object.entries(newFilters).some(
+                  ([key, value]) => key !== 'beds' && value && value.toString().trim() !== ''
+                );
+                if (!hasOtherFilters) {
+                  clearFilters();
+                } else {
+                  fetchFilteredFacilities(newFilters);
+                }
               }}
               iconLeftWidth="23px"
               iconLeftHeight="18px"
@@ -825,14 +905,21 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
               options={["Non-Profit", "Private", "Government"]}
               value={filters.ownership}
               onSelect={(val) => {
-                const newFilters = { ...filters, ownership: val.toString() };
+              const newFilters = { ...filters, ownership: val.toString() };
                 setFilters(newFilters);
                 fetchFilteredFacilities(newFilters);
               }}
               onClear={() => {
                 const newFilters = { ...filters, ownership: "" };
                 setFilters(newFilters);
-                fetchFilteredFacilities(newFilters);
+                const hasOtherFilters = Object.entries(newFilters).some(
+                  ([key, value]) => key !== 'ownership' && value && value.toString().trim() !== ''
+                );
+                if (!hasOtherFilters) {
+                  clearFilters();
+                } else {
+                  fetchFilteredFacilities(newFilters);
+                }
               }}
               iconLeftWidth="14px"
               iconLeftHeight="18px"
@@ -848,8 +935,16 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
               iconRightWidth="12px"
               iconRightHeight="10px"
               onClear={() => {
-                setFilters(f => ({ ...f, city: "", state: "" }));
-                fetchFilteredFacilities();
+              const newFilters = { ...filters, city: "", state: "" };
+              setFilters(newFilters);
+              const hasOtherFilters = Object.entries(newFilters).some(
+                ([key, value]) => !['city', 'state'].includes(key) && value && value.toString().trim() !== ''
+              );
+              if (!hasOtherFilters) {
+                clearFilters();
+              } else {
+                fetchFilteredFacilities(newFilters);
+              }
               }}
               value={filters.city || filters.state}
             >
@@ -861,7 +956,6 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
                   value={filters.city}
                   onChange={(e) => setFilters(f => ({ ...f, city: e.target.value }))}
                   onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilities()}
-
                 />
                 <input
                   type="text"
@@ -871,7 +965,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
                   onChange={(e) => setFilters(f => ({ ...f, state: e.target.value }))}
                   onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilities()}
                 />
-                <Button
+                 <Button
                   onClick={() => {
                     fetchFilteredFacilities();
                     toast.success("Filters applied!");
@@ -882,6 +976,15 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
                 </Button>
               </div>
             </FilterButton>
+             {/* ✅ Clear All Filters Button - Only show when filters are active */}
+            {(usingFilters && filterApplied) && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center justify-center gap-2 w-auto h-[43px] rounded-[9.56px] bg-gray-500 px-4 font-inter font-medium text-[16.72px] leading-[23.89px] text-white hover:bg-gray-600 transition-colors"
+              >
+                Clear All Filters
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -894,242 +997,261 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   <div className="hidden md:flex justify-center items-start w-[120px] my-18 lg:w-[120px]">
     <AdUnit adSlot="right-skyscraper" layout="skyscraper" />
   </div>
+  
   {isFiltering || showSkeletonTimer ? (
     <FacilityReviewSkeleton />
-  ) : filteredFacilities.length === 0 ? (
-    <div className="flex justify-center items-center w-full h-[300px] text-gray-500 text-lg font-medium">
-      No Facilities Found
+  ) : filteredFacilities.length === 0 && usingFilters ? (
+    <div className="flex flex-col justify-center items-center w-full h-[300px] text-gray-500 text-lg font-medium">
+      <p>No facilities match your filters</p>
+      <button
+        onClick={clearFilters}
+        className="mt-4 px-4 py-2 bg-[#D02B38] text-white rounded-lg hover:bg-[#af404a] transition-colors"
+      >
+        Clear Filters
+      </button>
     </div>
   ) : (
     <>
       {viewMode === "both" && (
         <>
-          {isLoading || isPageLoading  ? (
+          {isLoading || isPageLoading ? (
             <FacilityReviewSkeleton />
           ) : (
-            <div className="w-full lg:w-[720px] min-h-[400px] overflow-hidden space-y-4">
-              {paginatedFacilities.map((facility: Facility) => (
-                <div
-                  key={facility.id}
-                  onClick={() => handleCardClick(facility)}
-                  className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer ${
-                    selectedFacilityId?.toString() === facility.id
-                      ? "border-l-[4.78px] border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
-                      : ""
-                  }`}
-                >
-                  <div className="flex flex-col sm:flex-row">
-                    {/* Image */}
-                    <div className="w-full sm:w-1/4 flex justify-center sm:justify-start mb-4 sm:mb-0">
-                      <img
-                        src={facility.imageUrl || "/Default_image.png"}
-                        alt={facility.name}
-                        className="w-[114px] h-[114px] object-cover rounded-[9.56px]"
-                      />
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex-1 sm:ml-5">
-                      <h3 className="text-[#111827] font-bold text-[20px] sm:text-[23.89px] leading-[28px] sm:leading-[33.45px]">
-                        {facility.name}
-                      </h3>
-
-                      <div className="flex items-center gap-2 mt-2">
+            <>
+              {/* Left Column - Facilities List */}
+              <div className="w-full lg:w-[720px] min-h-[400px] overflow-hidden space-y-4">
+                {paginatedFacilities.map((facility: Facility) => (
+                  <div
+                    key={facility.id}
+                    onClick={() => handleCardClick(facility)}
+                    className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer ${
+                      selectedFacilityId?.toString() === facility.id
+                        ? "border-l-[4.78px] border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row">
+                      {/* Image */}
+                      <div className="w-full sm:w-1/4 flex justify-center sm:justify-start mb-4 sm:mb-0">
                         <img
-                          src="/icons/location_icon_new.png"
-                          alt="Location Icon"
-                          className="w-[12px] h-[16px]"
+                          src={facility.imageUrl || "/Default_image.png"}
+                          alt={facility.name}
+                          className="w-[114px] h-[114px] object-cover rounded-[9.56px]"
                         />
-                        <span className="text-[#4B5563] text-sm sm:text-base">
-                          {facility.distance != null
-                            ? `${facility.distance.toFixed(1)} miles`
-                            : ""}
-                          {facility.address ? ` • ${facility.address}` : ""}
-                        </span>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3">
-                        <div className="flex items-center gap-2">
+                      {/* Details */}
+                      <div className="flex-1 sm:ml-5">
+                        <h3 className="text-[#111827] font-bold text-[20px] sm:text-[23.89px] leading-[28px] sm:leading-[33.45px]">
+                          {facility.name}
+                        </h3>
+
+                        <div className="flex items-center gap-2 mt-2">
                           <img
-                            src="/icons/bed_icon.png"
-                            alt="Beds Icon"
-                            className="w-[18px] h-[12px]"
+                            src="/icons/location_icon_new.png"
+                            alt="Location Icon"
+                            className="w-[12px] h-[16px]"
                           />
                           <span className="text-[#4B5563] text-sm sm:text-base">
-                            {facility.beds} beds
+                            {facility.distance != null
+                              ? `${facility.distance.toFixed(1)} miles`
+                              : ""}
+                            {facility.address ? ` • ${facility.address}` : ""}
                           </span>
                         </div>
 
-                        <div className="flex flex-row items-center gap-2 sm:gap-3">
-                          <span className="text-[#4B5563] text-sm sm:text-base">
-                            {facility.isNonProfit ? "Non-Profit" : "For-Profit"}
-                          </span>
-                          <span
-                            className={`text-sm sm:text-base font-medium ${getStatusColor(facility.status)}`}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3">
+                          <div className="flex items-center gap-2">
+                            <img
+                              src="/icons/bed_icon.png"
+                              alt="Beds Icon"
+                              className="w-[18px] h-[12px]"
+                            />
+                            <span className="text-[#4B5563] text-sm sm:text-base">
+                              {facility.beds} beds
+                            </span>
+                          </div>
+
+                          <div className="flex flex-row items-center gap-2 sm:gap-3">
+                            <span className="text-[#4B5563] text-sm sm:text-base">
+                              {facility.isNonProfit ? "Non-Profit" : "For-Profit"}
+                            </span>
+                            <span
+                              className={`text-sm sm:text-base font-medium ${getStatusColor(facility.status)}`}
+                            >
+                              {facility.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Pros & Cons */}
+                        <div className="bg-[#F5F5F5] rounded-md p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                          <div className="flex items-start gap-2">
+                            <span className="text-green-600 font-medium">✓</span>
+                            <p className="text-green-600 text-sm leading-5">
+                              Pros:{" "}
+                              {facility.pros
+                                ? facility.pros.split(" ").length > 10
+                                  ? facility.pros.split(" ").slice(0, 10).join(" ") + "..."
+                                  : facility.pros
+                                : "No pros available"}
+                            </p>
+                          </div>
+
+                          <div className="flex items-start gap-2">
+                            <span className="text-red-600 font-medium">✗</span>
+                            <p className="text-red-600 text-sm leading-5">
+                              Cons:{" "}
+                              {facility.cons
+                                ? facility.cons.split(" ").length > 10
+                                  ? facility.cons.split(" ").slice(0, 10).join(" ") + "..."
+                                  : facility.cons
+                                : "No cons available"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Contact + Button */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <img
+                                src="/icons/phone_icon.png"
+                                alt="Phone"
+                                className="w-[12px] h-[12px]"
+                              />
+                              <span className="text-[#4B5563] text-sm sm:text-base">
+                                {facility.phone}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <img
+                                src="/icons/clock_icon.png"
+                                alt="Clock"
+                                className="w-[12px] h-[12px]"
+                              />
+                              <span className="text-[#4B5563] text-sm sm:text-base">
+                                {facility.hours}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            className="w-full sm:w-[136.76px] h-[43px] bg-[#D02B38] rounded-[4.78px] text-white font-inter font-medium text-[16.72px] leading-[23.89px] flex items-center justify-center text-center disabled:opacity-70"
+                            onClick={() => handleViewDetails(facility)}
+                            disabled={loadingFacilityId === facility.id}
                           >
-                            {facility.status}
-                          </span>
+                            {loadingFacilityId === facility.id ? (
+                              <div className="loader border-t-2 border-white border-solid rounded-full w-[18px] h-[18px] animate-spin"></div>
+                            ) : (
+                              "View Details"
+                            )}
+                          </button>
                         </div>
-                      </div>
-
-                      {/* Pros & Cons */}
-                      <div className="bg-[#F5F5F5] rounded-md p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                        <div className="flex items-start gap-2">
-                          <span className="text-green-600 font-medium">✓</span>
-                          <p className="text-green-600 text-sm leading-5">
-                            Pros:{" "}
-                            {facility.pros
-                              ? facility.pros.split(" ").length > 10
-                                ? facility.pros.split(" ").slice(0, 10).join(" ") + "..."
-                                : facility.pros
-                              : "No pros available"}
-                          </p>
-                        </div>
-
-                        <div className="flex items-start gap-2">
-                          <span className="text-red-600 font-medium">✗</span>
-                          <p className="text-red-600 text-sm leading-5">
-                            Cons:{" "}
-                            {facility.cons
-                              ? facility.cons.split(" ").length > 10
-                                ? facility.cons.split(" ").slice(0, 10).join(" ") + "..."
-                                : facility.cons
-                              : "No cons available"}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Contact + Button */}
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <img
-                              src="/icons/phone_icon.png"
-                              alt="Phone"
-                              className="w-[12px] h-[12px]"
-                            />
-                            <span className="text-[#4B5563] text-sm sm:text-base">
-                              {facility.phone}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <img
-                              src="/icons/clock_icon.png"
-                              alt="Clock"
-                              className="w-[12px] h-[12px]"
-                            />
-                            <span className="text-[#4B5563] text-sm sm:text-base">
-                              {facility.hours}
-                            </span>
-                          </div>
-                        </div>
-
-                        <button
-                          className="w-full sm:w-[136.76px] h-[43px] bg-[#D02B38] rounded-[4.78px] text-white font-inter font-medium text-[16.72px] leading-[23.89px] flex items-center justify-center text-center disabled:opacity-70"
-                          onClick={() => handleViewDetails(facility)}
-                          disabled={loadingFacilityId === facility.id}
-                        >
-                          {loadingFacilityId === facility.id ? (
-                            <div className="loader border-t-2 border-white border-solid rounded-full w-[18px] h-[18px] animate-spin"></div>
-                          ) : (
-                            "View Details"
-                          )}
-                        </button>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {displayTotal  > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full">
-                   {usingFilters ? (
-                    <p>Showing {startFacility}-{endFacility} of {displayTotal} filtered facilities</p>
-                  ) : (
-                    <p>Showing {startFacility}-{endFacility} of {displayTotal} total facilities</p>
-                  )}
+                {/* ✅ FIXED: Pagination with proper total counts */}
+                {displayTotal > ITEMS_PER_PAGE && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full">
+                    <div className="text-sm text-gray-600 mb-3 sm:mb-0">
+                      {usingFilters && filterApplied ? (
+                        <span>
+                          Showing <strong>{startFacility}-{endFacility}</strong> of{" "}
+                          <strong>{displayTotal} filtered</strong> facilities
+                          {totalCountFromProvider > displayTotal && (
+                            <span> (from {totalCountFromProvider} total)</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span>
+                          Showing <strong>{startFacility}-{endFacility}</strong> of{" "}
+                          <strong>{displayTotal} total</strong> facilities
+                        </span>
+                      )}
+                    </div>
 
-                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
-                    {/* Prev */}
-                    <button
-                      disabled={currentPage === 1}
-                      onClick={goToPrevPage}
-                      className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
-                    >
-                      Prev
-                    </button>
-
-                    {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
+                      {/* Prev */}
                       <button
-                        key={idx}
-                        onClick={() => typeof page === "number" && goToPage(page)}
-                        className={`px-3 py-2 rounded-md text-sm sm:text-base ${
-                          currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
-                        }`}
-                        disabled={page === "..."} 
+                        disabled={currentPage === 1}
+                        onClick={goToPrevPage}
+                        className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
                       >
-                        {page}
+                        Prev
                       </button>
-                    ))}
-                    <button
-                      disabled={currentPage === totalFacilityPages}
-                      onClick={goToNextPage}
-                      className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
-                    >
-                      Next
-                    </button>
+
+                      {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => typeof page === "number" && goToPage(page)}
+                          className={`px-3 py-2 rounded-md text-sm sm:text-base ${
+                            currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
+                          }`}
+                          disabled={page === "..."} 
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      
+                      <button
+                        disabled={currentPage === totalFacilityPages}
+                        onClick={goToNextPage}
+                        className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-
-
-
-                  </div>
-
                 )}
-                {/* --- Right Column (Map) --- */}
-                <div className="w-full lg:w-[780px] h-[400px] lg:h-[677px] bg-white rounded-[9.56px] shadow flex items-center justify-center sticky top-6 overflow-hidden">
-                  {GOOGLE_MAPS_API_KEY ? (
-                    <MapView
-                      facilities={facilityCoords} // This now uses paginated facilities coordinates
-                      centerCoords={mapCenter}
-                      googleMapsApiKey={GOOGLE_MAPS_API_KEY}
-                      locationName={locationName}
-                      markerIconUrl="/icons/red_hospital_pin.png"
-                    />
-                  ) : (
-                    <img
-                      src="/map_placeholder.png"
-                      alt="Map"
-                      className="w-full h-full object-cover rounded-[9.56px]"
-                    />
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* Map Only Mode */}
-            {viewMode === "mapOnly" && (
-              <div className="w-full h-[677px] bg-white rounded-[12.56px] shadow flex items-center justify-center overflow-hidden">
-                <MapView
-                  facilities={facilityCoords}
-                  centerCoords={mapCenter}
-                  googleMapsApiKey={GOOGLE_MAPS_API_KEY!}
-                  locationName={locationName}
-                  markerIconUrl="/icons/red_hospital_pin.png"
-                />
               </div>
-            )}
-          </>
-        )}
 
-        {/* ✅ Right Skyscraper Ad — visible only on md to lg */}
-        {/* ✅ Right Skyscraper Ad — only visible on md+ */}
-        <div className="hidden md:flex justify-center items-start w-[120px] my-18 lg:w-[120px]">
-          <AdUnit adSlot="right-skyscraper" layout="skyscraper" />
+              {/* Right Column - Map */}
+              <div className="w-full lg:w-[780px] h-[400px] lg:h-[677px] bg-white rounded-[9.56px] shadow flex items-center justify-center sticky top-6 overflow-hidden">
+                {GOOGLE_MAPS_API_KEY ? (
+                  <MapView
+                    facilities={facilityCoords}
+                    centerCoords={mapCenter}
+                    googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                    locationName={locationName}
+                    markerIconUrl="/icons/red_hospital_pin.png"
+                  />
+                ) : (
+                  <img
+                    src="/map_placeholder.png"
+                    alt="Map"
+                    className="w-full h-full object-cover rounded-[9.56px]"
+                  />
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* Map Only Mode */}
+      {viewMode === "mapOnly" && (
+        <div className="w-full h-[677px] bg-white rounded-[12.56px] shadow flex items-center justify-center overflow-hidden">
+          <MapView
+            facilities={facilityCoords}
+            centerCoords={mapCenter}
+            googleMapsApiKey={GOOGLE_MAPS_API_KEY!}
+            locationName={locationName}
+            markerIconUrl="/icons/red_hospital_pin.png"
+          />
         </div>
-      </section>
+      )}
+    </>
+  )}
+
+  {/* ✅ Right Skyscraper Ad — only visible on md+ */}
+  <div className="hidden md:flex justify-center items-start w-[120px] my-18 lg:w-[120px]">
+    <AdUnit adSlot="right-skyscraper" layout="skyscraper" />
+  </div>
+</section>
 
 
       <section className="w-full min-h-[566px] pb-5 px-4 sm:px-6 lg:px-12 xl:px-20 mt-[40px] sm:mt-[80px]">

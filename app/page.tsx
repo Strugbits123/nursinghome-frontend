@@ -36,7 +36,7 @@ export default function Home() {
   useEffect(() => {
     console.log('🔄 Detecting navigation type...');
     
-    // Check performance navigation API
+    // Check performance navigation api
     if (performance.navigation) {
       const perfNav = performance.navigation;
       if (perfNav.type === perfNav.TYPE_BACK_FORWARD) {
@@ -120,9 +120,10 @@ export default function Home() {
           }
 
           if (locoScrollRef.current) {
-            locoScrollRef.current.scrollTo(position, { 
+            // Fixed: Proper scrollTo usage with options
+            locoScrollRef.current.scrollTo(position, {
               duration: 0,
-              disableLerp: true 
+              disableLerp: true
             });
             
             // Verify scroll position
@@ -332,10 +333,11 @@ export default function Home() {
         ScrollTrigger.scrollerProxy(containerRef.current!, {
           scrollTop(value) {
             if (arguments.length) {
-              locoScroll.scrollTo(value, { 
-                duration: 0, 
-                disableLerp: true 
-              });
+              // Fixed: Proper scrollTo usage with two arguments
+             locoScrollRef.current.scrollTo(value, {
+                duration: 0,
+                disableLerp: true
+              }, 0);
             }
             return locoScroll.scroll.instance.scroll.y;
           },
