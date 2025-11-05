@@ -31,13 +31,25 @@ const getRecommendationsCacheKey = (locationName: string) => `recommendations_${
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities`;
 const FACILITIES_WITH_REVIEWS_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews`;
 
-// --- Safe Local Storage Helpers ---
+// 🎯 FIXED: Safe Local Storage Helpers with SSR support
+function isClient() {
+  return typeof window !== "undefined";
+}
+
 function saveToStorage<T>(key: string, value: T) {
-  const data = { value, timestamp: Date.now() };
-  localStorage.setItem(key, JSON.stringify(data));
+  if (!isClient()) return;
+  
+  try {
+    const data = { value, timestamp: Date.now() };
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (err) {
+    console.error(`Error saving to localStorage for ${key}:`, err);
+  }
 }
 
 function getFromStorage<T>(key: string, defaultValue: T): T {
+  if (!isClient()) return defaultValue;
+  
   try {
     const stored = localStorage.getItem(key);
     if (stored) {
@@ -145,20 +157,12 @@ const FacilitiesContext = createContext<FacilitiesContextType | undefined>(
 export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  // 🎯 FIXED: Initialize state from localStorage FIRST
-  const [facilities, setFacilities] = useState<Facility[]>(() => 
-    getFromStorage(FACILITIES_STORAGE_KEY, [])
-  );
+  // 🎯 FIXED: Initialize state with empty defaults first, then update in useEffect
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [recommendations, setRecommendations] = useState<Facility[]>([]);
-  const [coords, setCoords] = useState<Coords | null>(() => 
-    getFromStorage(COORDS_STORAGE_KEY, null)
-  );
-  const [locationName, setLocationName] = useState<string>(() => 
-    getFromStorage(LOCATION_NAME_STORAGE_KEY, "")
-  );
-  const [filters, setFilters] = useState<FilterState>(() => 
-    getFromStorage(FILTERS_STORAGE_KEY, {})
-  );
+  const [coords, setCoords] = useState<Coords | null>(null);
+  const [locationName, setLocationName] = useState<string>("");
+  const [filters, setFilters] = useState<FilterState>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotalState] = useState(0);
@@ -166,11 +170,24 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   // Custom setTotal that also saves to localStorage
   const setTotal = useCallback((newTotal: number) => {
     setTotalState(newTotal);
-    localStorage.setItem("facilities_total_count", newTotal.toString());
+    if (isClient()) {
+      localStorage.setItem("facilities_total_count", newTotal.toString());
+    }
   }, []);
 
-  // 🎯 FIXED: Also initialize total from localStorage
+  // 🎯 FIXED: Initialize state from localStorage in useEffect (client-side only)
   useEffect(() => {
+    if (!isClient()) return;
+
+    console.log("🔄 FacilitiesProvider: Initializing state from localStorage");
+    
+    // Initialize state from localStorage
+    setFacilities(getFromStorage(FACILITIES_STORAGE_KEY, []));
+    setCoords(getFromStorage(COORDS_STORAGE_KEY, null));
+    setLocationName(getFromStorage(LOCATION_NAME_STORAGE_KEY, ""));
+    setFilters(getFromStorage(FILTERS_STORAGE_KEY, {}));
+
+    // Initialize total from localStorage
     const savedTotal = localStorage.getItem("facilities_total_count");
     if (savedTotal) {
       try {
@@ -199,7 +216,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
   // 🎯 FIXED: Get cached data for current location
   const getCachedData = useCallback((currentLocation: string) => {
-    if (!currentLocation || typeof window === "undefined") return null;
+    if (!currentLocation || !isClient()) return null;
     
     const normalized = normalizeLocationName(currentLocation);
     const page1CacheKey = getPage1CacheKey(normalized);
@@ -236,7 +253,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
   // 🎯 FIXED: Save data with consistent normalization
   const saveToLocationCache = useCallback((currentLocation: string, facilities: Facility[], total: number, recommendations: Facility[] = []) => {
-    if (!currentLocation || typeof window === "undefined") return;
+    if (!currentLocation || !isClient()) return;
     
     const normalized = normalizeLocationName(currentLocation);
     
@@ -263,6 +280,10 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   // Helper: Fetch Top Recommendations
   const fetchTopRecommendations = async (state: string, city: string, top_n: number) => {
     if (!state && !city) return [];
+    
+    // Only fetch on client side
+    if (!isClient()) return [];
+    
     const token = localStorage.getItem("token") || "";
     const url = `http://localhost:8000/recommendations/top?state=${encodeURIComponent(state)}&city=${encodeURIComponent(city)}&limit=${top_n}`;
     try {
@@ -337,7 +358,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         const { state, city } = parseQueryToStateCity(currentFilters.locationName || locationName);
         let topFacilities: Facility[] = [];
         
-        if (state || city) {
+        if ((state || city) && isClient()) {
           topFacilities = await fetchTopRecommendations(state, city, 5);
         }
 
@@ -389,7 +410,11 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
     searchQuery: string,
     currentCoords: Coords | null
   ) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!isClient()) {
+      throw new Error("This function can only be called on the client side");
+    }
+
+    const token = localStorage.getItem("token");
 
     if (!token) {
       throw new Error("Please log in to search facilities");
@@ -497,9 +522,11 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       setLocationName("");
       setRecommendations([]);
 
-      localStorage.removeItem(FACILITIES_STORAGE_KEY);
-      localStorage.removeItem(COORDS_STORAGE_KEY);
-      localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
+      if (isClient()) {
+        localStorage.removeItem(FACILITIES_STORAGE_KEY);
+        localStorage.removeItem(COORDS_STORAGE_KEY);
+        localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
+      }
 
       throw err; // Re-throw for component to handle
     } finally {
@@ -509,7 +536,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
   // 🎯 FIXED: Restore from cache on mount - IMPROVED
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!isClient()) return;
 
     console.log("🔄 Context: Checking for cached data on mount", {
       locationName,
@@ -565,29 +592,33 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
   // 🎯 FIXED: Persist state changes to localStorage
   useEffect(() => {
-    if (facilities.length > 0) {
+    if (facilities.length > 0 && isClient()) {
       saveToStorage(FACILITIES_STORAGE_KEY, facilities);
     }
   }, [facilities]);
 
   useEffect(() => {
-    if (coords) {
+    if (coords && isClient()) {
       saveToStorage(COORDS_STORAGE_KEY, coords);
     }
   }, [coords]);
 
   useEffect(() => {
-    if (locationName) {
+    if (locationName && isClient()) {
       saveToStorage(LOCATION_NAME_STORAGE_KEY, locationName);
     }
   }, [locationName]);
 
   useEffect(() => {
-    saveToStorage(FILTERS_STORAGE_KEY, filters);
+    if (isClient()) {
+      saveToStorage(FILTERS_STORAGE_KEY, filters);
+    }
   }, [filters]);
 
   // 🎯 FIXED: Auto-fetch if cache empty - IMPROVED
   useEffect(() => {
+    if (!isClient()) return;
+
     if (locationName && facilities.length === 0) {
       const cachedData = getCachedData(locationName);
       const savedFacilities = getFromStorage(FACILITIES_STORAGE_KEY, []);

@@ -84,6 +84,7 @@ const getStatusColor = (status: Facility['status']): string => {
 type ViewMode = "both" | "mapOnly";
 
 export default function FacilitySearchPage() {
+  
   const router = useRouter();
 
   const [viewMode, setViewMode] = useState<ViewMode>("both");
@@ -110,7 +111,7 @@ export default function FacilitySearchPage() {
 
   const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
   const [isFiltering, setIsFiltering] = useState(false);
-  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null); // ✅ FIXED: This was missing
+  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [showSkeletonTimer, setShowSkeletonTimer] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loadingFacilityId, setLoadingFacilityId] = useState<string | null>(null);
@@ -125,112 +126,152 @@ export default function FacilitySearchPage() {
   const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [filterApplied, setFilterApplied] = useState(false);
 
-  // ✅ SIMPLIFIED: Initialize data from context only
-  useEffect(() => {
-    console.log("🔄 INITIALIZING DATA FROM CONTEXT:", {
-      locationName,
-      initialFacilitiesCount: initialFacilities.length,
-      totalCountFromProvider
-    });
+  // ✅ FIXED: Initialize data from context with proper filter state respect
+useEffect(() => {
+  console.log("🔄 INITIALIZING DATA FROM CONTEXT:", {
+    locationName,
+    initialFacilitiesCount: initialFacilities.length,
+    totalCountFromProvider,
+    usingFilters,
+    filterApplied
+  });
 
-    if (initialFacilities.length > 0) {
-      console.log("✅ Using context data");
+  if (initialFacilities.length > 0) {
+    // Only update if we're not in the middle of filtering
+    if (!usingFilters && !filterApplied) {
+      console.log("✅ Using context data - no filters active");
       setAllFacilities(initialFacilities);
       setFilteredFacilities(initialFacilities);
-      setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
+      
+      // Only update pagination if we're on page 1
+      if (currentPage === 1) {
+        setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
+      }
+      
       setTotalFacilities(totalCountFromProvider || initialFacilities.length);
+    } else {
+      console.log("ℹ️ Context updated but filters active, preserving filter state");
     }
-  }, [initialFacilities, totalCountFromProvider, locationName]);
+  }
+}, [initialFacilities, totalCountFromProvider, locationName, usingFilters, filterApplied, currentPage]);
 
-  // ✅ SIMPLIFIED: Get display total
+  // ✅ FIXED: Get display total - use filtered count when filters are active
   const displayTotal = useMemo(() => {
-    return totalFacilities > 0 ? totalFacilities : allFacilities.length;
-  }, [totalFacilities, allFacilities.length]);
-
-  // ✅ SIMPLIFIED: Load page function - no caching
-  const loadPage = useCallback(async (page: number) => {
-    // For filtered results, use existing facilities
     if (usingFilters) {
-      const start = (page - 1) * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE;
-      setPaginatedFacilities(filteredFacilities.slice(start, end));
+      // When filters are active, show the filtered facilities count
+      return filteredFacilities.length;
+    } else {
+      // When no filters, show the total from provider or all facilities count
+      return totalFacilities > 0 ? totalFacilities : allFacilities.length;
+    }
+  }, [usingFilters, filteredFacilities.length, totalFacilities, allFacilities.length]);
+
+  // ✅ FIXED: Load page function with proper cache handling
+const loadPage = useCallback(async (page: number) => {
+  // For filtered results, use existing facilities
+  if (usingFilters && filterApplied) {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    setPaginatedFacilities(filteredFacilities.slice(start, end));
+    return;
+  }
+
+  // For cached pages beyond page 1, fetch from API
+  setIsPageLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token || !locationName?.trim()) return;
+
+    const params = new URLSearchParams();
+    const normalizedQuery = locationName.trim().replace(/\s+/g, "_");
+    params.append("q", normalizedQuery);
+    params.append("page", page.toString());
+    params.append("limit", ITEMS_PER_PAGE.toString());
+
+    if (coords?.lat && coords?.lng) {
+      params.append("lat", coords.lat.toString());
+      params.append("lng", coords.lng.toString());
+    }
+
+    const url = `${API_URL}/?${params.toString()}`;
+    console.log("🌐 Loading cached page:", page, "from API");
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
+    const data = await res.json();
+    if (!data || typeof data !== "object" || !Array.isArray(data.data)) {
+      setPaginatedFacilities([]);
       return;
     }
 
-    // For non-cached pages, fetch from API
-    setIsPageLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token || !locationName?.trim()) return;
+    const { data: facilityList } = data;
+    const mapped: Facility[] = facilityList.map((f: RawFacility) =>
+      mapRawFacilityToCard(f, coords)
+    );
 
-      const params = new URLSearchParams();
-      const normalizedQuery = locationName.trim().replace(/\s+/g, "_");
-      params.append("q", normalizedQuery);
-      params.append("page", page.toString());
-      params.append("limit", ITEMS_PER_PAGE.toString());
+    setPaginatedFacilities(mapped);
 
-      if (coords?.lat && coords?.lng) {
-        params.append("lat", coords.lat.toString());
-        params.append("lng", coords.lng.toString());
-      }
-
-      const url = `${API_URL}/?${params.toString()}`;
-      console.log("🌐 Loading page:", page, "from API");
-
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-
-      const data = await res.json();
-      if (!data || typeof data !== "object" || !Array.isArray(data.data)) {
-        setPaginatedFacilities([]);
-        return;
-      }
-
-      const { data: facilityList } = data;
-      const mapped: Facility[] = facilityList.map((f: RawFacility) =>
-        mapRawFacilityToCard(f, coords)
-      );
-
-      setPaginatedFacilities(mapped);
-
-    } catch (err: any) {
-      console.error("❌ loadPage failed:", err?.message || err);
+  } catch (err: any) {
+    console.error("❌ loadPage failed:", err);
+    // Fallback to cached data if available
+    if (page === 1 && allFacilities.length > 0) {
+      setPaginatedFacilities(allFacilities.slice(0, ITEMS_PER_PAGE));
+    } else {
       setPaginatedFacilities([]);
-    } finally {
-      setIsPageLoading(false);
     }
-  }, [coords, locationName, filteredFacilities, usingFilters]);
+  } finally {
+    setIsPageLoading(false);
+  }
+}, [coords, locationName, filteredFacilities, usingFilters, filterApplied, allFacilities]);
 
-  // ✅ SIMPLIFIED: Pagination effect
-  useEffect(() => {
-    console.log("🔄 Pagination effect:", {
-      currentPage,
-      usingFilters,
-      filteredCount: filteredFacilities.length,
-      allCount: allFacilities.length
+  // ✅ FIXED: Pagination effect with proper cache handling
+useEffect(() => {
+  console.log("🔄 Pagination effect:", {
+    currentPage,
+    usingFilters,
+    filterApplied,
+    filteredCount: filteredFacilities.length,
+    allCount: allFacilities.length,
+    displayTotal
+  });
+
+  if (usingFilters && filterApplied) {
+    // Using filtered results
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const paginated = filteredFacilities.slice(start, end);
+    setPaginatedFacilities(paginated);
+    console.log("🔧 Filtered pagination:", { 
+      start, 
+      end, 
+      paginatedCount: paginated.length,
+      totalFiltered: filteredFacilities.length 
     });
-
-    if (usingFilters) {
-      const start = (currentPage - 1) * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE;
-      const paginated = filteredFacilities.slice(start, end);
-      setPaginatedFacilities(paginated);
-    } else if (currentPage === 1) {
-      // For page 1, show first ITEMS_PER_PAGE facilities
+  } else {
+    // Using cached/original results
+    if (currentPage === 1) {
+      // For page 1, show first ITEMS_PER_PAGE facilities from cache
       const paginated = allFacilities.slice(0, ITEMS_PER_PAGE);
       setPaginatedFacilities(paginated);
+      console.log("🔧 Page 1 cached pagination:", { 
+        paginatedCount: paginated.length,
+        totalCached: allFacilities.length 
+      });
     } else if (currentPage > 1) {
       // For other pages, load from API
       loadPage(currentPage);
     }
-  }, [currentPage, usingFilters, filteredFacilities, allFacilities, loadPage]);
+  }
+}, [currentPage, usingFilters, filterApplied, filteredFacilities, allFacilities, loadPage, displayTotal]);
 
   // Update facilities when context changes
   useEffect(() => {
@@ -277,51 +318,103 @@ export default function FacilitySearchPage() {
     }
   };
 
-  // ✅ SIMPLIFIED: Filter functions - use context's refetch
-  const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
-    const appliedFilters = newFilters || filters;
-    setIsFiltering(true);
+  const clearFilters = useCallback(() => {
+    console.log("🔄 Clearing filters, resetting to cached data");
+    
+    setFilters({
+      city: "",
+      state: "",
+      ratingMin: "",
+      ownership: "",
+      locationName: "",
+      distance: "",
+      beds: "",
+    });
+    
+    // ✅ Reset all filter states
+    setUsingFilters(false);
+    setFilterApplied(false);
+    setCurrentPage(1);
+    
+    // ✅ Reset to original context data immediately
+    setFilteredFacilities(initialFacilities);
+    setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
+    setTotalFacilities(totalCountFromProvider || initialFacilities.length);
+    
+    console.log("✅ Filters cleared, showing cached data:", {
+      originalCount: initialFacilities.length,
+      totalCountFromProvider,
+      paginatedCount: initialFacilities.slice(0, ITEMS_PER_PAGE).length
+    });
+    
+    toast.success("Filters cleared!");
+  }, [initialFacilities, totalCountFromProvider]);
 
-    try {
-      const hasActiveFilters = Object.values(appliedFilters).some(value => 
-        value && value.toString().trim() !== '' && !['locationName', 'city', 'state'].includes(value.toString())
-      );
-
-      // 🔄 Reset filters - restore from context
-      if (!hasActiveFilters) {
-        setFilteredFacilities(initialFacilities);
+  // ✅ FIXED: Handle context updates after clearing filters
+  useEffect(() => {
+    if (!usingFilters && !filterApplied) {
+      console.log("🔄 Context data updated, refreshing display data");
+      setAllFacilities(initialFacilities);
+      setFilteredFacilities(initialFacilities);
+      
+      // Only update pagination if we're on page 1
+      if (currentPage === 1) {
         setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
-        setUsingFilters(false);
-        setCurrentPage(1);
-        setIsFiltering(false);
-        toast.success("Filters cleared!");
-        return;
       }
-
-      // Use context's refetch function for filtered results
-      const filterParams: any = {
-        locationName: locationName || appliedFilters.locationName,
-        ...appliedFilters
-      };
-
-      // Remove empty values
-      Object.keys(filterParams).forEach(key => {
-        if (!filterParams[key]) delete filterParams[key];
-      });
-
-      await refetchFacilities(filterParams);
       
-      setUsingFilters(true);
-      setCurrentPage(1);
-      toast.success(`Found ${initialFacilities.length} facilities`);
-      
-    } catch (err: any) {
-      console.error("❌ Filter fetch failed:", err);
-      toast.error(err.message || "Error applying filters");
-    } finally {
-      setIsFiltering(false);
+      setTotalFacilities(totalCountFromProvider || initialFacilities.length);
     }
-  };
+  }, [initialFacilities, totalCountFromProvider, usingFilters, filterApplied, currentPage]);
+
+
+  // ✅ FIXED: Filter functions - properly track filtered count
+  // ✅ FIXED: Filter functions - use clearFilters for consistency
+const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
+  const appliedFilters = newFilters || filters;
+  setIsFiltering(true);
+
+  try {
+    const hasActiveFilters = Object.values(appliedFilters).some(value => 
+      value && value.toString().trim() !== '' && !['locationName', 'city', 'state'].includes(value.toString())
+    );
+
+    // 🔄 Reset filters - use clearFilters for consistency
+    if (!hasActiveFilters) {
+      clearFilters(); // Use the centralized clear function
+      setIsFiltering(false);
+      return;
+    }
+
+    // Use context's refetch function for filtered results
+    const filterParams: any = {
+      locationName: locationName || appliedFilters.locationName,
+      ...appliedFilters
+    };
+
+    // Remove empty values
+    Object.keys(filterParams).forEach(key => {
+      if (!filterParams[key]) delete filterParams[key];
+    });
+
+    // Get filtered facilities from context
+    await refetchFacilities(filterParams);
+    
+    // ✅ FIXED: Use the actual filtered count from context
+    const filteredCount = initialFacilities.length;
+    setFilteredFacilities(initialFacilities);
+    setUsingFilters(true);
+    setFilterApplied(true);
+    setCurrentPage(1);
+    setTotalFacilities(filteredCount);
+    toast.success(`Found ${filteredCount} facilities`);
+    
+  } catch (err: any) {
+    console.error("❌ Filter fetch failed:", err);
+    toast.error(err.message || "Error applying filters");
+  } finally {
+    setIsFiltering(false);
+  }
+};
 
   // Filtered pagination
   const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
@@ -396,23 +489,30 @@ export default function FacilitySearchPage() {
     }
   }, [recommendations]);
 
-  // ✅ FIXED: Map center calculation with proper dependencies
-  const mapCenter = useMemo(
-    () => calculateMapCenter(filteredFacilities, selectedCoords || coords),
-    [filteredFacilities, selectedCoords, coords] // ✅ Now includes selectedCoords
-  );
-
+  // ✅ FIXED: Extract coordinates from PAGINATED facilities only
   const facilityCoords = useMemo(
-    () => extractFacilityCoords(filteredFacilities),
-    [filteredFacilities]
+    () => extractFacilityCoords(paginatedFacilities),
+    [paginatedFacilities]
   );
 
+  // ✅ FIXED: Map center calculation based on paginated facilities
+  const mapCenter = useMemo(
+    () => calculateMapCenter(paginatedFacilities, selectedCoords || coords),
+    [paginatedFacilities, selectedCoords, coords]
+  );
+
+  // ✅ FIXED: Handle card click to center map on selected facility
   const handleCardClick = (facility: any) => {
     setSelectedFacilityId(facility.id);
     if (facility.lat && facility.lng) {
       setSelectedCoords({ lat: facility.lat, lng: facility.lng });
     }
   };
+
+  // ✅ FIXED: Reset selected coordinates when changing pages
+  useEffect(() => {
+    setSelectedCoords(null); // Reset selection when page changes
+  }, [currentPage]);
 
   useEffect(() => {
     const facilityList = document.getElementById("facility-list");
@@ -465,10 +565,10 @@ export default function FacilitySearchPage() {
     currentPage,
     paginatedCount: paginatedFacilities.length,
     startFacility,
-    endFacility
+    endFacility,
+    usingFilters,
+    filteredCount: filteredFacilities.length
   });
-
-  
 
   {
     isPrefetching && (
@@ -543,118 +643,6 @@ export default function FacilitySearchPage() {
       </section>
 
       <RecommendationModal recommendations={recommendations} />
-
-      {/* --------------------- Top Recommendations --------------------- */}
-      
-       {/* <AnimatePresence>
-        {showModal && recommendations?.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, x: 200, y: -100 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, x: 200, y: -100 }}
-            transition={{ type: "spring", stiffness: 80, damping: 12 }}
-            className="fixed top-6 right-6 z-50 bg-white shadow-2xl border border-gray-200 rounded-2xl w-80 max-h-[85vh] flex flex-col"
-          >
-            <div className="flex justify-between items-center p-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-800">
-                🌟 Top Recommendations
-              </h2>
-              <div className="flex gap-2 items-center">
-                <button
-                  onClick={() => setExpanded((prev) => !prev)}
-                  className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition"
-                >
-                  {expanded ? "▲" : "▼"}
-                </button>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div className="p-4 border-b border-gray-200">
-              <p className="text-sm text-gray-600">
-                Based on your search and preferences:
-              </p>
-            </div>
-
-            <AnimatePresence>
-              {expanded && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex-1 overflow-hidden"
-                >
-                  <div className="space-y-2 p-4 max-h-64 overflow-y-auto">
-                    {recommendations.slice(0, 6).map((facility, index) => (
-                      <motion.div
-                        key={facility.id || index}
-                        whileHover={{ scale: 1.02 }}
-                        className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition cursor-pointer bg-white"
-                      >
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-800 truncate">
-                              {facility.name}
-                            </p>
-                            <p className="text-sm text-gray-500 truncate mt-1">
-                              {facility.city_town}, {facility.state}
-                            </p>
-                            {facility.type && (
-                              <p className="text-xs text-gray-400 mt-1">
-                                {facility.type}
-                              </p>
-                            )}
-                          </div>
-                          {facility.rating && (
-                            <div className="flex items-center text-yellow-500 text-sm whitespace-nowrap">
-                              ★
-                              <span className="ml-1 text-gray-700 font-medium">
-                                {facility.rating}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-3 flex justify-end">
-                          <button
-                            onClick={() => handleViewDetails(facility)}
-                            disabled={loadingFacilityId === facility.id}
-                            className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed min-w-20"
-                          >
-                            {loadingFacilityId === facility.id ? (
-                              <span className="flex items-center justify-center">
-                                <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Loading...
-                              </span>
-                            ) : (
-                              "View Details"
-                            )}
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {!expanded && (
-              <div className="p-4 text-center text-gray-500 text-sm">
-                Click ↓ to view recommendations
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence> */}
 
       <section className="w-full min-h-[148px] mx-auto bg-white flex flex-col justify-center px-4 sm:px-6 py-4 ">
         <div className="flex flex-col md:flex-col md:items-start w-full mb-4 gap-4">
@@ -1054,9 +1042,8 @@ export default function FacilitySearchPage() {
                 </div>
               ))}
 
-              {totalFacilityPages > 1 && (
+              {displayTotal  > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full">
-                  {/* Total Count Display - ONLY THIS PART CHANGED */}
                    {usingFilters ? (
                     <p>Showing {startFacility}-{endFacility} of {displayTotal} filtered facilities</p>
                   ) : (
@@ -1073,7 +1060,6 @@ export default function FacilitySearchPage() {
                       Prev
                     </button>
 
-                    {/* Page numbers (1–6, 7–12, etc.) */}
                     {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
                       <button
                         key={idx}
@@ -1081,12 +1067,11 @@ export default function FacilitySearchPage() {
                         className={`px-3 py-2 rounded-md text-sm sm:text-base ${
                           currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
                         }`}
-                        disabled={page === "..."} // disable ellipsis
+                        disabled={page === "..."} 
                       >
                         {page}
                       </button>
                     ))}
-                    {/* Next */}
                     <button
                       disabled={currentPage === totalFacilityPages}
                       onClick={goToNextPage}
@@ -1107,7 +1092,7 @@ export default function FacilitySearchPage() {
                 <div className="w-full lg:w-[780px] h-[400px] lg:h-[677px] bg-white rounded-[9.56px] shadow flex items-center justify-center sticky top-6 overflow-hidden">
                   {GOOGLE_MAPS_API_KEY ? (
                     <MapView
-                      facilities={facilityCoords}
+                      facilities={facilityCoords} // This now uses paginated facilities coordinates
                       centerCoords={mapCenter}
                       googleMapsApiKey={GOOGLE_MAPS_API_KEY}
                       locationName={locationName}
@@ -1146,178 +1131,6 @@ export default function FacilitySearchPage() {
         </div>
       </section>
 
-
-      {/* <section className="w-[1736.7px] h-[566px] mx-50 mt-[80px]">
-        <div className="w-[1548.03px] h-[488.59px]">
-          <h2 className="font-jost font-bold text-[32px] leading-[38.4px] text-[#111827]">
-            Search Tips &amp; Resources
-          </h2>
-
-          <p className="mt-2 font-inter font-normal text-[18px] leading-[28px] text-[#707070]">
-            Make the most of your nursing home search
-          </p>
-
-          <div className="grid grid-cols-3 gap- mt-5">
-            <div className="w-[470.85px] h-[377.33px] bg-[#F5F5F5] rounded-[9.68px] p-6">
-              <div className="flex items-center gap-3">
-                <img
-                  src="/icons/light_icon.png"
-                  alt="Search Icon"
-                  className="w-[21.77px] h-[29.02px]"
-                />
-                <h3 className="font-inter font-bold text-[21.77px] leading-[33.86px] text-[#111827]">
-                  Search Tips
-                </h3>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/right_icon.png"
-                    alt="Check Icon"
-                    className="w-[14.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    Visit facilities in person when possible
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/right_icon.png"
-                    alt="Check Icon"
-                    className="w-[14.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    Ask about staff-to-resident ratios
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/right_icon.png"
-                    alt="Check Icon"
-                    className="w-[14.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    Review recent inspection reports
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/right_icon.png"
-                    alt="Check Icon"
-                    className="w-[14.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    Consider location and family access
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="w-[470.85px] h-[377.33px] bg-[#F5F5F5] rounded-[9.68px] p-6">
-              <div className="flex items-center gap-3">
-                <img
-                  src="/icons/question_icon.png"
-                  alt="Search Icon"
-                  className="w-[29.77px] h-[29.02px]"
-                />
-                <h3 className="font-inter font-bold text-[21.77px] leading-[33.86px] text-[#111827]">
-                  Questions to Ask
-                </h3>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/left_arrow_icon.png"
-                    alt="Check Icon"
-                    className="w-[14.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    What services are included in the base rate?
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/left_arrow_icon.png"
-                    alt="Check Icon"
-                    className="w-[14.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    How do you handle medical emergencies?
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/left_arrow_icon.png"
-                    alt="Check Icon"
-                    className="w-[14.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    What activities and programs are available?
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/left_arrow_icon.png"
-                    alt="Check Icon"
-                    className="w-[14.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    Can I see the dining menu and meal options?
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="w-[470.85px] h-[377.33px] bg-[#F5F5F5] rounded-[9.68px] p-6">
-              <div className="flex items-center gap-3">
-                <img
-                  src="/icons/light_icon.png"
-                  alt="Search Icon"
-                  className="w-[21.77px] h-[29.02px]"
-                />
-                <h3 className="font-inter font-bold text-[21.77px] leading-[33.86px] text-[#111827]">
-                  Search Tips
-                </h3>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/check_green.png"
-                    alt="Check Icon"
-                    className="w-[12.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    Visit facilities in person when possible
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/check_green.png"
-                    alt="Check Icon"
-                    className="w-[12.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    Compare multiple facilities before deciding
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src="/icons/check_green.png"
-                    alt="Check Icon"
-                    className="w-[12.7px] h-[14.51px] mt-1"
-                  />
-                  <p className="font-inter font-normal text-[16.93px] leading-[24.19px] text-[#374151]">
-                    Check reviews and official ratings online
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section> */}
 
       <section className="w-full min-h-[566px] pb-5 px-4 sm:px-6 lg:px-12 xl:px-20 mt-[40px] sm:mt-[80px]">
         <div className="w-full max-w-[100%] md:max-w-[90%] lg:max-w-[85%] xl:max-w-[1200px] mx-auto">

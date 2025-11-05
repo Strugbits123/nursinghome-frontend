@@ -13,7 +13,6 @@ interface MapViewProps {
   googleMapsApiKey: string;
   markerIconUrl?: string;
   locationName?: string;
-
 }
 
 const containerStyle = {
@@ -44,9 +43,6 @@ const MapView: React.FC<MapViewProps> = ({
     []
   );
 
-  /**
-   * Create the custom marker icon *only after* Google Maps is loaded
-   */
   const customMarkerIcon = useMemo(() => {
     if (!isLoaded || !window.google?.maps) return undefined;
     return {
@@ -58,20 +54,31 @@ const MapView: React.FC<MapViewProps> = ({
   }, [markerIconUrl, isLoaded]);
 
   /**
-   * Fit all markers + center into the viewport
+   * Fit all markers from current page into viewport
    */
   const onMapLoad = useCallback(
     (map: google.maps.Map) => {
+      // If no facilities on current page, use center coords
       if (facilities.length === 0) {
         map.setCenter(centerCoords);
         map.setZoom(12);
         return;
       }
 
+      // If only one facility, center on it with a good zoom level
+      if (facilities.length === 1) {
+        map.setCenter({ lat: facilities[0].lat, lng: facilities[0].lng });
+        map.setZoom(14);
+        return;
+      }
+
+      // For multiple facilities, fit bounds with padding
       const bounds = new window.google.maps.LatLngBounds();
-      bounds.extend(centerCoords);
       facilities.forEach((f) => bounds.extend({ lat: f.lat, lng: f.lng }));
-      map.fitBounds(bounds);
+      
+      // Add some padding to ensure markers aren't at the very edge
+      const padding = 50;
+      map.fitBounds(bounds, padding);
     },
     [facilities, centerCoords]
   );
@@ -87,22 +94,15 @@ const MapView: React.FC<MapViewProps> = ({
       options={mapOptions}
       onLoad={onMapLoad}
     >
-      {/* Facility markers */}
+      {/* Show only facilities from current page */}
       {facilities.map((facility, index) => (
         <MarkerF
-          key={index}
+          key={`${facility.lat}-${facility.lng}-${index}`}
           position={{ lat: facility.lat, lng: facility.lng }}
           title={facility.name}
           icon={customMarkerIcon}
         />
       ))}
-
-      {/* Center marker */}
-      <MarkerF
-        position={centerCoords}
-        title={locationName || "Search Center"}
-        icon={customMarkerIcon}
-      />
     </GoogleMap>
   );
 };
