@@ -157,22 +157,21 @@ useEffect(() => {
   }
 }, [initialFacilities, totalCountFromProvider, locationName, usingFilters, filterApplied, currentPage]);
 
- // ✅ FIXED: Get display total - use API total when available
-  const displayTotal = useMemo(() => {
-    if (usingFilters && filterApplied) {
-      // When filters are active, show the total from API response
-      console.log("📊 Using filtered total:", totalFacilities);
-      return totalFacilities;
-    } else {
-      // When no filters, show the total from provider or all facilities count
-      const total = totalCountFromProvider > 0 ? totalCountFromProvider : allFacilities.length;
-      console.log("📊 Using original total:", total);
-      return total;
-    }
-  }, [usingFilters, filterApplied, totalFacilities, totalCountFromProvider, allFacilities.length]);
+// ✅ FIXED: Get display total - use API total when available
+const displayTotal = useMemo(() => {
+  if (usingFilters && filterApplied) {
+    // When filters are active, show the total from API response
+    console.log("📊 Using filtered total:", totalFacilities);
+    return totalFacilities;
+  } else {
+    // When no filters, show the total from provider or all facilities count
+    const total = totalCountFromProvider > 0 ? totalCountFromProvider : allFacilities.length;
+    console.log("📊 Using original total:", total);
+    return total;
+  }
+}, [usingFilters, filterApplied, totalFacilities, totalCountFromProvider, allFacilities.length]);
 
-
-  // ✅ FIXED: Load page function with proper total handling
+// ✅ FIXED: Load page function with proper total handling
 const loadPage = useCallback(async (page: number) => {
   // For filtered results, use existing facilities
   if (usingFilters && filterApplied) {
@@ -377,7 +376,8 @@ useEffect(() => {
 
 
   // ✅ FIXED: Filter functions - properly track filtered count
- // ✅ FIXED: Filter functions with proper total count handling
+
+// ✅ FIXED: Filter functions with proper total count handling
 const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   const appliedFilters = newFilters || filters;
   setIsFiltering(true);
@@ -414,24 +414,19 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
 
     console.log("🔍 Filtering with params:", filterParams);
 
-    // Get filtered facilities from context
-    await refetchFacilities(filterParams);
+    // Call the filtered pagination function to get proper total count
+    await fetchFilteredFacilitiesWithPagination(filterParams, 1);
     
-    // ✅ FIXED: Use the actual filtered count from context
-    const filteredCount = initialFacilities.length;
-    setFilteredFacilities(initialFacilities);
     setUsingFilters(true);
     setFilterApplied(true);
-    setCurrentPage(1); // ✅ Reset to page 1 when filters applied
-    setTotalFacilities(filteredCount);
+    setCurrentPage(1);
     
     console.log("✅ Filters applied:", {
-      filteredCount,
       locationName: filterParams.locationName,
       activeFilters: filterParams
     });
     
-    toast.success(`Found ${filteredCount} facilities`);
+    toast.success(`Found ${totalFacilities} facilities`);
     
   } catch (err: any) {
     console.error("❌ Filter fetch failed:", err);
@@ -441,7 +436,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   }
 };
 
-  // ✅ FIXED: Filtered pagination with proper total count handling
+// ✅ FIXED: Filtered pagination with proper total count handling
 const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
   setIsPageLoading(true);
 
@@ -489,8 +484,8 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
     const data = await res.json();
     const facilitiesData = data.data?.facilities || data.facilities || [];
     
-    // ✅ FIXED: Use the total from API response, not the facilitiesData length
-    const totalFromAPI = data.total || data.totalCount || facilitiesData.length;
+    // ✅ FIXED: Use the totalCount from pagination, not the facilitiesData length
+    const totalFromAPI = data.data?.pagination?.totalCount || data.total || data.totalCount || 0;
     
     if (!facilitiesData || facilitiesData.length === 0) {
       setPaginatedFacilities([]);
@@ -505,14 +500,15 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
 
     setPaginatedFacilities(mappedFacilities);
     
-    // ✅ FIXED: Use the total count from API response, not the paginated count
+    // ✅ FIXED: Use the totalCount from API response pagination
     setTotalFacilities(totalFromAPI);
     
     console.log("✅ Filtered pagination response:", {
       page,
       totalFromAPI,
       paginatedCount: mappedFacilities.length,
-      facilitiesDataCount: facilitiesData.length
+      facilitiesDataCount: facilitiesData.length,
+      pagination: data.data?.pagination
     });
     
   } catch (err: any) {
@@ -815,7 +811,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
               onSelect={(val) => {
                 const newFilters = { ...filters, ratingMin: val.toString() };
                 setFilters(newFilters);
-                fetchFilteredFacilities(newFilters);
+                fetchFilteredFacilitiesWithPagination(newFilters, 1); // ✅ Use filtered pagination
               }}
               onClear={() => {
                 const newFilters = { ...filters, ratingMin: "" };
@@ -827,7 +823,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
                 if (!hasOtherFilters) {
                   clearFilters(); // Clear all if no other filters
                 } else {
-                  fetchFilteredFacilities(newFilters); // Just update this filter
+                   fetchFilteredFacilitiesWithPagination(newFilters, 1); 
                 }
               }}
               className="flex items-center justify-center gap-2 w-[130px] h-[43px] rounded-[9.56px] bg-[#D02B38] px-3 font-inter font-medium text-[16.72px] leading-[23.89px] text-white"
@@ -847,7 +843,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
                onSelect={(val) => {
           const newFilters = { ...filters, distance: val.toString() };
           setFilters(newFilters);
-          fetchFilteredFacilities(newFilters);
+          fetchFilteredFacilitiesWithPagination(newFilters, 1); 
         }}
         onClear={() => {
           const newFilters = { ...filters, distance: "" };
@@ -858,7 +854,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
           if (!hasOtherFilters) {
             clearFilters();
           } else {
-            fetchFilteredFacilities(newFilters);
+           fetchFilteredFacilitiesWithPagination(newFilters, 1); 
           }
         }}
               iconLeftWidth="14px"
@@ -877,7 +873,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
               onSelect={(val) => {
                 const newFilters = { ...filters, beds: val.toString() };
                 setFilters(newFilters);
-                fetchFilteredFacilities(newFilters);
+                 fetchFilteredFacilitiesWithPagination(newFilters, 1); 
               }}
               onClear={() => {
                 const newFilters = { ...filters, beds: "" };
@@ -888,7 +884,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
                 if (!hasOtherFilters) {
                   clearFilters();
                 } else {
-                  fetchFilteredFacilities(newFilters);
+                 fetchFilteredFacilitiesWithPagination(newFilters, 1); 
                 }
               }}
               iconLeftWidth="23px"
@@ -907,7 +903,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
               onSelect={(val) => {
               const newFilters = { ...filters, ownership: val.toString() };
                 setFilters(newFilters);
-                fetchFilteredFacilities(newFilters);
+                 fetchFilteredFacilitiesWithPagination(newFilters, 1); 
               }}
               onClear={() => {
                 const newFilters = { ...filters, ownership: "" };
@@ -918,7 +914,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
                 if (!hasOtherFilters) {
                   clearFilters();
                 } else {
-                  fetchFilteredFacilities(newFilters);
+                   fetchFilteredFacilitiesWithPagination(newFilters, 1); 
                 }
               }}
               iconLeftWidth="14px"
@@ -943,7 +939,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
               if (!hasOtherFilters) {
                 clearFilters();
               } else {
-                fetchFilteredFacilities(newFilters);
+                 fetchFilteredFacilitiesWithPagination(newFilters, 1); 
               }
               }}
               value={filters.city || filters.state}

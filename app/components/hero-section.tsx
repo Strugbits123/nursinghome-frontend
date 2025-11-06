@@ -26,7 +26,7 @@ function ThreeBackground() {
     // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ 
+    const renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: false
     });
@@ -35,7 +35,7 @@ function ThreeBackground() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
-    
+
     // Create floating healthcare-themed particles
     const particleCount = 400;
     const positions = new Float32Array(particleCount * 3);
@@ -91,7 +91,7 @@ function ThreeBackground() {
     // Mouse interaction
     const mouse = new THREE.Vector2();
     const targetMouse = new THREE.Vector2();
-    
+
     const handleMouseMove = (event: MouseEvent) => {
       targetMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       targetMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -105,20 +105,20 @@ function ThreeBackground() {
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      
+
       const elapsedTime = clock.getElapsedTime();
-      
+
       // Smooth mouse follow
       mouse.lerp(targetMouse, 0.03);
-      
+
       // Gentle floating animation with mouse interaction
       particles.rotation.x = elapsedTime * 0.05 + mouse.y * 0.05;
       particles.rotation.y = elapsedTime * 0.03 + mouse.x * 0.05;
-      
+
       // Subtle floating movement
       particles.position.y = Math.sin(elapsedTime * 0.2) * 0.2;
       particles.position.x = Math.sin(elapsedTime * 0.1) * 0.1;
-      
+
       renderer.render(scene, camera);
     };
 
@@ -146,8 +146,8 @@ function ThreeBackground() {
   }, []);
 
   return (
-    <div 
-      ref={mountRef} 
+    <div
+      ref={mountRef}
       className="absolute inset-0 pointer-events-none opacity-40"
       style={{ zIndex: 1 }}
     />
@@ -241,7 +241,7 @@ const fetchTopRecommendations = async (state: string, city: string, top_n: numbe
 //       return { city: "", state: "" };
 //     }
 //   };
-    
+
 //   const fetchFacilities = async (
 //     currentSearchQuery: string,
 //     currentCoords: Coords | null
@@ -301,7 +301,7 @@ const fetchTopRecommendations = async (state: string, city: string, top_n: numbe
 //         const errorData = await res.json();
 //         throw new Error(errorData?.error || `HTTP ${res.status}`);
 //       }
-      
+
 //       const data = await res.json();
 
 //       const rawFacilitiesList = Array.isArray(data.data)
@@ -479,7 +479,7 @@ const fetchTopRecommendations = async (state: string, city: string, top_n: numbe
 //     if ((coords && coords.lat) || searchQuery) {
 //     }
 //   }, [coords, searchQuery]);
-const HeroSection = memo(function HeroSection() {  
+const HeroSection = memo(function HeroSection() {
   const popularSearches = ["New York", " New Jersey", "Connecticut", "Pennsylvania"];
   const router = useRouter();
 
@@ -501,12 +501,12 @@ const HeroSection = memo(function HeroSection() {
 
   // ✅ FIXED: Simple search handler that uses context function
   const handleSearch = async (searchQuery: string, coords: Coords | null) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    // const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-    if (!token) {
-      toast.error("Please log in to search facilities");
-      return;
-    }
+    // if (!token) {
+    //   toast.error("Please log in to search facilities");
+    //   return;
+    // }
 
     if ((!searchQuery || searchQuery.trim() === "") && (!coords?.lat || !coords?.lng)) {
       toast.error("Please enter a city, state, or ZIP code");
@@ -521,7 +521,7 @@ const HeroSection = memo(function HeroSection() {
     try {
       // ✅ FIXED: Use context function which handles caching and recommendations automatically
       await fetchFacilitiesWithReviews(searchQuery, coords);
-      
+
       console.log(`✅ Search completed for "${searchQuery}"`);
       toast.success("Facilities loaded successfully!");
       router.push("/facility-search");
@@ -633,16 +633,16 @@ const HeroSection = memo(function HeroSection() {
   }, [currentCoords, locationName, active]);
 
 
-    return (
-        <section className="min-h-[900px]  relative">
-        
-            
-            {/* Three.js Background */}
-            <ThreeBackground />
+  return (
+    <section className="min-h-[900px]  relative">
 
-            {/* Hero Content - EXACT SAME LAYOUT */}
-            <div
-                className="
+
+      {/* Three.js Background */}
+      <ThreeBackground />
+
+      {/* Hero Content - EXACT SAME LAYOUT */}
+      <div
+        className="
                 relative z-10
                 w-full max-w-[1256px] h-auto sm:h-[152px]
                 mx-auto 
@@ -650,24 +650,24 @@ const HeroSection = memo(function HeroSection() {
                 pt-[120px] sm:pt-[262px]
                 px-4 sm:px-0
                 "
-            >
-                <h1
-                className="
+      >
+        <h1
+          className="
                     font-jost font-semibold 
                     text-[40px] sm:text-[60px] md:text-[80px] lg:text-[90px]
                     leading-[42px] sm:leading-[64px] md:leading-[85px] lg:leading-[91px]
                     tracking-[-6%]
                     text-white text-center
                 "
-                >
-                Find the Right Nursing Home <br />
-                <span className="italic">for Your Loved Ones</span>
-                </h1>
-            </div>
+        >
+          Find the Right Nursing Home <br />
+          <span className="italic">for Your Loved Ones</span>
+        </h1>
+      </div>
 
-            {/* Search Section */}
-            <div
-                className="
+      {/* Search Section */}
+      <div
+        className="
                 relative z-10
                 w-full max-w-[1320px] h-auto sm:h-[308px]
                 mx-auto 
@@ -675,15 +675,15 @@ const HeroSection = memo(function HeroSection() {
                 mt-[30px] sm:mt-[120px]
                 px-4 sm:px-0
                 "
-            >
-                {/* Heading */}
-                <h2 className="text-white text-center font-jost font-light text-[16px] sm:text-[18px] md:text-[20px] leading-[28px] sm:leading-[32px] md:leading-[36px] max-w-[778px]">
-                Trusted data from CMS, Google Reviews, and AI insights to help you make the most important decision for your family
-                </h2>
+      >
+        {/* Heading */}
+        <h2 className="text-white text-center font-jost font-light text-[16px] sm:text-[18px] md:text-[20px] leading-[28px] sm:leading-[32px] md:leading-[36px] max-w-[778px]">
+          Trusted data from CMS, Google Reviews, and AI insights to help you make the most important decision for your family
+        </h2>
 
-                {/* Input & Buttons */}
-                <div
-        className="
+        {/* Input & Buttons */}
+        <div
+          className="
           relative z-10 
           w-full max-w-[1186px] 
           h-auto sm:h-[78.38px] 
@@ -698,37 +698,35 @@ const HeroSection = memo(function HeroSection() {
           [@media(min-width:640px)_and_(max-width:880px)]:p-4
           [@media(min-width:640px)_and_(max-width:880px)]:gap-2
         "
-      >
-                <button
-                    onClick={handleUseLocation}
-                    className={`w-full sm:w-[220px] md:w-[230px] h-[56px] rounded-[6px] flex items-center justify-center sm:justify-start px-3 space-x-2 transition-colors duration-200 ${
-                    active ? "bg-[#C71F37]" : "bg-white"
-                    }`}
-                >
-                    <Image
-                    src="/icons/location_svg.png"
-                    alt="Location icon"
-                    width={20}
-                    height={20}
-                    className={`transition duration-200 ${active ? "invert brightness-0" : ""}`}
+        >
+          <button
+            onClick={handleUseLocation}
+            className={`w-full sm:w-[220px] md:w-[230px] h-[56px] rounded-[6px] flex items-center justify-center sm:justify-start px-3 space-x-2 transition-colors duration-200 ${active ? "bg-[#C71F37]" : "bg-white"
+              }`}
+          >
+            <Image
+              src="/icons/location_svg.png"
+              alt="Location icon"
+              width={20}
+              height={20}
+              className={`transition duration-200 ${active ? "invert brightness-0" : ""}`}
 
-                    priority
-                    />
-                    <span
-                    className={`font-jost font-medium text-[15px] cursor-pointer sm:text-[16px] leading-[100%] transition-colors duration-200 ${
-                        active ? "text-white" : "text-[#212529B2]"
-                    }`}
-                    >
-                    Use My Location
-                    </span>
-                </button>
+              priority
+            />
+            <span
+              className={`font-jost font-medium text-[15px] cursor-pointer sm:text-[16px] leading-[100%] transition-colors duration-200 ${active ? "text-white" : "text-[#212529B2]"
+                }`}
+            >
+              Use My Location
+            </span>
+          </button>
 
-                <input
-                    type="text"
-                    value={locationName}
-                    onChange={(e) => setLocationName(e.target.value)}
-                    placeholder="Enter Location ZIP code, city, or state..."
-                    className="
+          <input
+            type="text"
+            value={locationName}
+            onChange={(e) => setLocationName(e.target.value)}
+            placeholder="Enter Location ZIP code, city, or state..."
+            className="
                       w-full sm:flex-1 md:w-[65%] lg:w-[703px]
                       h-[56px] border-x border-[#ADADAD]
                       rounded-none px-4 focus:outline-none 
@@ -737,12 +735,12 @@ const HeroSection = memo(function HeroSection() {
                       [@media(min-width:640px)_and_(max-width:880px)]:text-[15px]
                       [@media(min-width:640px)_and_(max-width:880px)]:px-3
                     "
-                  />
+          />
 
-                <button
-                    onClick={() => handleSearch(locationName, currentCoords)}
-                    disabled={isLoading}
-                    className="
+          <button
+            onClick={() => handleSearch(locationName, currentCoords)}
+            disabled={isLoading}
+            className="
                         w-full sm:w-[180px] md:w-[190px] h-[56px]
                         rounded-[6px] bg-[#C71F37] border border-[#C71F37]
                         text-white flex items-center justify-center gap-2
@@ -751,27 +749,27 @@ const HeroSection = memo(function HeroSection() {
                         cursor-pointer
                         [@media(min-width:640px)_and_(max-width:880px)]:text-[15px]
                       "
-                    >
-                    {isLoading ? (
-                    <div className="loader"></div>
-                    ) : (
-                    <>
-                        <Image
-                        src="/icons/search_svg.png"
-                        alt="Search icon"
-                        width={24}
-                        height={24}
-                        priority
-                        />
-                        Search
-                    </>
-                    )}
-                </button>
-                </div>
+          >
+            {isLoading ? (
+              <div className="loader"></div>
+            ) : (
+              <>
+                <Image
+                  src="/icons/search_svg.png"
+                  alt="Search icon"
+                  width={24}
+                  height={24}
+                  priority
+                />
+                Search
+              </>
+            )}
+          </button>
+        </div>
 
-                {/* Popular Searches */}
-                <div
-                  className="
+        {/* Popular Searches */}
+        <div
+          className="
                     [@media(min-width:640px)_and_(max-width:880px)]:ml-30
                     [@media(min-width:640px)_and_(max-width:880px)]:mt-8
                     [@media(min-width:640px)_and_(max-width:880px)]:h-[550px]
@@ -782,35 +780,35 @@ const HeroSection = memo(function HeroSection() {
                     mt-6 sm:mt-10
                     flex flex-col sm:flex-row items-center gap-3
                     "
-                >
-                {/* Heading */}
-                      <span className="font-inter font-semibold text-[16px] sm:text-[20px] leading-[20px] text-white mb-2 sm:mb-0">
+        >
+          {/* Heading */}
+          <span className="font-inter font-semibold text-[16px] sm:text-[20px] leading-[20px] text-white mb-2 sm:mb-0">
 
-                    Popular searches:
-                </span>
+            Popular searches:
+          </span>
 
-                {/* Buttons Container */}
-                 <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-4
+          {/* Buttons Container */}
+          <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-4
        ">
-        {popularSearches.map((state) => (
-          <button
-            key={state}
-            onClick={() => handlePopularSearchClick(state)}
-            className="w-[120px] sm:w-[138.5px] h-[34px] bg-[#C71F37] text-white rounded-full font-inter font-normal text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24.29px] flex items-center justify-center hover:bg-[#A01A2E] transition-colors duration-200"
-          >
-            {state}
-          </button>
-        ))}
-      </div>
-    </div>
+            {popularSearches.map((state) => (
+              <button
+                key={state}
+                onClick={() => handlePopularSearchClick(state)}
+                className="w-[120px] sm:w-[138.5px] h-[34px] bg-[#C71F37] text-white rounded-full font-inter font-normal text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24.29px] flex items-center justify-center hover:bg-[#A01A2E] transition-colors duration-200"
+              >
+                {state}
+              </button>
+            ))}
+          </div>
+        </div>
 
 
 
 
       </div>
-        
+
     </section>
-    )
+  )
 });
 
 export { HeroSection };
