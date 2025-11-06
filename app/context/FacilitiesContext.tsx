@@ -414,7 +414,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       throw new Error("This function can only be called on the client side");
     }
 
-    // const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     // if (!token) {
     //   throw new Error("Please log in to search facilities");
