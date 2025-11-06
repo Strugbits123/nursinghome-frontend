@@ -42,7 +42,7 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 
 export const mapRawFacilityToCard = (raw: RawFacility, currentCoords?: Coords | null): Facility => {
   const id = raw._id;
-  const name = raw.googleName || raw.provider_name || "Facility Name Unknown";
+  const name = raw.googleName || raw.provider_name || "";
 
   const address =
     raw.location ||

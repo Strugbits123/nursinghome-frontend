@@ -356,8 +356,8 @@ const fetchTopRecommendations = async (state: string, city: string, top_n: numbe
 //     } catch (err: any) {
 //       console.error("❌ Fetch failed:", err);
 //       toast.error(err.message || "Failed to load facilities");
-//       setError(err.message || "Unknown error");
-//       setContextError && setContextError(err.message || "Unknown error");
+//       setError(err.message || "");
+//       setContextError && setContextError(err.message || "");
 
 //       // 🔹 Clear stale cache on error
 //       setFacilities([]);
@@ -529,8 +529,8 @@ const HeroSection = memo(function HeroSection() {
     } catch (err: any) {
       console.error("❌ Search failed:", err);
       toast.error(err.message || "Failed to load facilities");
-      setError(err.message || "Unknown error");
-      setContextError && setContextError(err.message || "Unknown error");
+      setError(err.message || "error");
+      setContextError && setContextError(err.message || "error");
     } finally {
       setIsLoading(false);
       setContextIsLoading && setContextIsLoading(false);

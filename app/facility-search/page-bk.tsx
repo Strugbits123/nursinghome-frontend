@@ -52,7 +52,7 @@ const extractFacilityCoords = (facilities: Facility[]) => {
         (f as any).provider_name ||
         (f as any).legal_business_name ||
         f.name ||
-        "Unknown Facility",
+        "",
     }));
 };
 
@@ -191,7 +191,7 @@ export default function FacilitySearchPage() {
         pros: f.aiSummary?.pros?.join(", ") || "No specific pros listed",
         cons: f.aiSummary?.cons?.join(", ") || "No specific cons listed",
         imageUrl: f.photo || "/default_facility_image.png",
-        status: f.status  || "Unknown",
+        status: f.status  || "",
         hours: f.operating_hours || "",
         rating: f.rating || f.overall_rating || 0,
       }));
@@ -210,7 +210,7 @@ export default function FacilitySearchPage() {
 
   function getFacilityStatus(facility: any) {
       if (!facility.number_of_certified_beds || !facility.average_number_of_residents_per_day)
-        return "Unknown";
+        return "";
 
       const occupancyRate =
         (facility.average_number_of_residents_per_day / facility.number_of_certified_beds) * 100;
@@ -1167,7 +1167,7 @@ export default function FacilitySearchPage() {
 
   // function getFacilityStatus(facility: any) {
   //   if (!facility.number_of_certified_beds || !facility.average_number_of_residents_per_day)
-  //     return "Unknown";
+  //     return "";
 
   //   const occupancyRate =
   //     (facility.average_number_of_residents_per_day / facility.number_of_certified_beds) * 100;

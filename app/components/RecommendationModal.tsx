@@ -33,15 +33,15 @@ const RecommendationModal: React.FC<RecommendationModalProps> = ({ recommendatio
   };
 
   const getFacilityName = (facility: Facility): string => {
-    return facility.provider_name || facility.name || 'Unknown Facility';
+    return facility.provider_name || facility.name || '';
   };
 
   const getFacilityCity = (facility: Facility): string => {
-    return facility.city_town || facility.city || 'Unknown City';
+    return facility.city_town || facility.city || '';
   };
 
   const getFacilityState = (facility: Facility): string => {
-    return facility.state || 'Unknown State';
+    return facility.state || '';
   };
 
   const getRating = (facility: Facility): number => {
@@ -289,7 +289,7 @@ const RecommendationModal: React.FC<RecommendationModalProps> = ({ recommendatio
                               <div>
                                 <p className="text-gray-600">Status</p>
                                 <p className={`font-semibold px-2 py-1 rounded-full text-xs ${getStatusColor(facility.status)}`}>
-                                  {facility.status || 'Unknown'}
+                                  {facility.status || ''}
                                 </p>
                               </div>
                             </div>

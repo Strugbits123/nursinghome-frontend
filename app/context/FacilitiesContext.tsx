@@ -119,7 +119,7 @@ export interface Facility {
   numeric_overall_rating?: number | null;
   number_of_certified_beds?: number;
   ownership_type?: string;
-  status?: "Accepting" | "Waitlist" | "Full" | "Unknown";
+  status?: "Accepting" | "Waitlist" | "Full" | "";
   telephone_number?: string;
   operating_hours?: string;
   [key: string]: any;
@@ -466,7 +466,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       const facilitiesList = rawFacilitiesList.map((raw: any) => ({
         ...raw,
         id: raw._id || raw.id,
-        name: raw.name || raw.provider_name || "Unknown Facility",
+        name: raw.name || raw.provider_name || "",
         address: raw.address || raw.provider_address || "",
         city: raw.city || raw.city_town || "",
         state: raw.state || "",
@@ -476,7 +476,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         rating: raw.rating || raw.overall_rating || null,
         beds: raw.beds || raw.number_of_certified_beds || 0,
         ownership: raw.ownership || raw.ownership_type || "",
-        status: raw.status || "Unknown",
+        status: raw.status || "",
         phone: raw.phone || raw.telephone_number || "",
         hours: raw.hours || raw.operating_hours || "",
         imageUrl: raw.imageUrl || raw.photo || "",

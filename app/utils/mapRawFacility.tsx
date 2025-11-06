@@ -10,7 +10,7 @@ const getStatus = (overallRating: string | number | undefined): Facility['status
     if (rating >= 4) return 'Accepting';
     if (rating >= 3) return 'Waitlist';
     if (rating < 3) return 'Full';
-    return 'Unknown';
+    return '';
 };
 
 export const mapRawFacilityToCard = (raw: any, searchCoords: Coords | null): Facility => {

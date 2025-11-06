@@ -54,7 +54,7 @@ const extractFacilityCoords = (facilities: Facility[]) => {
     .map((f) => ({
       lat: f.lat!,
       lng: f.lng!,
-      name: (f as any).provider_name || (f as any).legal_business_name || f.name || "Unknown Facility",
+      name: (f as any).provider_name || (f as any).legal_business_name || f.name || "",
     }));
 };
 
@@ -1059,7 +1059,7 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3">
                           <div className="flex items-center gap-2">
                             <img
-                              src="/icons/bed_icon.png"
+                              src="/icons/Bed_icon.png"
                               alt="Beds Icon"
                               className="w-[18px] h-[12px]"
                             />
