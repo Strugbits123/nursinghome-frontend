@@ -94,7 +94,7 @@ export function ResultsSection() {
           </h2>
 
         <p className="max-w-xl text-gray-700 text-base sm:text-lg">
-          Switch between map and list views to find the perfect nursing home location.
+          We understand that everyone has different preferences when it comes to viewing and comparing data. That's why we offer two ways to view nursing home results.
         </p>
 
         <div className="w-full bg-white rounded-xl border border-gray-300 shadow-sm p-3 sm:p-4 md:p-6 flex flex-col space-y-3 sm:space-y-4 ">

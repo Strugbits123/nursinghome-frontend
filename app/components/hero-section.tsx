@@ -641,29 +641,13 @@ const HeroSection = memo(function HeroSection() {
       <ThreeBackground />
 
       {/* Hero Content - EXACT SAME LAYOUT */}
-      <div
-        className="
-                relative z-10
-                w-full max-w-[1256px] h-auto sm:h-[152px]
-                mx-auto 
-                flex items-center justify-center
-                pt-[120px] sm:pt-[262px]
-                px-4 sm:px-0
-                "
-      >
-        <h1
-          className="
-                    font-jost font-semibold 
-                    text-[40px] sm:text-[60px] md:text-[80px] lg:text-[90px]
-                    leading-[42px] sm:leading-[64px] md:leading-[85px] lg:leading-[91px]
-                    tracking-[-6%]
-                    text-white text-center
-                "
-        >
-          Find the Right Nursing Home <br />
-          <span className="italic">for Your Loved Ones</span>
+      <div className="relative z-10 w-full max-w-[1256px] h-auto sm:h-[152px] mx-auto flex items-center justify-center pt-[120px] sm:pt-[262px] px-4 sm:px-0">
+  <h1 className="font-jost font-semibold text-[40px] sm:text-[60px] md:text-[80px] lg:text-[90px] leading-[42px] sm:leading-[64px] md:leading-[85px] lg:leading-[91px] tracking-[-6%] text-white text-center">Find the Best Nursing Homes Near You <br /><span className="italic">for Your Loved Ones' Care</span></h1>
+</div>
+          {/* Find the Best Nursing Homes Near You <br />
+          <span className="italic">for Your Loved Ones' Care</span>
         </h1>
-      </div>
+      </div> */}
 
       {/* Search Section */}
       <div
@@ -677,10 +661,14 @@ const HeroSection = memo(function HeroSection() {
                 "
       >
         {/* Heading */}
-        <h2 className="text-white text-center font-jost font-light text-[16px] sm:text-[18px] md:text-[20px] leading-[28px] sm:leading-[32px] md:leading-[36px] max-w-[778px]">
-          Trusted data from CMS, Google Reviews, and AI insights to help you make the most important decision for your family
+        <h2 className="text-white text-center font-jost font-light text-[16px] mt-2 sm:text-[18px] md:text-[20px] leading-[28px] sm:leading-[32px] md:leading-[36px] max-w-[778px]">
+         (Trusted data from CMS, Google Reviews, and AI insights to guide you in making the best decision for your family.)
         </h2>
 
+        {/* <h2 className="text-white text-center font-jost font-light text-[16px] sm:text-[18px] md:text-[20px] leading-[28px] sm:leading-[32px] md:leading-[36px] max-w-[778px]">
+        At CareNav, we understand the challenges families face in finding the right place to call home for their loved ones. That’s why we’ve created a platform to help you navigate the process with ease.
+        </h2> */}
+        
         {/* Input & Buttons */}
         <div
           className="

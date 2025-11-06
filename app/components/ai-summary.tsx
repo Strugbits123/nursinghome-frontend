@@ -46,9 +46,9 @@ export function AISummary() {
                 {/* === HEADING === */}
                 <div className="w-full mx-auto flex flex-col items-center text-center gap-4 relative px-0 sm:px-0 md:px-8 lg:px-0">
                     <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-jost font-bold text-black text-center">
-                        Smarter Decisions with{" "}
+                        Our Advanced{" "}
                         <span className="relative text-[#C71F37] inline-block">
-                        AI Summaries
+                        AI Technology
                         <Image
                             src="/herbs-BCkTGihn.svg fill.png"
                             alt="herb icon"
@@ -60,7 +60,7 @@ export function AISummary() {
                     </h2>
 
                     <p className="max-w-[864px] text-sm sm:text-base md:text-lg lg:text-[18px] text-gray-700 text-center">
-                        Our advanced AI analyzes thousands of reviews to provide clear, concise summaries that highlight what matters most to families.
+                        Our advanced AI processes thousands of reviews to deliver clear and concise summaries that focus on the most important factors for families.
                     </p>
                 </div>
 
@@ -269,10 +269,10 @@ export function AISummary() {
                                 />
                             </div>
                             <h4 className="font-inter font-semibold text-sm sm:text-base lg:text-[17.58px] leading-tight sm:leading-[26.37px] text-[#212121] mt-3 sm:mt-4">
-                                Data Collection
+                                Data Collections
                             </h4>
                             <p className="font-inter text-xs sm:text-sm lg:text-[15.38px] leading-relaxed sm:leading-[21.98px] text-[#707070] mt-2 text-center">
-                                Analyzes reviews from Google, CMS reports, and facility data
+                                We gather and process key data from CMS 5-Star ratings, Google Reviews, and other trusted sources to create a comprehensive profile for each facility.
                             </p>
                         </div>
 
@@ -285,7 +285,7 @@ export function AISummary() {
                                 Smart Analysis
                             </h4>
                             <p className="font-inter text-xs sm:text-sm lg:text-[15.38px] leading-relaxed sm:leading-[21.98px] text-[#707070] mt-2 text-center">
-                                Our AI processes data to find trends and key insights
+                                Our AI analyzes all collected data to identify patterns, trends, and unique insights, giving you a clearer picture of each nursing home’s performance.
                             </p>
                         </div>
 
@@ -298,7 +298,7 @@ export function AISummary() {
                                 Clear Insights
                             </h4>
                             <p className="font-inter text-xs sm:text-sm lg:text-[15.38px] leading-relaxed sm:leading-[21.98px] text-[#707070] mt-2 text-center">
-                                Delivers concise pros, cons, and key highlights
+                                We present this data as simple, digestible summaries that highlight the pros and cons of each facility, along with key strengths and concerns.
                             </p>
                         </div>
                     </div>

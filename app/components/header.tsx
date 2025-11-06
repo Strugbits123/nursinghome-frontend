@@ -32,7 +32,7 @@ export function Header() {
 
 
         <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
-          {/* <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center">
             <a
               href="#"
               className="font-inter font-black text-[14px] leading-[13px] tracking-[0.2px] capitalize text-white"
@@ -57,7 +57,7 @@ export function Header() {
             className="font-inter font-medium text-[16px] leading-[13px] tracking-[0.2px] capitalize text-white"
           >
             Contact
-          </a> */}
+          </a>
         </nav>
 
         <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
@@ -112,7 +112,7 @@ export function Header() {
         <div className="lg:hidden absolute top-full left-0 right-0 bg-white/30 backdrop-blur-md border-b border-[#E5E7EB] z-50">
           <nav className="max-w-[1856px] mx-auto px-4 py-4">
             <div className="flex flex-col items-center text-center space-y-4">
-              {/* <a
+              <a
                 href="#"
                 className="font-inter font-black text-[16px] leading-[20px] tracking-[0.2px] capitalize text-[#111827] py-2"
               >
@@ -135,7 +135,7 @@ export function Header() {
                 className="font-inter font-medium text-[16px] leading-[20px] tracking-[0.2px] capitalize text-[#111827] py-2"
               >
                 Contact
-              </a> */}
+              </a>
 
               <div className="pt-4  border-gray-200 w-full flex flex-col items-center">
                 {isAuthenticated ? (

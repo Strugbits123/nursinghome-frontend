@@ -44,7 +44,7 @@ export default function RootLayout({
           name="google-adsense-account"
           content="ca-pub-7125240672406407"
         />
-     <Script
+        <Script
           id="adsense-script"
           async
           strategy="afterInteractive"
@@ -55,12 +55,17 @@ export default function RootLayout({
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{
+          cursor: 'default',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          msUserSelect: 'none'
+        }}
       >
         <CustomToaster />
         <FacilitiesProvider>
           {children}
         </FacilitiesProvider>
-
       </body>
     </html>
   );

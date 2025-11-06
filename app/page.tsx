@@ -30,7 +30,6 @@ export default function Home() {
   
   const locoScrollRef = useRef<any>(null);
   const ScrollTriggerRef = useRef<any>(null);
-  const initializationAttempts = useRef(0);
 
   // Detect navigation type and handle all scenarios
   useEffect(() => {
@@ -120,7 +119,6 @@ export default function Home() {
           }
 
           if (locoScrollRef.current) {
-            // Fixed: Proper scrollTo usage with options
             locoScrollRef.current.scrollTo(position, {
               duration: 0,
               disableLerp: true
@@ -306,40 +304,36 @@ export default function Home() {
 
         const LocomotiveScroll = locomotiveModule.default;
 
-        // Initialize with optimized settings for all scenarios
+        // Initialize with optimized smooth settings
         const locoScroll = new LocomotiveScroll({
           el: containerRef.current!,
-          smooth: !prefersReducedMotion,
-          multiplier: prefersReducedMotion ? 0.5 : 1,
-          lerp: prefersReducedMotion ? 1 : 0.03, // Tighter lerp for better precision
-          smartphone: { 
-            smooth: !prefersReducedMotion,
-            breakpoint: 768
-          },
-          tablet: { 
-            smooth: !prefersReducedMotion,
-            breakpoint: 1024
-          },
-          reloadOnContextChange: true,
+          smooth: true,
+          multiplier: 0.8, // Slower for extra smoothness
+          lerp: 0.03, // Ultra-smooth interpolation
           getDirection: true,
           getSpeed: true,
+          smartphone: {
+            smooth: true,
+            breakpoint: 768,
+            lerp: 0.05 // Slightly faster on mobile
+          },
+          tablet: {
+            smooth: true,
+            breakpoint: 1024,
+            lerp: 0.04
+          },
+          reloadOnContextChange: true,
+          touchMultiplier: 1.5, // Better touch response
         });
 
         locoScrollRef.current = locoScroll;
 
-        // Setup scroll proxy
+        // Setup scroll proxy for GSAP ScrollTrigger
         locoScroll.on("scroll", ScrollTrigger.update);
 
         ScrollTrigger.scrollerProxy(containerRef.current!, {
           scrollTop(value) {
-            if (arguments.length) {
-              // Fixed: Proper scrollTo usage with two arguments
-             locoScrollRef.current.scrollTo(value, {
-                duration: 0,
-                disableLerp: true
-              }, 0);
-            }
-            return locoScroll.scroll.instance.scroll.y;
+            return arguments.length ? locoScroll.scrollTo(value, 0, 0) : locoScroll.scroll.instance.scroll.y;
           },
           getBoundingClientRect() {
             return {
@@ -359,12 +353,12 @@ export default function Home() {
 
         // Enhanced refresh handling
         ScrollTrigger.addEventListener("refresh", () => {
-          requestAnimationFrame(() => {
-            locoScroll.update();
-          });
+          locoScroll.update();
         });
 
-        // Multi-stage initialization for reliability
+        ScrollTrigger.refresh();
+
+        // Initialize with smooth update
         const initializeWithRetry = (attempt = 0) => {
           if (attempt > 3) {
             console.log('✅ Scroll effects initialized (final attempt)');
@@ -379,16 +373,10 @@ export default function Home() {
             locoScroll.update();
             ScrollTrigger.refresh();
             
-            // Check if initialization was successful
-            const scrollY = locoScroll.scroll.instance.scroll.y;
-            console.log(`🔄 Init attempt ${attempt + 1}, scrollY: ${scrollY}`);
+            console.log(`🔄 Smooth scroll init attempt ${attempt + 1}`);
             
-            if (scrollY >= 0) {
-              console.log('✅ Scroll effects initialized successfully');
-              setGsapReady(true);
-            } else {
-              initializeWithRetry(attempt + 1);
-            }
+            console.log('✅ Locomotive Scroll initialized with smooth scrolling');
+            setGsapReady(true);
           }, 100 + (attempt * 50));
         };
 
@@ -479,7 +467,7 @@ export default function Home() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         if (locoScrollRef.current && ScrollTriggerRef.current) {
-          console.log('📱 Handling resize, updating scroll');
+          console.log('📱 Handling resize, updating smooth scroll');
           locoScrollRef.current.update();
           ScrollTriggerRef.current.refresh();
         }
@@ -496,7 +484,7 @@ export default function Home() {
   // Final refresh when everything is ready
   useEffect(() => {
     if (sectionsLoaded && gsapReady) {
-      console.log('🎊 Everything loaded! Final refresh...');
+      console.log('🎊 Everything loaded! Final smooth refresh...');
       
       const finalRefresh = () => {
         if (locoScrollRef.current && ScrollTriggerRef.current) {
@@ -507,7 +495,7 @@ export default function Home() {
           setTimeout(() => {
             locoScrollRef.current.update();
             ScrollTriggerRef.current.refresh();
-            console.log('🏁 Page fully initialized and ready!');
+            console.log('🏁 Page fully initialized with smooth scrolling!');
           }, 200);
         }
       };
@@ -528,7 +516,7 @@ export default function Home() {
       <div
         ref={containerRef}
         data-scroll-container
-        className="min-h-screen bg-background scroll-smooth"
+        className="min-h-screen bg-background"
       >
         {/* Hero Section */}
         <div
