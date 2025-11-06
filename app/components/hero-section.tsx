@@ -698,7 +698,7 @@ const HeroSection = memo(function HeroSection() {
           [@media(min-width:640px)_and_(max-width:880px)]:p-4
           [@media(min-width:640px)_and_(max-width:880px)]:gap-2
         "
-        >
+        > 
           <button
             onClick={handleUseLocation}
             className={`w-full sm:w-[220px] md:w-[230px] h-[56px] rounded-[6px] flex items-center justify-center sm:justify-start px-3 space-x-2 transition-colors duration-200 ${active ? "bg-[#C71F37]" : "bg-white"
