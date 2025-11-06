@@ -594,10 +594,10 @@ const HeroSection = memo(function HeroSection() {
 
     const rawQuery = cityQuery || locationName || searchQuery;
 
-    if (!localStorage.getItem("token")) {
-      toast.error("Please log in to search facilities");
-      return;
-    }
+    // if (!localStorage.getItem("token")) {
+    //   toast.error("Please log in to search facilities");
+    //   return;
+    // }
 
     if (!rawQuery.trim()) {
       toast.error("Please enter a city or location name.");
