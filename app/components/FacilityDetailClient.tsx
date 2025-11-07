@@ -130,7 +130,12 @@ interface FacilityData {
   provider_type: string;
   chain_name: string | null;
   date_first_approved_to_provide_medicare_and_medicaid_services: string;
-  
+    
+  // Add the missing complaint field
+  number_of_substantiated_complaints: number;
+  number_of_citations_from_infection_control_inspections: number;
+
+
   // Your existing fields
   cmsStarRatings: {
     overall: number;
@@ -555,7 +560,7 @@ const getDynamicInspections = (facility: FacilityData | null) => {
       date: "Recent",
       deficiencies: facility.number_of_substantiated_complaints,
       status: facility.number_of_substantiated_complaints > 1 ? "Failed" : "Under Review",
-      statusDescription: `${facility.number_of_substantiated_complaints} substantiated complaint${facility.number_of_substantiated_complittees > 1 ? 's' : ''}`
+      statusDescription: `${facility.number_of_substantiated_complaints} substantiated complaint${facility.number_of_substantiated_complaints > 1 ? 's' : ''}`
     });
   }
 
