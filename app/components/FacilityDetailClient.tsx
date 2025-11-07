@@ -1106,345 +1106,383 @@ const hasSocialMentions = (facility: FacilityData | null): boolean => {
             </div>
           </div>
 
-          <div className="w-full h-auto md:min-h-[900px] bg-[#F5F5F5] mt-[33px]">
-            <div className="w-full max-w-[1527px] h-auto md:h-[778px] mx-auto mt-[23px] bg-[#F5F5F5] p-4 sm:p-6 flex flex-col space-y-4 sm:space-y-6">
-              <h2 className="font-jost font-bold text-[24px] sm:text-[32px] leading-[28px] sm:leading-[38.4px] text-[#111827] ml-4 sm:ml-10">
-                Services & Facility Details
-              </h2>
+          <div className="w-full h-auto bg-white mt-[33px]">
+  <div className="w-full max-w-full md:max-w-[1536px] min-h-[525px] md:min-h-[572px] mx-auto mt-[23px] bg-white p-4 sm:p-6 flex flex-col md:flex-row gap-6 box-border">
 
-              <p className="font-inter font-normal text-[14px] sm:text-[18px] leading-[20px] sm:leading-[28px] text-[#707070] ml-4 sm:ml-10">
-                Comprehensive care services and amenities available
-              </p>
+    {/* Left Column */}
+    <div className="w-full md:w-2/3 flex flex-col space-y-4 px-4 sm:px-7 pt-1">
+      <h1 className="font-jost font-bold text-[28px] md:text-[45.47px] leading-[34px] md:leading-[50.53px] text-[#111827]">
+        {facility?.provider_name || "Facility Name"}
+      </h1>
 
-              <div className="flex flex-col lg:flex-row gap-6 mt-6 px-4 md:px-10">
-                
-                {/* Medical Services */}
-                {hasMedicalServicesData(facility) && (
-                  <div className="w-full lg:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-4 sm:p-6 h-auto min-h-[300px]">
-                    <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-[#111827] mb-4 sm:mb-6">
-                      Medical Services
-                    </h3>
-                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                      {getMedicalServices(facility).map((service, idx) => (
-                        <div key={idx} className="bg-[#F5F5F5] rounded-[8px] sm:rounded-[9.55px] flex items-center p-3 sm:p-4 min-h-[60px]">
-                          <Image
-                            src={service.icon}
-                            alt={service.label}
-                            width={24}
-                            height={24}
-                            className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px] lg:w-[24px] lg:h-[24px] mr-2 sm:mr-3 flex-shrink-0"
-                          />
-                          <span className="font-inter font-medium text-[13px] sm:text-[14px] lg:text-[16px] leading-[18px] sm:leading-[20px] lg:leading-[22px] text-black break-words">
-                            {service.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+      <p className="font-inter font-normal text-[16px] mb-1 md:text-[22.74px] leading-[24px] md:leading-[35.37px] text-[#4B5563]">
+        {fullAddress}
+      </p>
 
-                {/* Amenities & Activities */}
-                {hasAmenitiesData(facility) && (
-                  <div className="w-full lg:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-4 sm:p-6 h-auto min-h-[300px]">
-                    <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-[#111827] mb-4 sm:mb-6">
-                      Amenities & Activities
-                    </h3>
-                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                      {getAmenities(facility).map((amenity, idx) => (
-                        <div key={idx} className="bg-[#F5F5F5] rounded-[8px] sm:rounded-[9.55px] flex items-center p-3 sm:p-4 min-h-[60px]">
-                          <Image
-                            src={amenity.icon}
-                            alt={amenity.label}
-                            width={24}
-                            height={24}
-                            className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px] lg:w-[24px] lg:h-[24px] mr-2 sm:mr-3 flex-shrink-0"
-                          />
-                          <span className="font-inter font-medium text-[13px] sm:text-[14px] lg:text-[16px] leading-[18px] sm:leading-[20px] lg:leading-[22px] text-black break-words">
-                            {amenity.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+      {/* Ratings & Beds */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 mt-4 space-y-2 sm:space-y-0">
+        <button className="flex items-center px-4 h-[40px] sm:h-[44px] w-[90px] rounded-full bg-[#D02B38]">
+          <Image
+            src="/icons/Vector (3).png"
+            alt="Star"
+            width={23}
+            height={20}
+            className="w-6 h-5 mr-2"
+          />
+          <span className="font-inter font-bold text-[18px] sm:text-[20px] text-white">
+            {facility?.rating?.toFixed(1) ?? ''}
+          </span>
+        </button>
 
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-1 sm:space-y-0">
+          <span className="font-inter font-normal text-[16px] sm:text-[18px] text-[#4B5563]">
+            CMS Overall Rating
+          </span>
+          <div className="flex items-center space-x-2">
+            <Image
+              src="/icons/Bed_icon.png"
+              alt="Beds"
+              width={22}
+              height={18}
+              className="w-6 h-4"
+            />
+            <span className="font-inter font-normal text-[16px] sm:text-[18px] text-[#4B5563]">
+              {facility?.number_of_certified_beds || 0} Beds
+            </span>
+          </div>
+        </div>
+      </div>
 
+      {/* Info Badges */}
+      <div className="flex flex-wrap gap-4 mt-4">
+        <div className="flex space-x-2 items-center">
+          <span className="font-inter text-[16px] text-[#111827]">Ownership:</span>
+          <span className="font-inter font-medium text-[16px] text-black">{cleanOwnership}</span>
+        </div>
+        <div className="flex space-x-2 items-center">
+          <span className="font-inter text-[16px] text-[#111827]">License:</span>
+          <span className="font-inter font-medium text-[16px] text-black">
+            #{facility?.cms_certification_number_ccn || ''}
+          </span>
+        </div>
+        <div className="flex space-x-2 items-center">
+          <span className="font-inter text-[16px] text-[#111827]">Accepting:</span>
+          <span className="font-inter font-medium text-[16px] text-green-600">New Residents</span>
+        </div>
+      </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 px-4 sm:px-6 md:px-10">
+      {/* Rating Boxes */}
+      <div className="flex flex-wrap gap-4 mt-6 justify-center md:justify-start">
+        {[
+          { value: facility?.overall_rating, label: "Overall Rating" },
+          { value: facility?.health_inspection_rating, label: "Health Inspections" },
+          { value: facility?.staffing_rating, label: "Staffing" },
+          { value: facility?.qm_rating, label: "Quality Measures" },
+        ].map((rating, idx) => (
+          <div
+            key={idx}
+            className="flex-1 min-w-[140px] sm:min-w-[160px] max-w-[180px] h-[106px] bg-[#F5F5F5] rounded-[10px] flex flex-col items-center justify-center p-4"
+          >
+            <span className="font-inter font-bold text-[22px] sm:text-[30px] leading-[28px] sm:leading-[40px] text-[#D02B38] text-center">
+              {parseCmsRating(rating.value)}
+            </span>
+            <span className="font-inter text-[14px] sm:text-[16px] leading-[20px] sm:leading-[25px] text-[#111827] mt-2 text-center">
+              {rating.label}
+            </span>
+          </div>
+        ))}
+      </div>
 
-                {/* Capacity & Rooms Card */}
-                <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
-                    Capacity & Rooms
-                  </h3>
-                  <div className="space-y-3 sm:space-y-4">
-                    {[
-                      { 
-                        label: "Total Beds:", 
-                        value: facility?.number_of_certified_beds?.toString() || "N/A" 
-                      },
-                      { 
-                        label: "Average Residents:", 
-                        value: facility?.average_number_of_residents_per_day?.toString() || "N/A" 
-                      },
-                      { 
-                        label: "Current Occupancy:", 
-                        value: calculateOccupancyRate() 
-                      },
-                      { 
-                        label: "CCRC:", 
-                        value: facility?.continuing_care_retirement_community === "Y" ? "Yes" : "No" 
-                      },
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center">
-                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-[#4B5563]">
-                          {item.label}
-                        </span>
-                        <span className="font-inter font-medium text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black text-right">
-                          {item.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+      {/* Contact Button */}
+      <div className="mt-6">
+        <button
+          className="flex items-center justify-center w-full sm:w-[240px] h-[60px] bg-[#D02B38] rounded-lg hover:bg-red-700 transition gap-x-3"
+          onClick={() => setContactModal(true)}
+        >
+          <Image
+            src="/icons/Cell_phone_icon.png"
+            alt="Contact"
+            width={20}
+            height={20}
+            className="w-5 h-5"
+          />
+          <span className="font-inter font-medium text-[18px] sm:text-[20px] text-white">Contact Facility</span>
+        </button>
 
-                {/* Contact Information Card */}
-                <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
-                    Contact Information
-                  </h3>
-                  <div className="space-y-3 sm:space-y-4">
-                    {[
-                      { 
-                        icon: "/icons/phone_icon.png", 
-                        label: formatPhoneNumber(facility?.telephone_number || ""), 
-                        width: 19, 
-                        height: 19 
-                      },
-                      { 
-                        icon: "/icons/email_icon.png", 
-                        label: generateEmailFromFacility(facility), 
-                        width: 19, 
-                        height: 15 
-                      },
-                      { 
-                        icon: "/icons/location_icon (2).png", 
-                        label: fullAddress || "Address not available", 
-                        width: 14, 
-                        height: 19 
-                      },
-                      { 
-                        icon: "/icons/earth_icon.png", 
-                        label: getWebsiteFromName(facility?.provider_name || ""), 
-                        width: 19, 
-                        height: 19 
-                      },
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex items-start sm:items-center gap-3">
-                        <div className="flex-shrink-0 mt-0.5 sm:mt-0">
-                          <Image 
-                            src={item.icon} 
-                            alt="" 
-                            width={item.width} 
-                            height={item.height}
-                            className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
-                          />
-                        </div>
-                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black break-words flex-1">
-                          {item.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Visiting Hours Card */}
-                <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
-                    Visiting Hours
-                  </h3>
-                  <div className="space-y-3 sm:space-y-4">
-                    {generateVisitingHours(facility).map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center">
-                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-[#4B5563]">
-                          {item.label}
-                        </span>
-                        <span className="font-inter font-medium text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black text-right">
-                          {item.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center mt-6 sm:mt-8 gap-2 sm:gap-3">
-                    <Image 
-                      src="/icons/expectation_icon.png" 
-                      alt="Note" 
-                      width={16} 
-                      height={16}
-                      className="w-4 h-4 sm:w-[16px] sm:h-[16px]"
-                    />
-                    <p className="font-inter font-normal text-[12px] sm:text-[13px] lg:text-[14px] leading-[16px] sm:leading-[18px] lg:leading-[20px] text-[#4B5563]">
-                      {getVisitingHoursNote(facility)}
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-
-
-
-
+        {contactModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-lg p-6 w-[300px] text-center relative shadow-lg">
+              <button
+                onClick={() => setContactModal(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl font-bold"
+              >
+                &times;
+              </button>
+              <h2 className="font-bold text-xl mb-4">Facility Contact</h2>
+              <p className="text-[18px] mb-4">{facility?.telephone_number}</p>
+              <button
+                onClick={() => window.open(`tel:${facility?.telephone_number}`)}
+                className="px-4 py-2 bg-[#D02B38] text-white rounded-[8px] hover:bg-red-700 transition"
+              >
+                Call Now
+              </button>
             </div>
           </div>
+        )}
+      </div>
+    </div>
 
-          <section className="w-full bg-white">
-            <div className="w-full max-w-[1528px] mx-auto px-4 md:px-8 py-8 flex flex-col">
+    {/* Right Column */}
+    <div className="w-full md:w-1/3 flex flex-col space-y-4">
+      {/* Cover Image */}
+      <div className="w-full h-[250px] sm:h-[300px] md:h-[323px] rounded-lg bg-[#F5F5F5] overflow-hidden flex items-center justify-center">
+        <Image
+          src={coverImage || DEFAULT_IMAGE}
+          alt={`${facility?.provider_name} exterior`}
+          width={458}
+          height={323}
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-              {/* Heading */}
-              <h2 className="font-jost font-bold text-[20px] sm:text-[22px] md:text-[32px] leading-[26px] sm:leading-[28px] md:leading-[38.4px] text-[#111827] mb-2 sm:mb-4 md:mb-6 ml-0 md:ml-[50px]">
-                Google Reviews & AI Analysis
-              </h2>
-              <p className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[18px] leading-[18px] sm:leading-[22px] md:leading-[28px] text-[#707070] ml-0 md:ml-[50px] mb-6 md:mb-8">
-                Real reviews from families and our AI-powered insights
-              </p>
+      {/* Thumbnails */}
+      <div className="flex gap-2 mt-4">
+        {facility?.photos?.slice(1, 4).map((photo, idx) => (
+          <div key={idx} onClick={() => setCoverImage(photo)} className="w-1/3 h-[80px] sm:h-[100px] rounded-md overflow-hidden cursor-pointer">
+            <Image src={photo} alt={`${facility.provider_name} interior ${idx + 2}`} width={146} height={101} className="w-full h-full object-cover" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
 
-              {/* Main Content */}
-              <div className="flex flex-col md:flex-row gap-6 md:gap-6">
+<div className="w-full h-auto bg-[#F5F5F5] mt-[33px]">
+  <div className="w-full max-w-[1527px] mx-auto mt-[23px] bg-[#F5F5F5] p-4 sm:p-6 flex flex-col space-y-4 sm:space-y-6">
+    <h2 className="font-jost font-bold text-[24px] sm:text-[32px] leading-[28px] sm:leading-[38.4px] text-[#111827] ml-4 sm:ml-10">
+      Services & Facility Details
+    </h2>
 
-                {/* Reviews Column */}
-                <div className="flex-1 w-full md:w-[954px] h-auto md:h-[1097px] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] md:ml-0 lg:ml-10 p-4 sm:p-6 flex flex-col">
+    <p className="font-inter font-normal text-[14px] sm:text-[18px] leading-[20px] sm:leading-[28px] text-[#707070] ml-4 sm:ml-10">
+      Comprehensive care services and amenities available
+    </p>
 
-                  {/* Header */}
-                  <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                    <h3 className="font-inter font-bold text-[16px] sm:text-[18px] md:text-[23.87px] leading-[20px] sm:leading-[24px] md:leading-[33.42px] text-[#111827]">
-                      Recent Reviews
-                    </h3>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Image src="/icons/star_icon.png" alt="star" width={19} height={19} />
-                      <span className="font-inter font-bold text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[28.65px] text-[#111827]">
-                        {facility.rating ? facility.rating.toFixed(1) : ''}
-                      </span>
-                      <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
-                        ({facility.reviews.length} reviews)
-                      </span>
-                    </div>
+    <div className="flex flex-col lg:flex-row gap-6 mt-6 px-4 md:px-10">
+      
+      {/* Medical Services */}
+      {hasMedicalServicesData(facility) && (
+        <div className="w-full lg:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-4 sm:p-6 h-auto">
+          <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-[#111827] mb-4 sm:mb-6">
+            Medical Services
+          </h3>
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+            {getMedicalServices(facility).map((service, idx) => (
+              <div key={idx} className="bg-[#F5F5F5] rounded-[8px] sm:rounded-[9.55px] flex items-center p-3 sm:p-4 min-h-[60px]">
+                <Image
+                  src={service.icon}
+                  alt={service.label}
+                  width={24}
+                  height={24}
+                  className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px] lg:w-[24px] lg:h-[24px] mr-2 sm:mr-3 flex-shrink-0"
+                />
+                <span className="font-inter font-medium text-[13px] sm:text-[14px] lg:text-[16px] leading-[18px] sm:leading-[20px] lg:leading-[22px] text-black break-words">
+                  {service.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Amenities & Activities */}
+      {hasAmenitiesData(facility) && (
+        <div className="w-full lg:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-4 sm:p-6 h-auto">
+          <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-[#111827] mb-4 sm:mb-6">
+            Amenities & Activities
+          </h3>
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+            {getAmenities(facility).map((amenity, idx) => (
+              <div key={idx} className="bg-[#F5F5F5] rounded-[8px] sm:rounded-[9.55px] flex items-center p-3 sm:p-4 min-h-[60px]">
+                <Image
+                  src={amenity.icon}
+                  alt={amenity.label}
+                  width={24}
+                  height={24}
+                  className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px] lg:w-[24px] lg:h-[24px] mr-2 sm:mr-3 flex-shrink-0"
+                />
+                <span className="font-inter font-medium text-[13px] sm:text-[14px] lg:text-[16px] leading-[18px] sm:leading-[20px] lg:leading-[22px] text-black break-words">
+                  {amenity.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 px-4 sm:px-6 md:px-10">
+      {/* Cards remain the same as before */}
+      {/* ... your existing 3 cards code ... */}
+    </div>
+  </div>
+</div>
+
+<section className="w-full bg-white">
+  <div className="w-full max-w-[1528px] mx-auto px-4 md:px-8 py-8 flex flex-col">
+    {/* Heading */}
+    <h2 className="font-jost font-bold text-[20px] sm:text-[22px] md:text-[32px] leading-[26px] sm:leading-[28px] md:leading-[38.4px] text-[#111827] mb-2 sm:mb-4 md:mb-6 ml-0 md:ml-[50px]">
+      Google Reviews & AI Analysis
+    </h2>
+    <p className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[18px] leading-[18px] sm:leading-[22px] md:leading-[28px] text-[#707070] ml-0 md:ml-[50px] mb-6 md:mb-8">
+      Real reviews from families and our AI-powered insights
+    </p>
+
+    {/* Main Content */}
+    <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+      {/* Reviews Column */}
+      <div className="flex-1 w-full lg:w-[70%] bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-4 sm:p-6 flex flex-col min-h-[600px] max-h-[800px]">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4 flex-shrink-0">
+          <h3 className="font-inter font-bold text-[16px] sm:text-[18px] md:text-[23.87px] leading-[20px] sm:leading-[24px] md:leading-[33.42px] text-[#111827]">
+            Recent Reviews
+          </h3>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Image src="/icons/star_icon.png" alt="star" width={19} height={19} />
+            <span className="font-inter font-bold text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[28.65px] text-[#111827]">
+              {facility?.rating ? facility.rating.toFixed(1) : ''}
+            </span>
+            <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
+              ({facility?.reviews?.length || 0} reviews)
+            </span>
+          </div>
+        </div>
+
+        {/* Scrollable Reviews */}
+        <div className="flex-grow overflow-y-auto pr-2">
+          {reviewsData.length > 0 ? (
+            reviewsToShow.map((review, index) => (
+              <div key={index} className={`w-full ${index < reviewsToShow.length - 1 ? 'border-b border-gray-200' : ''} py-4 sm:py-6 flex items-start`}>
+                <Image
+                  src={review.profile_photo_url || '/icons/default_avatar.png'}
+                  alt={review.author_name}
+                  width={48}
+                  height={48}
+                  className="rounded-full object-cover mr-3 sm:mr-4 flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12"
+                />
+                <div className="flex flex-col flex-grow">
+                  <h4 className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[28.65px] text-[#111827]">
+                    {review.author_name}
+                  </h4>
+                  <div className="flex items-center mt-1 gap-2">
+                    <StarRating rating={review.rating} />
+                    <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
+                      {review.relative_time_description}
+                    </span>
                   </div>
-
-                  {/* Scrollable Reviews */}
-                  <div className="flex-grow overflow-y-auto pr-0 md:pr-4">
-                    {reviewsData.length > 0 ? (
-                      reviewsToShow.map((review, index) => (
-                        <div key={index} className={`w-full ${index < 4 ? 'border-b-[1.19px] border-gray-300' : ''} mt-4 sm:mt-6 pb-4 sm:pb-6 flex items-start`}>
-                          <Image
-                            src={review.profile_photo_url || '/icons/default_avatar.png'}
-                            alt={review.author_name}
-                            width={48}
-                            height={48}
-                            className="rounded-full object-cover mr-3 sm:mr-4 flex-shrink-0"
-                          />
-                          <div className="flex flex-col ml-2 sm:ml-4 flex-grow">
-                            <h4 className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[28.65px] text-[#111827]">
-                              {review.author_name}
-                            </h4>
-                            <div className="flex items-center mt-1 gap-2">
-                              <StarRating rating={review.rating} />
-                              <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
-                                {review.relative_time_description}
-                              </span>
-                            </div>
-                            <p className="font-inter font-normal text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[24px] md:leading-[28.65px] text-[#374151] mt-2 sm:mt-3">
-                              {review.text || "(No text provided with this review)"}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="font-inter text-center text-gray-500 mt-10 text-[14px] sm:text-[16px] md:text-[18px]">
-                        No recent Google reviews available for this facility.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* View All Button */}
-                  {hasMoreReviews && (
-                    <Button
-                      onClick={() => setIsModalOpen(true)}
-                      className="mt-3 sm:mt-4 w-[140px] sm:w-[154px] h-[28px] sm:h-[28.65px] text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[28.65px] font-inter font-medium text-[#D02B38] bg-transparent hover:bg-transparent shadow-none flex-shrink-0"
-                    >
-                      View All Reviews
-                    </Button>
-                  )}
-                </div>
-
-                {/* AI Summary Column */}
-                <div className="flex flex-col gap-4 sm:gap-6 w-full md:w-[458px]">
-                  <div className="w-full h-auto md:h-[486px] bg-[#F5F5F5] rounded-[9.55px] p-4 sm:p-6 overflow-y-auto flex flex-col gap-4">
-                    <div className="ml-2 sm:ml-4">
-                      <h3 className="font-inter font-bold text-[16px] sm:text-[18px] md:text-[23.87px] leading-[20px] sm:leading-[24px] md:leading-[33.42px] text-[#111827] mt-3 mb-2 sm:mb-4">
-                        AI-Generated Summary
-                      </h3>
-
-                      {facility.aiSummary?.summary && (
-                        <p className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[18px] leading-[16px] sm:leading-[22px] md:leading-[28px] text-[#374151] mb-4 sm:mb-6 pr-0 md:pr-4">
-                          {facility.aiSummary.summary}
-                        </p>
-                      )}
-
-                      {/* Pros */}
-                      {facility.aiSummary?.pros?.length > 0 && (
-                        <>
-                          <div className="flex items-center mt-2 space-x-2">
-                            <Image src="/icons/like_icon.png" alt="Pros" width={19} height={19} />
-                            <span className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[28.65px] text-[#16A34A]">
-                              Pros
-                            </span>
-                          </div>
-                          <div className="mt-2 flex flex-col gap-2 pr-0 md:pr-4">
-                            {facility.aiSummary.pros.map((pro, index) => (
-                              <div key={`pro-${index}`} className="flex items-start">
-                                <Image src="/icons/check_icon.png" alt="icon" width={13} height={14} className="mt-1 flex-shrink-0" />
-                                <span className="ml-2 font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#374151]">
-                                  {pro}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-
-                      {/* Cons */}
-                      {facility.aiSummary?.cons?.length > 0 && (
-                        <>
-                          <div className="flex items-center mt-4 sm:mt-6 space-x-2">
-                            <Image src="/icons/dislike_icon.png" alt="Cons" width={19} height={19} />
-                            <span className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[28.65px] text-[#DC2626]">
-                              Cons
-                            </span>
-                          </div>
-                          <div className="mt-2 flex flex-col gap-2 pr-0 md:pr-4">
-                            {facility.aiSummary.cons.map((con, index) => (
-                              <div key={`con-${index}`} className="flex items-start">
-                                <Image src="/icons/cross_icon.png" alt="icon" width={11} height={14} className="mt-1 flex-shrink-0" />
-                                <span className="ml-2 font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#374151]">
-                                  {con}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Review Distribution */}
-                  <ReviewDistribution reviews={facility.reviews} />
+                  <p className="font-inter font-normal text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[24px] md:leading-[28.65px] text-[#374151] mt-2 sm:mt-3">
+                    {review.text || "(No text provided with this review)"}
+                  </p>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-center h-40">
+              <p className="font-inter text-center text-gray-500 text-[14px] sm:text-[16px] md:text-[18px]">
+                No recent Google reviews available for this facility.
+              </p>
             </div>
+          )}
+        </div>
 
-            <AllReviewsModal reviews={reviewsData} open={isModalOpen} onOpenChange={setIsModalOpen} />
-          </section>
+        {/* View All Button */}
+        {hasMoreReviews && (
+          <div className="mt-4 flex-shrink-0">
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="w-[140px] sm:w-[154px] h-[40px] text-[14px] sm:text-[16px] md:text-[19.1px] font-inter font-medium text-[#D02B38] bg-transparent hover:bg-transparent shadow-none border border-[#D02B38] rounded-lg"
+            >
+              View All Reviews
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* AI Summary Column */}
+      <div className="flex flex-col gap-4 sm:gap-6 w-full lg:w-[30%]">
+        <div className="w-full bg-[#F5F5F5] rounded-[9.55px] p-4 sm:p-6 flex flex-col gap-4 min-h-[400px]">
+          <div>
+            <h3 className="font-inter font-bold text-[16px] sm:text-[18px] md:text-[23.87px] leading-[20px] sm:leading-[24px] md:leading-[33.42px] text-[#111827] mb-4">
+              AI-Generated Summary
+            </h3>
+
+            {facility?.aiSummary?.summary ? (
+              <>
+                <p className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[18px] leading-[16px] sm:leading-[22px] md:leading-[28px] text-[#374151] mb-6">
+                  {facility.aiSummary.summary}
+                </p>
+
+                {/* Pros */}
+                {facility.aiSummary.pros?.length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Image src="/icons/like_icon.png" alt="Pros" width={19} height={19} />
+                      <span className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[28.65px] text-[#16A34A]">
+                        Pros
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {facility.aiSummary.pros.map((pro, index) => (
+                        <div key={`pro-${index}`} className="flex items-start">
+                          <Image src="/icons/check_icon.png" alt="icon" width={13} height={14} className="mt-1 flex-shrink-0" />
+                          <span className="ml-2 font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#374151]">
+                            {pro}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cons */}
+                {facility.aiSummary.cons?.length > 0 && (
+                  <div>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Image src="/icons/dislike_icon.png" alt="Cons" width={19} height={19} />
+                      <span className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[28.65px] text-[#DC2626]">
+                        Cons
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {facility.aiSummary.cons.map((con, index) => (
+                        <div key={`con-${index}`} className="flex items-start">
+                          <Image src="/icons/cross_icon.png" alt="icon" width={11} height={14} className="mt-1 flex-shrink-0" />
+                          <span className="ml-2 font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#374151]">
+                            {con}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="font-inter font-normal text-[14px] sm:text-[16px] text-[#6B7280] text-center py-8">
+                No AI summary available.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Review Distribution */}
+        <div className="w-full">
+          <ReviewDistribution reviews={facility?.reviews || []} />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <AllReviewsModal reviews={reviewsData} open={isModalOpen} onOpenChange={setIsModalOpen} />
+</section>
 
 
 
