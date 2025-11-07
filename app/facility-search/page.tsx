@@ -1130,7 +1130,7 @@ export default function FacilitySearchPage() {
                                   onClick={() => handleCardClick(facility)}
                                   className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 cursor-pointer ${
                                     selectedFacilityId?.toString() === facility.id
-                                      ? "border-l-[4.78px] border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
+                                      ? "border-l-[4.78px]  border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
                                       : ""
                                   }`}
                                 >

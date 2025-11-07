@@ -495,6 +495,7 @@ const HeroSection = memo(function HeroSection() {
     setCoords,
     locationName,
     setLocationName,
+    displayLocationName,
     setIsLoading: setContextIsLoading,
     setError: setContextError,
   } = useFacilities();
@@ -711,7 +712,7 @@ const HeroSection = memo(function HeroSection() {
 
           <input
             type="text"
-            value={locationName}
+            value={displayLocationName}
             onChange={(e) => setLocationName(e.target.value)}
             placeholder="Enter Location ZIP code, city, or state..."
             className="
