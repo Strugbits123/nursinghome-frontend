@@ -1269,35 +1269,35 @@ export default function FacilitySearchPage() {
                               <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full"
+                                className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-lg shadow-sm p-6 mt-6 w-full border border-gray-100"
                               >
-                                <div className="text-sm text-gray-600 mb-3 sm:mb-0">
+                                <div className="text-sm text-gray-600 mb-4 sm:mb-0">
                                   {usingFilters && filterApplied ? (
                                     <span>
-                                      Showing <strong>{startFacility}-{endFacility}</strong> of{" "}
-                                      <strong>{displayTotal} filtered</strong> facilities
+                                      Showing <strong className="text-gray-900">{startFacility}-{endFacility}</strong> of{" "}
+                                      <strong className="text-gray-900">{displayTotal} filtered</strong> facilities
                                       {totalCountFromProvider > displayTotal && (
-                                        <span> (from {totalCountFromProvider} total)</span>
+                                        <span className="text-gray-500"> (from {totalCountFromProvider} total)</span>
                                       )}
                                     </span>
                                   ) : (
                                     <span>
-                                      Showing <strong>{startFacility}-{endFacility}</strong> of{" "}
-                                      <strong>{displayTotal} total</strong> facilities
+                                      Showing <strong className="text-gray-900">{startFacility}-{endFacility}</strong> of{" "}
+                                      <strong className="text-gray-900">{displayTotal} total</strong> facilities
                                     </span>
                                   )}
                                 </div>
 
-                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-1 justify-center sm:justify-end w-full sm:w-auto">
                                   {/* Previous Button */}
                                   <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                     disabled={currentPage === 1}
                                     onClick={goToPrevPage}
-                                    className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200"
                                   >
-                                    Prev
+                                    Previous
                                   </motion.button>
 
                                   {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
@@ -1306,9 +1306,11 @@ export default function FacilitySearchPage() {
                                       whileHover={{ scale: 1.05 }}
                                       whileTap={{ scale: 0.95 }}
                                       onClick={() => typeof page === "number" && goToPage(page)}
-                                      className={`px-3 py-2 rounded-md text-sm sm:text-base ${
-                                        currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
-                                      }`}
+                                      className={`px-3 py-2 min-w-[40px] rounded-lg text-sm font-medium transition-all duration-200 ${
+                                        currentPage === page 
+                                          ? "bg-[#D02B38] text-white border border-[#D02B38] shadow-sm" 
+                                          : "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                                      } ${page === "..." ? "cursor-default hover:bg-transparent hover:border-gray-300" : ""}`}
                                       disabled={page === "..."}
                                     >
                                       {page}
@@ -1317,11 +1319,11 @@ export default function FacilitySearchPage() {
 
                                   {/* Next Button */}
                                   <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                     disabled={currentPage === totalFacilityPages}
                                     onClick={goToNextPage}
-                                    className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200"
                                   >
                                     Next
                                   </motion.button>
