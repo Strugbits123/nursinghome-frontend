@@ -184,24 +184,24 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
     console.log("🔄 FacilitiesProvider: Initializing state from localStorage");
     
-    // Initialize state from localStorage
-    setFacilities(getFromStorage(FACILITIES_STORAGE_KEY, []));
-    setCoords(getFromStorage(COORDS_STORAGE_KEY, null));
+    // Initialize state from localStorage with proper typing
+    setFacilities(getFromStorage<Facility[]>(FACILITIES_STORAGE_KEY, []));
+    setCoords(getFromStorage<Coords | null>(COORDS_STORAGE_KEY, null));
     
-    // Load both names
-    const savedLocationName = getFromStorage(LOCATION_NAME_STORAGE_KEY, "");
+    // Load both names with proper typing
+    const savedLocationName = getFromStorage<string>(LOCATION_NAME_STORAGE_KEY, "");
     setLocationName(savedLocationName);
     
     // Try to load display name, fallback to converting normalized name
-    const savedDisplayName = getFromStorage(DISPLAY_LOCATION_NAME_STORAGE_KEY, "");
+    const savedDisplayName = getFromStorage<string>(DISPLAY_LOCATION_NAME_STORAGE_KEY, "");
     if (savedDisplayName) {
       setDisplayLocationName(savedDisplayName);
     } else if (savedLocationName) {
       // Convert normalized name back to readable format
-      setDisplayLocationName(savedLocationName.replace(/_/g, " "));
+      setDisplayLocationName(String(savedLocationName).replace(/_/g, " "));
     }
     
-    setFilters(getFromStorage(FILTERS_STORAGE_KEY, {}));
+    setFilters(getFromStorage<FilterState>(FILTERS_STORAGE_KEY, {}));
 
     // Initialize total from localStorage
     const savedTotal = localStorage.getItem("facilities_total_count");
@@ -432,10 +432,6 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
     const token = localStorage.getItem("token");
 
-    // if (!token) {
-    //   throw new Error("Please log in to search facilities");
-    // }
-
     if ((!searchQuery || searchQuery.trim() === "") && (!currentCoords?.lat || !currentCoords?.lng)) {
       throw new Error("Please enter a city, state, or ZIP code");
     }
@@ -577,7 +573,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         setRecommendations(cachedData.recommendations);
         
         // Also restore coords if available in localStorage
-        const savedCoords = getFromStorage(COORDS_STORAGE_KEY, null);
+        const savedCoords = getFromStorage<Coords | null>(COORDS_STORAGE_KEY, null);
         if (savedCoords) {
           setCoords(savedCoords);
         }
@@ -585,7 +581,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         console.log("❌ Context: No location-specific cache found for:", locationName);
         
         // 🎯 FIXED: Check legacy localStorage data
-        const savedFacilities = getFromStorage(FACILITIES_STORAGE_KEY, []);
+        const savedFacilities = getFromStorage<Facility[]>(FACILITIES_STORAGE_KEY, []);
         const savedTotal = localStorage.getItem("facilities_total_count");
         
         if (savedFacilities.length > 0) {
@@ -644,7 +640,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
     if (locationName && facilities.length === 0) {
       const cachedData = getCachedData(locationName);
-      const savedFacilities = getFromStorage(FACILITIES_STORAGE_KEY, []);
+      const savedFacilities = getFromStorage<Facility[]>(FACILITIES_STORAGE_KEY, []);
       
       // Only fetch if we have NO cached data at all
       if (!cachedData && savedFacilities.length === 0) {

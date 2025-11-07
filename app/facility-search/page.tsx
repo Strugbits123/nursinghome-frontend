@@ -874,7 +874,7 @@ export default function FacilitySearchPage() {
                     }}
                     iconLeftWidth="14px"
                     iconLeftHeight="18px"
-                    iconRightWidth="12px"
+                    iconRightWidth="10px"
                     iconRightHeight="10px"
                   />
                 </motion.div>
