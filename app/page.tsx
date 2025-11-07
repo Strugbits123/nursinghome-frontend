@@ -309,7 +309,7 @@ export default function Home() {
           el: containerRef.current!,
           smooth: true,
           multiplier: 0.8, // Slower for extra smoothness
-          lerp: 0.03, // Ultra-smooth interpolation
+          lerp: 0.08, // Ultra-smooth interpolation
           getDirection: true,
           getSpeed: true,
           smartphone: {
