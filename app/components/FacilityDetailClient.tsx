@@ -134,7 +134,7 @@ interface FacilityData {
   // Add the missing complaint field
   number_of_substantiated_complaints: number;
   number_of_citations_from_infection_control_inspections: number;
-
+  user_ratings_total: number;
 
   // Your existing fields
   cmsStarRatings: {
@@ -1319,7 +1319,10 @@ const hasSocialMentions = (facility: FacilityData | null): boolean => {
               {facility?.rating ? facility.rating.toFixed(1) : ''}
             </span>
             <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
-              ({facility?.reviews?.length || 0} reviews)
+               {facility?.user_ratings_total 
+                  ? `(${facility.user_ratings_total.toLocaleString()} reviews)`
+                  : `(${facility?.reviews?.length || 0} reviews)`
+                }
             </span>
           </div>
         </div>
