@@ -31,7 +31,7 @@ export function Header() {
         />
 
 
-        <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
+        {/* <nav className="hidden lg:flex w-[357px] h-[65px] items-center space-x-8 mt-8 mr-50">
           <div className="flex flex-col items-center">
             <a
               href="#"
@@ -58,7 +58,7 @@ export function Header() {
           >
             Contact
           </a>
-        </nav>
+        </nav> */}
 
         <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
           <div className="hidden md:flex items-center space-x-2 lg:space-x-6 md:mt-8 lg:mt-8">
@@ -110,7 +110,7 @@ export function Header() {
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 right-0 bg-white/30 backdrop-blur-md border-b border-[#E5E7EB] z-50">
-          <nav className="max-w-[1856px] mx-auto px-4 py-4">
+          {/* <nav className="max-w-[1856px] mx-auto px-4 py-4">
             <div className="flex flex-col items-center text-center space-y-4">
               <a
                 href="#"
@@ -175,7 +175,7 @@ export function Header() {
                 )}
               </div>
             </div>
-          </nav>
+          </nav> */}
         </div>
       )}
 
