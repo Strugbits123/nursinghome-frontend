@@ -488,6 +488,7 @@ const HeroSection = memo(function HeroSection() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [currentCoords, setCurrentCoords] = React.useState<{ lat: number; lng: number } | null>(null);
+  
 
   // ✅ FIXED: Use context's fetchFacilitiesWithReviews function
   const {
@@ -632,6 +633,12 @@ const HeroSection = memo(function HeroSection() {
     }
   }, [currentCoords, locationName, active]);
 
+const formatLocationName = (name: string): string => {
+    if (!name) return "";
+    return name
+      .replace(/[-_]/g, " ") // Replace underscores or hyphens
+      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
+  };
 
   return (
     <section className="min-h-[900px]  relative">
@@ -711,7 +718,7 @@ const HeroSection = memo(function HeroSection() {
 
           <input
             type="text"
-            value={locationName}
+            value={formatLocationName(locationName)}
             onChange={(e) => setLocationName(e.target.value)}
             placeholder="Enter Location ZIP code, city, or state..."
             className="
