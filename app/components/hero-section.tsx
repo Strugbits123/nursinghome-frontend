@@ -495,7 +495,6 @@ const HeroSection = memo(function HeroSection() {
     setCoords,
     locationName,
     setLocationName,
-    displayLocationName,
     setIsLoading: setContextIsLoading,
     setError: setContextError,
   } = useFacilities();
@@ -662,7 +661,7 @@ const HeroSection = memo(function HeroSection() {
                 "
       >
         {/* Heading */}
-        <h2 className="text-white text-center font-jost font-light text-[16px] mt-2 sm:text-[18px] md:text-[20px] leading-[28px] sm:leading-[32px] md:leading-[36px] max-w-[778px]">
+        <h2 className="text-white text-center font-jost font-light text-[16px] sm:text-[18px] md:text-[20px] leading-[28px] sm:leading-[32px] md:leading-[36px] max-w-[778px]">
          (Trusted data from CMS, Google Reviews, and AI insights to guide you in making the best decision for your family.)
         </h2>
 
@@ -712,7 +711,7 @@ const HeroSection = memo(function HeroSection() {
 
           <input
             type="text"
-            value={displayLocationName}
+            value={locationName}
             onChange={(e) => setLocationName(e.target.value)}
             placeholder="Enter Location ZIP code, city, or state..."
             className="

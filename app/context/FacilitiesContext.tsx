@@ -20,7 +20,6 @@ const normalizeLocationName = (locationName: string): string => {
 export const FACILITIES_STORAGE_KEY = "facilities";
 export const COORDS_STORAGE_KEY = "coords";
 export const LOCATION_NAME_STORAGE_KEY = "locationName";
-export const DISPLAY_LOCATION_NAME_STORAGE_KEY = "displayLocationName";
 export const FILTERS_STORAGE_KEY = "filters";
 
 // 🎯 SINGLE SOURCE OF TRUTH: Cache key generation
@@ -134,7 +133,6 @@ interface FacilitiesContextType {
   coords: Coords | null;
   setCoords: React.Dispatch<React.SetStateAction<Coords | null>>;
   locationName: string;
-  displayLocationName: string;
   setLocationName: React.Dispatch<React.SetStateAction<string>>;
   total: number;
   setTotal: (total: number) => void;
@@ -164,7 +162,6 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   const [recommendations, setRecommendations] = useState<Facility[]>([]);
   const [coords, setCoords] = useState<Coords | null>(null);
   const [locationName, setLocationName] = useState<string>("");
-  const [displayLocationName, setDisplayLocationName] = useState<string>("");
   const [filters, setFilters] = useState<FilterState>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -184,24 +181,11 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
     console.log("🔄 FacilitiesProvider: Initializing state from localStorage");
     
-    // Initialize state from localStorage with proper typing
-    setFacilities(getFromStorage<Facility[]>(FACILITIES_STORAGE_KEY, []));
-    setCoords(getFromStorage<Coords | null>(COORDS_STORAGE_KEY, null));
-    
-    // Load both names with proper typing
-    const savedLocationName = getFromStorage<string>(LOCATION_NAME_STORAGE_KEY, "");
-    setLocationName(savedLocationName);
-    
-    // Try to load display name, fallback to converting normalized name
-    const savedDisplayName = getFromStorage<string>(DISPLAY_LOCATION_NAME_STORAGE_KEY, "");
-    if (savedDisplayName) {
-      setDisplayLocationName(savedDisplayName);
-    } else if (savedLocationName) {
-      // Convert normalized name back to readable format
-      setDisplayLocationName(String(savedLocationName).replace(/_/g, " "));
-    }
-    
-    setFilters(getFromStorage<FilterState>(FILTERS_STORAGE_KEY, {}));
+    // Initialize state from localStorage
+    setFacilities(getFromStorage(FACILITIES_STORAGE_KEY, []));
+    setCoords(getFromStorage(COORDS_STORAGE_KEY, null));
+    setLocationName(getFromStorage(LOCATION_NAME_STORAGE_KEY, ""));
+    setFilters(getFromStorage(FILTERS_STORAGE_KEY, {}));
 
     // Initialize total from localStorage
     const savedTotal = localStorage.getItem("facilities_total_count");
@@ -432,6 +416,10 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
     const token = localStorage.getItem("token");
 
+    // if (!token) {
+    //   throw new Error("Please log in to search facilities");
+    // }
+
     if ((!searchQuery || searchQuery.trim() === "") && (!currentCoords?.lat || !currentCoords?.lng)) {
       throw new Error("Please enter a city, state, or ZIP code");
     }
@@ -503,10 +491,10 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         fetchTopRecommendations(state, city, 5)
       ]);
 
-      // Update state with both names
-      setLocationName(normalizeLocationName(searchQuery)); // Store normalized for API
-      setDisplayLocationName(searchQuery); // Store original for display
+      // Update state
+      setFacilities(facilitiesList);
       setCoords(currentCoords);
+      setLocationName(searchQuery || "");
       setTotal(data.total || 0);
       setRecommendations(topFacilities);
 
@@ -518,8 +506,9 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       // Save to localStorage for backward compatibility
       saveToStorage(FACILITIES_STORAGE_KEY, facilitiesList);
       saveToStorage(COORDS_STORAGE_KEY, currentCoords || null);
-      saveToStorage(LOCATION_NAME_STORAGE_KEY, normalizeLocationName(searchQuery));
-      saveToStorage(DISPLAY_LOCATION_NAME_STORAGE_KEY, searchQuery);
+      saveToStorage(LOCATION_NAME_STORAGE_KEY, 
+        searchQuery ? searchQuery.trim().replace(/\s+/g, "_").toLowerCase() : ""
+      );
 
       console.log(`✅ Context: Loaded ${facilitiesList.length} facilities and ${topFacilities.length} recommendations`);
 
@@ -531,14 +520,12 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
       setFacilities([]);
       setCoords(null);
       setLocationName("");
-      setDisplayLocationName("");
       setRecommendations([]);
 
       if (isClient()) {
         localStorage.removeItem(FACILITIES_STORAGE_KEY);
         localStorage.removeItem(COORDS_STORAGE_KEY);
         localStorage.removeItem(LOCATION_NAME_STORAGE_KEY);
-        localStorage.removeItem(DISPLAY_LOCATION_NAME_STORAGE_KEY);
       }
 
       throw err; // Re-throw for component to handle
@@ -573,7 +560,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         setRecommendations(cachedData.recommendations);
         
         // Also restore coords if available in localStorage
-        const savedCoords = getFromStorage<Coords | null>(COORDS_STORAGE_KEY, null);
+        const savedCoords = getFromStorage(COORDS_STORAGE_KEY, null);
         if (savedCoords) {
           setCoords(savedCoords);
         }
@@ -581,7 +568,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         console.log("❌ Context: No location-specific cache found for:", locationName);
         
         // 🎯 FIXED: Check legacy localStorage data
-        const savedFacilities = getFromStorage<Facility[]>(FACILITIES_STORAGE_KEY, []);
+        const savedFacilities = getFromStorage(FACILITIES_STORAGE_KEY, []);
         const savedTotal = localStorage.getItem("facilities_total_count");
         
         if (savedFacilities.length > 0) {
@@ -623,12 +610,6 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
   }, [locationName]);
 
   useEffect(() => {
-    if (displayLocationName && isClient()) {
-      saveToStorage(DISPLAY_LOCATION_NAME_STORAGE_KEY, displayLocationName);
-    }
-  }, [displayLocationName]);
-
-  useEffect(() => {
     if (isClient()) {
       saveToStorage(FILTERS_STORAGE_KEY, filters);
     }
@@ -640,7 +621,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
 
     if (locationName && facilities.length === 0) {
       const cachedData = getCachedData(locationName);
-      const savedFacilities = getFromStorage<Facility[]>(FACILITIES_STORAGE_KEY, []);
+      const savedFacilities = getFromStorage(FACILITIES_STORAGE_KEY, []);
       
       // Only fetch if we have NO cached data at all
       if (!cachedData && savedFacilities.length === 0) {
@@ -661,8 +642,7 @@ export const FacilitiesProvider: React.FC<{ children: ReactNode }> = ({
         setRecommendations,
         coords,
         setCoords,
-        locationName, // normalized version (for API calls)
-        displayLocationName, // readable version (for display)
+        locationName,
         setLocationName,
         currentPage,
         setCurrentPage,
