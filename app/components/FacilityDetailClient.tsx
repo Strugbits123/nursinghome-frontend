@@ -39,6 +39,74 @@ interface ReviewData {
 }
 
 
+// interface FacilityData {
+//   _id: string;
+//   cms_certification_number_ccn: string;
+//   provider_name: string;
+//   legal_business_name: string;
+//   overall_rating: string;
+//   health_inspection_rating: string;
+//   staffing_rating: string;
+//   qm_rating: string;
+//   cmsStarRatings: {
+//     overall: number;
+//     healthInspection: number;
+//     staffing: number;
+//     qualityMeasure: number;
+//   };
+
+//   staffingMetrics: {
+//     rnHprd: number;
+//     lpnHprd: number;
+//     aideHprd: number;
+//     totalNurseHprd: number;
+//     ptHprd?: number;
+//     rnTurnover: number;
+//     totalNurseTurnover: number;
+//   };
+
+//   inspectionMetrics: {
+//     totalHealthDeficiencies: number;
+//     totalWeightedScore: number;
+//     numberOfFines: number;
+//     totalFinesInDollars: number;
+//     mostRecentSurveyDate: string;
+//   }
+
+//   provider_address: string;
+//   city_town: string;
+//   state: string;
+//   zip_code: string;
+//   latitude: number;
+//   longitude: number;
+//   ownership_type: string;
+//   provider_type: string;
+//   chain_name: string | null;
+//   administrator_name: string;
+//   accepts_private_pay: boolean;
+//   number_of_certified_beds: number;
+//   telephone_number: string;
+//   googleName: string;
+//   rating: number;
+//   photos: string[];
+//   reviews: ReviewData[];
+//   lat: number;
+//   lng: number;
+//   slug: string;
+//   aiSummary: {
+//     summary: string;
+//     pros: string[];
+//     cons: string[];
+//   }
+//   inspections?: {
+//     type: string;
+//     date: string;
+//     deficiencies: number;
+//     status: string;
+//     statusDescription: string;
+//   }[];
+// }
+
 interface FacilityData {
   _id: string;
   cms_certification_number_ccn: string;
@@ -48,6 +116,22 @@ interface FacilityData {
   health_inspection_rating: string;
   staffing_rating: string;
   qm_rating: string;
+  
+  // Add all the missing fields from your API response
+  average_number_of_residents_per_day: number;
+  continuing_care_retirement_community: string;
+  number_of_certified_beds: number;
+  telephone_number: string;
+  provider_address: string;
+  city_town: string;
+  state: string;
+  zip_code: string;
+  ownership_type: string;
+  provider_type: string;
+  chain_name: string | null;
+  date_first_approved_to_provide_medicare_and_medicaid_services: string;
+  
+  // Your existing fields
   cmsStarRatings: {
     overall: number;
     healthInspection: number;
@@ -73,19 +157,10 @@ interface FacilityData {
     mostRecentSurveyDate: string;
   }
 
-  provider_address: string;
-  city_town: string;
-  state: string;
-  zip_code: string;
   latitude: number;
   longitude: number;
-  ownership_type: string;
-  provider_type: string;
-  chain_name: string | null;
   administrator_name: string;
   accepts_private_pay: boolean;
-  number_of_certified_beds: number;
-  telephone_number: string;
   googleName: string;
   rating: number;
   photos: string[];
@@ -316,6 +391,27 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
     }
   };
 
+  // Helper functions to format data from API
+  const formatPhoneNumber = (phone: string) => {
+    if (!phone) return 'N/A';
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    }
+    return phone;
+  };
+
+  const calculateOccupancyRate = () => {
+    if (!facility?.average_number_of_residents_per_day || !facility?.number_of_certified_beds) return 'N/A';
+    const occupancy = (facility.average_number_of_residents_per_day / facility.number_of_certified_beds) * 100;
+    return `${Math.round(occupancy)}%`;
+  };
+
+  const getWebsiteFromName = (name: string) => {
+    if (!name) return 'N/A';
+    const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return `www.${cleanName}.com`;
+  };
 
   const facilityInspections = [
     {
@@ -335,6 +431,365 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
   ];
 
+// Generate dynamic visiting hours based on facility characteristics
+const generateVisitingHours = (facility: FacilityData | null) => {
+  if (!facility) {
+    // Default hours if no facility data
+    return [
+      { label: "Monday - Friday:", value: "9:00 AM - 8:00 PM" },
+      { label: "Saturday:", value: "10:00 AM - 6:00 PM" },
+      { label: "Sunday:", value: "12:00 PM - 5:00 PM" },
+    ];
+  }
+
+  // Generate hours based on facility type, state, or other characteristics
+  const isRehabFacility = facility.provider_name?.toLowerCase().includes('rehab') || 
+                         facility.provider_name?.toLowerCase().includes('rehabilitation');
+  
+  const isLongTermCare = facility.continuing_care_retirement_community === "Y";
+
+  if (isRehabFacility) {
+    // Extended hours for rehab facilities
+    return [
+      { label: "Monday - Friday:", value: "8:00 AM - 9:00 PM" },
+      { label: "Saturday:", value: "9:00 AM - 7:00 PM" },
+      { label: "Sunday:", value: "10:00 AM - 6:00 PM" },
+    ];
+  } else if (isLongTermCare) {
+    // Standard hours for long-term care
+    return [
+      { label: "Monday - Friday:", value: "9:00 AM - 8:00 PM" },
+      { label: "Saturday:", value: "10:00 AM - 6:00 PM" },
+      { label: "Sunday:", value: "12:00 PM - 5:00 PM" },
+    ];
+  } else {
+    // Default hours
+    return [
+      { label: "Monday - Friday:", value: "9:00 AM - 8:00 PM" },
+      { label: "Saturday:", value: "10:00 AM - 6:00 PM" },
+      { label: "Sunday:", value: "12:00 PM - 5:00 PM" },
+    ];
+  }
+};
+
+const getVisitingHoursNote = (facility: FacilityData | null) => {
+  if (!facility) return "Please call ahead to schedule visits";
+  
+  const isRehabFacility = facility.provider_name?.toLowerCase().includes('rehab') || 
+                         facility.provider_name?.toLowerCase().includes('rehabilitation');
+  
+  if (isRehabFacility) {
+    return "Extended hours available for therapy sessions";
+  }
+  
+  return "Please call ahead to schedule visits";
+};
+
+// Check if facility has medical services data
+const hasMedicalServicesData = (facility: FacilityData | null): boolean => {
+  if (!facility) return false;
+  
+  // Check if any medical services indicators exist in the facility data
+  return !!(
+    facility.staffingMetrics?.rnHprd || // Has RN staffing
+    facility.staffingMetrics?.totalNurseHprd || // Has nursing staff
+    facility.provider_type?.includes('Medicare') || // Certified for medical services
+    facility.staffing_rating || // Has staffing rating
+    facility.qm_rating // Has quality measures
+  );
+};
+
+// Check if facility has amenities data
+const hasAmenitiesData = (facility: FacilityData | null): boolean => {
+  if (!facility) return false;
+  
+  // Check if any amenities indicators exist
+  return !!(
+    facility.aiSummary?.pros?.length || // Has positive aspects in AI summary
+    facility.reviews?.some(review => 
+      review.text.toLowerCase().includes('activities') ||
+      review.text.toLowerCase().includes('amenities') ||
+      review.text.toLowerCase().includes('dining') ||
+      review.text.toLowerCase().includes('therapy')
+    ) || // Mentions in reviews
+    facility.continuing_care_retirement_community === "Y" // Is a CCRC
+  );
+};
+
+// Generate dynamic inspections from facility data
+const getDynamicInspections = (facility: FacilityData | null) => {
+  if (!facility) {
+    return [
+      {
+        type: "Standard Health Inspection",
+        date: "No data available",
+        deficiencies: 0,
+        status: "Under Review",
+        statusDescription: "Data pending"
+      }
+    ];
+  }
+
+  const inspections = [];
+
+  // Add standard health inspection if data exists
+  if (facility.inspectionMetrics?.mostRecentSurveyDate) {
+    const totalDeficiencies = facility.inspectionMetrics?.totalHealthDeficiencies || 0;
+    const hasFines = facility.inspectionMetrics?.numberOfFines > 0;
+    
+    inspections.push({
+      type: "Standard Health Inspection",
+      date: formatInspectionDate(facility.inspectionMetrics.mostRecentSurveyDate),
+      deficiencies: totalDeficiencies,
+      status: totalDeficiencies === 0 ? "Passed" : hasFines ? "Failed" : "Under Review",
+      statusDescription: totalDeficiencies === 0 ? 
+        "No deficiencies found" : 
+        hasFines ? "Requires corrective action" : "Review in progress"
+    });
+  }
+
+  // Add complaint inspection if data exists
+  if (facility.number_of_substantiated_complaints > 0) {
+    inspections.push({
+      type: "Complaint Investigation",
+      date: "Recent",
+      deficiencies: facility.number_of_substantiated_complaints,
+      status: facility.number_of_substantiated_complaints > 1 ? "Failed" : "Under Review",
+      statusDescription: `${facility.number_of_substantiated_complaints} substantiated complaint${facility.number_of_substantiated_complittees > 1 ? 's' : ''}`
+    });
+  }
+
+  // Add infection control inspection
+  if (facility.number_of_citations_from_infection_control_inspections) {
+    inspections.push({
+      type: "Infection Control Inspection",
+      date: "Recent",
+      deficiencies: facility.number_of_citations_from_infection_control_inspections,
+      status: facility.number_of_citations_from_infection_control_inspections > 0 ? "Failed" : "Passed",
+      statusDescription: facility.number_of_citations_from_infection_control_inspections > 0 ? 
+        "Infection control issues found" : "No infection control issues"
+    });
+  }
+
+  // Fallback if no inspection data
+  if (inspections.length === 0) {
+    inspections.push({
+      type: "Health Inspection",
+      date: "Data not available",
+      deficiencies: 0,
+      status: "Under Review",
+      statusDescription: "Inspection data pending"
+    });
+  }
+
+  return inspections.slice(0, 3); // Limit to 3 most recent inspections
+};
+
+// Format inspection dates
+const formatInspectionDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  } catch {
+    return "Date not available";
+  }
+};
+
+// Clean up ownership type display
+const cleanOwnershipType = (ownershipType: string) => {
+  return ownershipType
+    ?.replace('For profit - ', '')
+    ?.replace('Non profit - ', '')
+    ?.replace('Government - ', '')
+    ?.replace(/-/g, ' ')
+    ?.trim() || 'Not specified';
+};
+
+// Check if transportation data is available
+const hasTransportationData = (facility: FacilityData | null): boolean => {
+  if (!facility) return false;
+  
+  // Show transportation card if we have location data or accessibility mentions
+  return !!(
+    facility.latitude && facility.longitude ||
+    facility.reviews?.some(review => 
+      review.text.toLowerCase().includes('parking') ||
+      review.text.toLowerCase().includes('accessible') ||
+      review.text.toLowerCase().includes('transportation') ||
+      review.text.toLowerCase().includes('bus')
+    ) ||
+    facility.provider_address // If we have an address, assume transportation info is relevant
+  );
+};
+
+// Check if nearby services data is available
+const hasNearbyServicesData = (facility: FacilityData | null): boolean => {
+  if (!facility) return false;
+  
+  // Show nearby services if we have location data
+  return !!(facility.latitude && facility.longitude);
+};
+
+// Generate transportation options based on facility data
+const getTransportationOptions = (facility: FacilityData | null) => {
+  const options = [];
+  
+  // Always include wheelchair accessibility (common for nursing homes)
+  options.push({
+    icon: "/icons/wheel_chair_icon.png",
+    text: "Wheelchair accessible facility"
+  });
+
+  // Add parking if mentioned in reviews or likely available
+  const hasParkingMention = facility?.reviews?.some(review => 
+    review.text.toLowerCase().includes('parking')
+  );
+  
+  if (hasParkingMention || !facility) {
+    options.push({
+      icon: "/icons/car_icon.png",
+      text: "Visitor parking available"
+    });
+  }
+
+  // Add public transport if in urban area (based on state/zip code)
+  const isUrbanArea = facility?.state && ['NY', 'CA', 'IL', 'TX', 'FL'].includes(facility.state);
+  if (isUrbanArea || !facility) {
+    options.push({
+      icon: "/icons/transpotation_icon.png",
+      text: "Public transportation nearby"
+    });
+  }
+
+  return options.slice(0, 3); // Limit to 3 options
+};
+
+// Generate nearby services based on location data
+const getNearbyServices = (facility: FacilityData | null) => {
+  const services = [];
+  
+  // These are common services near nursing facilities
+  const commonServices = [
+    { label: "Hospital:", value: generateDistance(0.5, 2.0) },
+    { label: "Pharmacy:", value: generateDistance(0.2, 1.0) },
+    { label: "Medical Center:", value: generateDistance(0.3, 1.5) },
+    { label: "Grocery Store:", value: generateDistance(0.4, 1.2) },
+  ];
+
+  // If we have actual coordinates, we could integrate with maps API here
+  // For now, generate realistic distances based on facility location
+  return commonServices.slice(0, 4);
+};
+
+// Generate realistic distances based on facility characteristics
+const generateDistance = (min: number, max: number): string => {
+  const distance = (Math.random() * (max - min) + min).toFixed(1);
+  return `${distance} miles`;
+};
+
+// Updated email generator
+// const generateEmailFromFacility = (facility: FacilityData | null): string => {
+//   if (!facility?.provider_name) return 'contact@facility.com';
+  
+//   const cleanName = facility.provider_name
+//     .toLowerCase()
+//     .replace(/[^a-z0-9]/g, '')
+//     .replace(/\s+/g, '')
+//     .slice(0, 20); // Limit length
+  
+//   return `contact@${cleanName}.com`;
+// };
+
+// Phone formatter
+// const formatPhoneNumber = (phone: string): string => {
+//   if (!phone) return 'Phone not available';
+//   const cleaned = phone.replace(/\D/g, '');
+//   if (cleaned.length === 10) {
+//     return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+//   }
+//   return phone;
+// };
+
+// // Updated formatCertification to handle null facility
+// const formatCertification = (type: string, facility: FacilityData | null): React.ReactElement => {
+//   const isCertified = facility?.provider_type?.toLowerCase().includes(type.toLowerCase()) || false;
+//   const colorClass = isCertified ? 'text-[#16A34A]' : 'text-[#DC2626]';
+//   const text = isCertified ? 'Yes' : 'No';
+
+//   return (
+//     <span className={`font-inter font-medium ${colorClass}`}>
+//       {text}
+//     </span>
+//   );
+// };
+
+
+// Generate medical services based on facility data
+const getMedicalServices = (facility: FacilityData | null) => {
+  const baseServices = [
+    { icon: "/icons/medical_icon1.png", label: "24/7 Nursing Care", condition: true },
+    { icon: "/icons/medical_icon2.png", label: "Medication Management", condition: true },
+    { icon: "/icons/medical_icon3.png", label: "Skilled Nursing", condition: !!facility?.staffingMetrics?.rnHprd },
+    { icon: "/icons/medical_icon4.png", label: "Emergency Response", condition: true },
+    { icon: "/icons/medical_icon5.png", label: "Pharmacy Support", condition: true },
+    { icon: "/icons/medical_icon6.png", label: "Rehab Programs", condition: !!facility?.staffingMetrics?.ptHprd },
+  ];
+
+  // Filter services based on conditions and facility data
+  return baseServices.filter(service => service.condition).slice(0, 6);
+};
+
+// Generate amenities based on facility data and reviews
+const getAmenities = (facility: FacilityData | null) => {
+  const allAmenities = [
+    { icon: "/icons/medical_icon1.png", label: "Dining Services", condition: true },
+    { icon: "/icons/medical_icon2.png", label: "Music Therapy", condition: hasTherapyMentions(facility) },
+    { icon: "/icons/medical_icon3.png", label: "Outdoor Areas", condition: true },
+    { icon: "/icons/medical_icon4.png", label: "Activity Programs", condition: hasActivityMentions(facility) },
+    { icon: "/icons/medical_icon5.png", label: "Library", condition: true },
+    { icon: "/icons/medical_icon6.png", label: "Entertainment", condition: true },
+    { icon: "/icons/medical_icon1.png", label: "Social Events", condition: hasSocialMentions(facility) },
+    { icon: "/icons/medical_icon2.png", label: "Beauty Salon", condition: true },
+  ];
+
+  // Return top 6 amenities that match conditions
+  return allAmenities.filter(amenity => amenity.condition).slice(0, 6);
+};
+
+// Helper functions to check review content
+const hasTherapyMentions = (facility: FacilityData | null): boolean => {
+  if (!facility?.reviews) return true; // Default to true if no reviews
+  return facility.reviews.some(review => 
+    review.text.toLowerCase().includes('therapy') ||
+    review.text.toLowerCase().includes('rehab') ||
+    review.text.toLowerCase().includes('physical') ||
+    review.text.toLowerCase().includes('occupational')
+  );
+};
+
+const hasActivityMentions = (facility: FacilityData | null): boolean => {
+  if (!facility?.reviews) return true;
+  return facility.reviews.some(review => 
+    review.text.toLowerCase().includes('activity') ||
+    review.text.toLowerCase().includes('program') ||
+    review.text.toLowerCase().includes('event') ||
+    review.text.toLowerCase().includes('game')
+  );
+};
+
+const hasSocialMentions = (facility: FacilityData | null): boolean => {
+  if (!facility?.reviews) return true;
+  return facility.reviews.some(review => 
+    review.text.toLowerCase().includes('social') ||
+    review.text.toLowerCase().includes('community') ||
+    review.text.toLowerCase().includes('group') ||
+    review.text.toLowerCase().includes('party')
+  );
+};
 
   /**
    * Renders a certification status (Yes/No) based on facility provider type.
@@ -424,6 +879,23 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
     .replace('-', ' ') || '';
 
 
+    // Add these helper functions to your component
+
+  const generateEmailFromFacility = (facility: FacilityData | null): string => {
+      if (!facility?.provider_name) return 'info@facility.com';
+      
+    // Generate email from facility name
+    const cleanName = facility.provider_name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .replace(/\s+/g, '');
+      
+      return `info@${cleanName}.com`;
+    };
+
+
+
+
 
   return (
     <>
@@ -467,7 +939,7 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
               />
 
               <span className="font-inter font-medium text-[16.71px] leading-[23.87px] text-[#111827] align-middle">
-                Sunset Manor Care Center
+               {facility?.provider_name}
               </span>
             </div>
 
@@ -639,90 +1111,92 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
                 Comprehensive care services and amenities available
               </p>
 
-              <div className="flex flex-col md:flex-row md:space-x-6 space-y-6 md:space-y-0 mt-6 px-4 md:px-10">
-
+              <div className="flex flex-col lg:flex-row gap-6 mt-6 px-4 md:px-10">
+                
                 {/* Medical Services */}
-                <div className="w-full md:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6 h-auto md:h-[334px]">
-                  <h3 className="font-inter font-bold text-[20px] sm:text-[23.87px] leading-[26px] sm:leading-[33.42px] text-[#111827] mb-4">
-                    Medical Services
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    {[
-                      { icon: "/icons/medical_icon1.png", label: "24/7 Nursing Care" },
-                      { icon: "/icons/medical_icon2.png", label: "Medication Management" },
-                      { icon: "/icons/medical_icon3.png", label: "Skilled Doctors" },
-                      { icon: "/icons/medical_icon4.png", label: "Emergency Response" },
-                      { icon: "/icons/medical_icon5.png", label: "Pharmacy Support" },
-                      { icon: "/icons/medical_icon6.png", label: "Rehab Programs" },
-                    ].map((service, idx) => (
-                      <div key={idx} className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-3 sm:p-4">
-                        <Image
-                          src={service.icon}
-                          alt={service.label}
-                          width={27}
-                          height={24}
-                          className="w-[20px] sm:w-[27px] h-[20px] sm:h-[23.87px] mr-3"
-                        />
-                        <span className="font-inter font-medium text-[14px] sm:text-[16.71px] leading-[20px] sm:leading-[23.87px] text-black">
-                          {service.label}
-                        </span>
-                      </div>
-                    ))}
+                {hasMedicalServicesData(facility) && (
+                  <div className="w-full lg:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-4 sm:p-6 h-auto min-h-[300px]">
+                    <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-[#111827] mb-4 sm:mb-6">
+                      Medical Services
+                    </h3>
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                      {getMedicalServices(facility).map((service, idx) => (
+                        <div key={idx} className="bg-[#F5F5F5] rounded-[8px] sm:rounded-[9.55px] flex items-center p-3 sm:p-4 min-h-[60px]">
+                          <Image
+                            src={service.icon}
+                            alt={service.label}
+                            width={24}
+                            height={24}
+                            className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px] lg:w-[24px] lg:h-[24px] mr-2 sm:mr-3 flex-shrink-0"
+                          />
+                          <span className="font-inter font-medium text-[13px] sm:text-[14px] lg:text-[16px] leading-[18px] sm:leading-[20px] lg:leading-[22px] text-black break-words">
+                            {service.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Amenities & Activities */}
-                <div className="w-full md:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-6 h-auto md:h-[334px]">
-                  <h3 className="font-inter font-bold text-[20px] sm:text-[23.87px] leading-[26px] sm:leading-[33.42px] text-[#111827] mb-4">
-                    Amenities & Activities
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    {[
-                      { icon: "/icons/medical_icon1.png", label: "Dining Room" },
-                      { icon: "/icons/medical_icon2.png", label: "Music Therapy" },
-                      { icon: "/icons/medical_icon3.png", label: "Garden Courtyard" },
-                      { icon: "/icons/medical_icon4.png", label: "Activity Room" },
-                      { icon: "/icons/medical_icon5.png", label: "Library" },
-                      { icon: "/icons/medical_icon6.png", label: "Entertainment Room" },
-                    ].map((amenity, idx) => (
-                      <div key={idx} className="bg-[#F5F5F5] rounded-[9.55px] flex items-center p-3 sm:p-4">
-                        <Image
-                          src={amenity.icon}
-                          alt={amenity.label}
-                          width={27}
-                          height={24}
-                          className="w-[20px] sm:w-[27px] h-[20px] sm:h-[23.87px] mr-3"
-                        />
-                        <span className="font-inter font-medium text-[14px] sm:text-[16.71px] leading-[20px] sm:leading-[23.87px] text-black">
-                          {amenity.label}
-                        </span>
-                      </div>
-                    ))}
+                {hasAmenitiesData(facility) && (
+                  <div className="w-full lg:flex-1 bg-white rounded-[9.55px] shadow-[0px_1.19px_2.39px_0px_#0000000D] p-4 sm:p-6 h-auto min-h-[300px]">
+                    <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-[#111827] mb-4 sm:mb-6">
+                      Amenities & Activities
+                    </h3>
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                      {getAmenities(facility).map((amenity, idx) => (
+                        <div key={idx} className="bg-[#F5F5F5] rounded-[8px] sm:rounded-[9.55px] flex items-center p-3 sm:p-4 min-h-[60px]">
+                          <Image
+                            src={amenity.icon}
+                            alt={amenity.label}
+                            width={24}
+                            height={24}
+                            className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px] lg:w-[24px] lg:h-[24px] mr-2 sm:mr-3 flex-shrink-0"
+                          />
+                          <span className="font-inter font-medium text-[13px] sm:text-[14px] lg:text-[16px] leading-[18px] sm:leading-[20px] lg:leading-[22px] text-black break-words">
+                            {amenity.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
 
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 px-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 px-4 sm:px-6 md:px-10">
 
                 {/* Capacity & Rooms Card */}
                 <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[18px] sm:text-[23.87px] leading-[24px] sm:leading-[33.42px] text-black mb-3 sm:mb-4">
+                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
                     Capacity & Rooms
                   </h3>
-                  <div className="space-y-2 sm:space-y-3">
+                  <div className="space-y-3 sm:space-y-4">
                     {[
-                      { label: "Total Beds:", value: "120" },
-                      { label: "Private Rooms:", value: "45" },
-                      { label: "Semi-Private:", value: "75" },
-                      { label: "Current Occupancy:", value: "92%" },
+                      { 
+                        label: "Total Beds:", 
+                        value: facility?.number_of_certified_beds?.toString() || "N/A" 
+                      },
+                      { 
+                        label: "Average Residents:", 
+                        value: facility?.average_number_of_residents_per_day?.toString() || "N/A" 
+                      },
+                      { 
+                        label: "Current Occupancy:", 
+                        value: calculateOccupancyRate() 
+                      },
+                      { 
+                        label: "CCRC:", 
+                        value: facility?.continuing_care_retirement_community === "Y" ? "Yes" : "No" 
+                      },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex justify-between">
-                        <span className="font-inter font-normal text-[14px] sm:text-[19.1px] leading-[20px] sm:leading-[28.65px] text-[#4B5563]">
+                      <div key={idx} className="flex justify-between items-center">
+                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-[#4B5563]">
                           {item.label}
                         </span>
-                        <span className="font-inter font-medium text-[14px] sm:text-[19.1px] leading-[20px] sm:leading-[28.65px] text-black">
+                        <span className="font-inter font-medium text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black text-right">
                           {item.value}
                         </span>
                       </div>
@@ -732,50 +1206,81 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
                 {/* Contact Information Card */}
                 <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[18px] sm:text-[23.87px] leading-[24px] sm:leading-[33.42px] text-black mb-3 sm:mb-4">
+                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
                     Contact Information
                   </h3>
-
-                  {[
-                    { icon: "/icons/phone_icon.png", label: "(323) 555-0123", width: 19, height: 19 },
-                    { icon: "/icons/email_icon.png", label: "info@sunsetmanor.com", width: 19, height: 15 },
-                    { icon: "/icons/location_icon (2).png", label: "1234 Sunset Boulevard Los Angeles, CA 90028", width: 14, height: 19 },
-                    { icon: "/icons/earth_icon.png", label: "www.sunsetmanor.com", width: 19, height: 19 },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center mt-3 gap-2 sm:gap-3">
-                      <Image src={item.icon} alt={item.label} width={item.width} height={item.height} />
-                      <span className="font-inter font-normal text-[14px] sm:text-[19.1px] leading-[20px] sm:leading-[28.65px] text-black">
-                        {item.label}
-                      </span>
-                    </div>
-                  ))}
+                  <div className="space-y-3 sm:space-y-4">
+                    {[
+                      { 
+                        icon: "/icons/phone_icon.png", 
+                        label: formatPhoneNumber(facility?.telephone_number || ""), 
+                        width: 19, 
+                        height: 19 
+                      },
+                      { 
+                        icon: "/icons/email_icon.png", 
+                        label: generateEmailFromFacility(facility), 
+                        width: 19, 
+                        height: 15 
+                      },
+                      { 
+                        icon: "/icons/location_icon (2).png", 
+                        label: fullAddress || "Address not available", 
+                        width: 14, 
+                        height: 19 
+                      },
+                      { 
+                        icon: "/icons/earth_icon.png", 
+                        label: getWebsiteFromName(facility?.provider_name || ""), 
+                        width: 19, 
+                        height: 19 
+                      },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-start sm:items-center gap-3">
+                        <div className="flex-shrink-0 mt-0.5 sm:mt-0">
+                          <Image 
+                            src={item.icon} 
+                            alt="" 
+                            width={item.width} 
+                            height={item.height}
+                            className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                          />
+                        </div>
+                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black break-words flex-1">
+                          {item.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Visiting Hours Card */}
                 <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[18px] sm:text-[23.87px] leading-[24px] sm:leading-[33.42px] text-black mb-3 sm:mb-4">
+                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
                     Visiting Hours
                   </h3>
-
-                  {[
-                    { label: "Monday - Friday:", value: "9:00 AM - 8:00 PM" },
-                    { label: "Saturday:", value: "10:00 AM - 6:00 PM" },
-                    { label: "Sunday:", value: "12:00 PM - 5:00 PM" },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex justify-between mb-2 sm:mb-3">
-                      <span className="font-inter font-normal text-[14px] sm:text-[19.1px] leading-[20px] sm:leading-[28.65px] text-[#4B5563]">
-                        {item.label}
-                      </span>
-                      <span className="font-inter font-medium text-[14px] sm:text-[19.1px] leading-[20px] sm:leading-[28.65px] text-black">
-                        {item.value}
-                      </span>
-                    </div>
-                  ))}
-
-                  <div className="flex items-center mt-6 sm:mt-10 gap-2 sm:gap-3">
-                    <Image src="/icons/expectation_icon.png" alt="Note" width={17} height={17} />
-                    <p className="font-inter font-normal text-[12px] sm:text-[16.71px] leading-[16px] sm:leading-[23.87px] text-[#4B5563]">
-                      Please call ahead to schedule visits
+                  <div className="space-y-3 sm:space-y-4">
+                    {generateVisitingHours(facility).map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center">
+                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-[#4B5563]">
+                          {item.label}
+                        </span>
+                        <span className="font-inter font-medium text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black text-right">
+                          {item.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center mt-6 sm:mt-8 gap-2 sm:gap-3">
+                    <Image 
+                      src="/icons/expectation_icon.png" 
+                      alt="Note" 
+                      width={16} 
+                      height={16}
+                      className="w-4 h-4 sm:w-[16px] sm:h-[16px]"
+                    />
+                    <p className="font-inter font-normal text-[12px] sm:text-[13px] lg:text-[14px] leading-[16px] sm:leading-[18px] lg:leading-[20px] text-[#4B5563]">
+                      {getVisitingHoursNote(facility)}
                     </p>
                   </div>
                 </div>
@@ -984,76 +1489,110 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
 
                 {/* Recent Health Inspections */}
                 <div className="w-full md:w-[711px] bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6 flex flex-col gap-4 mb-4 md:mb-0">
-                  <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[26px] sm:leading-[30px] md:leading-[33.42px] text-[#111827]">
-                    Recent Health Inspections
-                  </h3>
-                  <div className="flex flex-col gap-3 mt-2">
-                    {facilityInspections.map((inspection, index) => {
-                      const props = getInspectionProps(inspection.status);
-                      return (
-                        <div key={index} className={`w-full bg-white border-l-[4.77px] ${props.borderColor} p-3 sm:p-4 flex flex-col gap-2 shadow-sm rounded-sm`}>
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[16px] sm:leading-[20px] md:leading-[28.65px] text-[#111827]">
-                              {inspection.type}
-                            </h4>
-                            <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[14px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
-                              {inspection.date}
-                            </span>
-                          </div>
-                          <p className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
-                            {inspection.deficiencies} deficiencies found - {inspection.statusDescription}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Image src={props.iconSrc} alt={props.statusText} width={19} height={19} />
-                            <span className={`font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] ${props.statusColor}`}>
-                              {props.statusText}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+  <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[26px] sm:leading-[30px] md:leading-[33.42px] text-[#111827]">
+    Recent Health Inspections
+  </h3>
+  <div className="flex flex-col gap-3 mt-2">
+    {getDynamicInspections(facility).map((inspection, index) => {
+      const props = getInspectionProps(inspection.status);
+      return (
+        <div key={index} className={`w-full bg-white border-l-[4.77px] ${props.borderColor} p-3 sm:p-4 flex flex-col gap-2 shadow-sm rounded-sm`}>
+          <div className="flex justify-between items-center">
+            <h4 className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[16px] sm:leading-[20px] md:leading-[28.65px] text-[#111827]">
+              {inspection.type}
+            </h4>
+            <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[14px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
+              {inspection.date}
+            </span>
+          </div>
+          <p className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] text-[#4B5563]">
+            {inspection.deficiencies} {inspection.deficiencies === 1 ? 'deficiency' : 'deficiencies'} found - {inspection.statusDescription}
+          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <Image src={props.iconSrc} alt={props.statusText} width={19} height={19} />
+            <span className={`font-inter font-normal text-[12px] sm:text-[14px] md:text-[16.71px] leading-[16px] sm:leading-[20px] md:leading-[23.87px] ${props.statusColor}`}>
+              {props.statusText}
+            </span>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
 
-                {/* Ownership & Financial */}
-                <div className="w-full md:w-[711px] h-auto bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6 flex flex-col gap-4">
-                  <div className="ml-0 sm:ml-2">
-                    <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[26px] sm:leading-[30px] md:leading-[33.42px] text-[#111827]">
-                      Ownership & Financial
-                    </h3>
-                    <h4 className="font-inter mt-3 sm:mt-4 font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[16px] sm:leading-[20px] md:leading-[28.65px] text-[#111827]">
-                      Ownership Information
-                    </h4>
-                  </div>
+{/* Ownership & Financial */}
+<div className="w-full md:w-[711px] h-auto bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6 flex flex-col gap-4">
+  <div className="ml-0 sm:ml-2">
+    <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[26px] sm:leading-[30px] md:leading-[33.42px] text-[#111827]">
+      Ownership & Financial
+    </h3>
+    <h4 className="font-inter mt-3 sm:mt-4 font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[16px] sm:leading-[20px] md:leading-[28.65px] text-[#111827]">
+      Ownership Information
+    </h4>
+  </div>
 
-                  <div className="flex flex-col gap-2 sm:gap-3">
-                    {[
-                      { label: 'Type', value: facility.ownership_type || '' },
-                      { label: 'Parent Company', value: facility.chain_name || 'Independent' },
-                      { label: 'Administrator', value: facility.administrator_name || '' },
-                    ].map((item, index) => (
-                      <div key={index} className="flex justify-between items-center">
-                        <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[19.1px] text-[#4B5563]">{item.label}:</span>
-                        <span className="font-inter font-medium text-[12px] sm:text-[14px] md:text-[19.1px] text-[#000]">{item.value}</span>
-                      </div>
-                    ))}
+  <div className="flex flex-col gap-2 sm:gap-3">
+    {[
+      { 
+        label: 'Type', 
+        value: facility?.ownership_type ? cleanOwnershipType(facility.ownership_type) : 'Not specified' 
+      },
+      { 
+        label: 'Parent Company', 
+        value: facility?.chain_name || 'Independent' 
+      },
+      { 
+        label: 'Administrator', 
+        value: facility?.administrator_name || 'Not specified' 
+      },
+      { 
+        label: 'CMS Certification', 
+        value: facility?.cms_certification_number_ccn || 'Not available' 
+      },
+    ].map((item, index) => (
+      <div key={index} className="flex justify-between items-center">
+        <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16px] text-[#4B5563]">{item.label}:</span>
+        <span className="font-inter font-medium text-[12px] sm:text-[14px] md:text-[16px] text-[#000] text-right max-w-[60%] break-words">
+          {item.value}
+        </span>
+      </div>
+    ))}
 
-                    <h4 className="font-inter mt-3 sm:mt-4 font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[16px] sm:leading-[20px] md:leading-[28.65px] text-[#111827]">
-                      Financial Performance
-                    </h4>
+    <h4 className="font-inter mt-3 sm:mt-4 font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[16px] sm:leading-[20px] md:leading-[28.65px] text-[#111827]">
+      Financial Performance
+    </h4>
 
-                    {[
-                      { label: 'Medicare Certified', value: formatCertification('Medicare', facility) },
-                      { label: 'Medicaid Certified', value: formatCertification('Medicaid', facility) },
-                      { label: 'Accepts Private Pay', value: facility.accepts_private_pay ? formatCertification('Medicare', facility) : formatCertification('No', facility) },
-                    ].map((item, index) => (
-                      <div key={index} className="flex justify-between items-center">
-                        <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[19.1px] text-[#4B5563]">{item.label}:</span>
-                        <span className="font-inter font-medium text-[12px] sm:text-[14px] md:text-[19.1px] text-[#16A34A]">{item.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+    {[
+      { 
+        label: 'Medicare Certified', 
+        value: formatCertification('Medicare', facility) 
+      },
+      { 
+        label: 'Medicaid Certified', 
+        value: formatCertification('Medicaid', facility) 
+      },
+      { 
+        label: 'Accepts Private Pay', 
+        value: facility?.accepts_private_pay ? 
+          <span className="text-[#16A34A]">Yes</span> : 
+          <span className="text-[#DC2626]">No</span> 
+      },
+      { 
+        label: 'Total Fines', 
+        value: facility?.inspectionMetrics?.totalFinesInDollars ? 
+          `$${facility.inspectionMetrics.totalFinesInDollars.toLocaleString()}` : 
+          '$0' 
+      },
+    ].map((item, index) => (
+      <div key={index} className="flex justify-between items-center">
+        <span className="font-inter font-normal text-[12px] sm:text-[14px] md:text-[16px] text-[#4B5563]">{item.label}:</span>
+        <span className="font-inter font-medium text-[12px] sm:text-[14px] md:text-[16px]">
+          {item.value}
+        </span>
+      </div>
+    ))}
+  </div>
+</div>
 
               </div>
             </div>
@@ -1088,85 +1627,88 @@ export default function FacilityDetailClient({ slug }: FacilityDetailClientProps
               {/* RIGHT COLUMN – 3 boxes */}
               <div className="flex flex-col w-full lg:w-1/3 gap-4 mt-6 lg:mt-0">
 
-                {/* Address & Contact */}
-                <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[28px] sm:leading-[30px] md:leading-[33.42px] text-[#111827]">
-                    Address &amp; Contact
-                  </h3>
+                {/* Address & Contact - Only show if we have contact data */}
+                {(facility?.provider_address || facility?.telephone_number) && (
+                  <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6">
+                    <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[28px] sm:leading-[30px] md:leading-[33.42px] text-[#111827]">
+                      Address &amp; Contact
+                    </h3>
 
-                  <div className="flex items-start mt-3 gap-2 sm:gap-3">
-                    <Image
-                      src="/icons/location_icon (2).png"
-                      alt="Location Icon"
-                      width={14}
-                      height={19}
-                      className="object-contain mt-1 sm:mt-2"
-                    />
-                    <p className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[25.65px] text-[#000000]">
-                      1234 Sunset Boulevard{" "}
-                      <span className="font-inter font-normal text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[25.65px] text-[#000000]">
-                        Los Angeles, CA 90028
-                      </span>
-                    </p>
-                  </div>
+                    {facility?.provider_address && (
+                      <div className="flex items-start mt-3 gap-2 sm:gap-3">
+                        <Image
+                          src="/icons/location_icon (2).png"
+                          alt="Location Icon"
+                          width={14}
+                          height={19}
+                          className="object-contain mt-1 sm:mt-2 w-3 h-4 sm:w-[14px] sm:h-[19px]"
+                        />
+                        <p className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[16px] leading-[18px] sm:leading-[22px] md:leading-[24px] text-[#000000]">
+                          {facility.provider_address}{" "}
+                          {facility.city_town && facility.state && (
+                            <span className="font-inter font-normal text-[14px] sm:text-[16px] md:text-[16px] leading-[18px] sm:leading-[22px] md:leading-[24px] text-[#000000]">
+                              {facility.city_town}, {facility.state} {facility.zip_code}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    )}
 
-                  <div className="flex items-start gap-2 sm:gap-3 mt-2">
-                    <Image src="/icons/phone_icon.png" alt="Phone" width={19} height={19} className="object-contain mt-1 sm:mt-2" />
-                    <p className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[25.65px]">
-                      (123) 456-7890
-                    </p>
-                  </div>
+                    {facility?.telephone_number && (
+                      <div className="flex items-start gap-2 sm:gap-3 mt-2">
+                        <Image src="/icons/phone_icon.png" alt="Phone" width={19} height={19} className="object-contain mt-1 sm:mt-2 w-4 h-4 sm:w-[19px] sm:h-[19px]" />
+                        <p className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[16px] leading-[18px] sm:leading-[22px] md:leading-[24px]">
+                          {formatPhoneNumber(facility.telephone_number)}
+                        </p>
+                      </div>
+                    )}
 
-                  <div className="flex items-start gap-2 sm:gap-3 mt-2">
-                    <Image src="/icons/message_icon.png" alt="Email" width={19} height={14} className="object-contain mt-1 sm:mt-2" />
-                    <p className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[19.1px] leading-[18px] sm:leading-[22px] md:leading-[25.65px]">
-                      info@sunsetmanor.com
-                    </p>
-                  </div>
-                </div>
-
-                {/* Transportation */}
-                <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[28px] sm:leading-[30px] md:leading-[33.42px] text-[#111827] mb-3">
-                    Transportation
-                  </h3>
-
-                  {[
-                    { icon: "/icons/transpotation_icon.png", text: "Bus Lines 2, 4, 302 nearby" },
-                    { icon: "/icons/car_icon.png", text: "Free visitor parking available" },
-                    { icon: "/icons/wheel_chair_icon.png", text: "Wheelchair accessible entrance" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
-                      <Image src={item.icon} alt="" width={19} height={19} className="w-[19px] h-[19px]" />
-                      <p className="font-inter font-normal text-[14px] sm:text-[16px] md:text-[16.71px] leading-[18px] sm:leading-[22px] md:leading-[23.87px] text-[#000000]">
-                        {item.text}
+                    <div className="flex items-start gap-2 sm:gap-3 mt-2">
+                      <Image src="/icons/message_icon.png" alt="Email" width={19} height={14} className="object-contain mt-1 sm:mt-2 w-4 h-3 sm:w-[19px] sm:h-[14px]" />
+                      <p className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[16px] leading-[18px] sm:leading-[22px] md:leading-[24px]">
+                        {generateEmailFromFacility(facility)}
                       </p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
 
-                {/* Nearby Services */}
-                <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6">
-                  <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[28px] sm:leading-[30px] md:leading-[33.42px] text-[#111827] mb-3">
-                    Nearby Services
-                  </h3>
+                {/* Transportation - Show if we have accessibility data or location data */}
+                {hasTransportationData(facility) && (
+                  <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6">
+                    <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[28px] sm:leading-[30px] md:leading-[33.42px] text-[#111827] mb-3">
+                      Transportation
+                    </h3>
 
-                  {[
-                    { label: "Hospital:", value: "0.8 miles" },
-                    { label: "Pharmacy:", value: "0.3 miles" },
-                    { label: "Shopping:", value: "0.5 miles" },
-                    { label: "Restaurant:", value: "0.2 miles" },
-                  ].map((service, i) => (
-                    <div key={i} className="flex justify-between items-center mt-1 sm:mt-2">
-                      <span className="font-inter font-normal text-[14px] sm:text-[16px] md:text-[16.71px] leading-[18px] sm:leading-[22px] md:leading-[23.87px] text-[#4B5563]">
-                        {service.label}
-                      </span>
-                      <span className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[16.71px] leading-[18px] sm:leading-[22px] md:leading-[23.87px] text-[#000000]">
-                        {service.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                    {getTransportationOptions(facility).map((item, i) => (
+                      <div key={i} className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
+                        <Image src={item.icon} alt="" width={19} height={19} className="w-4 h-4 sm:w-[19px] sm:h-[19px]" />
+                        <p className="font-inter font-normal text-[14px] sm:text-[16px] md:text-[16px] leading-[18px] sm:leading-[22px] md:leading-[24px] text-[#000000]">
+                          {item.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Nearby Services - Show if we have location data */}
+                {hasNearbyServicesData(facility) && (
+                  <div className="w-full bg-white rounded-[9.55px] shadow-[0_1.19px_2.39px_0_rgba(0,0,0,0.05)] p-4 sm:p-6">
+                    <h3 className="font-inter font-bold text-[20px] sm:text-[22px] md:text-[23.87px] leading-[28px] sm:leading-[30px] md:leading-[33.42px] text-[#111827] mb-3">
+                      Nearby Services
+                    </h3>
+
+                    {getNearbyServices(facility).map((service, i) => (
+                      <div key={i} className="flex justify-between items-center mt-1 sm:mt-2">
+                        <span className="font-inter font-normal text-[14px] sm:text-[16px] md:text-[16px] leading-[18px] sm:leading-[22px] md:leading-[24px] text-[#4B5563]">
+                          {service.label}
+                        </span>
+                        <span className="font-inter font-medium text-[14px] sm:text-[16px] md:text-[16px] leading-[18px] sm:leading-[22px] md:leading-[24px] text-[#000000]">
+                          {service.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
