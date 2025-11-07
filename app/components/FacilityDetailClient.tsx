@@ -696,42 +696,6 @@ const generateDistance = (min: number, max: number): string => {
   return `${distance} miles`;
 };
 
-// Updated email generator
-// const generateEmailFromFacility = (facility: FacilityData | null): string => {
-//   if (!facility?.provider_name) return 'contact@facility.com';
-  
-//   const cleanName = facility.provider_name
-//     .toLowerCase()
-//     .replace(/[^a-z0-9]/g, '')
-//     .replace(/\s+/g, '')
-//     .slice(0, 20); // Limit length
-  
-//   return `contact@${cleanName}.com`;
-// };
-
-// Phone formatter
-// const formatPhoneNumber = (phone: string): string => {
-//   if (!phone) return 'Phone not available';
-//   const cleaned = phone.replace(/\D/g, '');
-//   if (cleaned.length === 10) {
-//     return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-//   }
-//   return phone;
-// };
-
-// // Updated formatCertification to handle null facility
-// const formatCertification = (type: string, facility: FacilityData | null): React.ReactElement => {
-//   const isCertified = facility?.provider_type?.toLowerCase().includes(type.toLowerCase()) || false;
-//   const colorClass = isCertified ? 'text-[#16A34A]' : 'text-[#DC2626]';
-//   const text = isCertified ? 'Yes' : 'No';
-
-//   return (
-//     <span className={`font-inter font-medium ${colorClass}`}>
-//       {text}
-//     </span>
-//   );
-// };
-
 
 // Generate medical services based on facility data
 const getMedicalServices = (facility: FacilityData | null) => {
@@ -898,6 +862,12 @@ const hasSocialMentions = (facility: FacilityData | null): boolean => {
       return `info@${cleanName}.com`;
     };
 
+const formatLocationName = (name: string): string => {
+  if (!name) return '';
+  return name
+    .replace(/_/g, ' ')              // Replace underscores with spaces
+    .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
+};
 
 
 
@@ -933,7 +903,7 @@ const hasSocialMentions = (facility: FacilityData | null): boolean => {
               <Link
                 href="/facility-search"
                 className="align-middle">
-                  {locationName || "California"}
+                 {formatLocationName(locationName) || "California"}
               </Link>
               <Image
                 src="/icons/search_fac_right_icon.png"
