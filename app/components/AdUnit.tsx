@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useEffect, useState  } from "react";
-
-
+import React, { useEffect, useState } from "react";
 
 declare global {
   interface Window {
@@ -22,9 +20,10 @@ interface AdUnitProps {
     | "skyscraperMain"
     | "halfpage"
     | "mobile";
+  className?: string; // Add this line
 }
 
-export default function AdUnit({ adSlot, layout = "banner" }: AdUnitProps) {
+export default function AdUnit({ adSlot, layout = "banner", className = "" }: AdUnitProps) {
   
   // ✅ Tailwind layout classes for each ad type
   const layoutClasses: Record<string, string> = {
@@ -48,33 +47,32 @@ export default function AdUnit({ adSlot, layout = "banner" }: AdUnitProps) {
       "block mx-auto border border-gray-300 w-[320px] h-[50px] sm:w-[320px] sm:h-[100px]",
   };
 
-useEffect(() => {
-  const el = document.querySelector(`ins[data-ad-slot="${adSlot}"]`);
-  if (!el) return;
+  useEffect(() => {
+    const el = document.querySelector(`ins[data-ad-slot="${adSlot}"]`);
+    if (!el) return;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting) {
-        try {
-          // @ts-ignore
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-        } catch (err) {
-          console.error("Adsense load error:", err);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          try {
+            // @ts-ignore
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+          } catch (err) {
+            console.error("Adsense load error:", err);
+          }
+          observer.disconnect();
         }
-        observer.disconnect();
-      }
-    },
-    { threshold: 0.1 }
-  );
+      },
+      { threshold: 0.1 }
+    );
 
-  observer.observe(el);
-  return () => observer.disconnect();
-}, [adSlot]);
-
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [adSlot]);
 
   return (
     <div
-      className={`${layoutClasses[layout] || layoutClasses.banner} flex justify-center items-center bg-gray-100`}
+      className={`${layoutClasses[layout] || layoutClasses.banner} ${className} flex justify-center items-center bg-gray-100`}
     >
       <ins
         className="adsbygoogle"
@@ -85,21 +83,6 @@ useEffect(() => {
         data-full-width-responsive="true"
         data-adtest="on"
       ></ins>
-     {/* <ins
-      className="adsbygoogle"
-      style={{
-        display: "block",
-        width: "300px",
-        height: "250px",
-        minWidth: "120px",
-        minHeight: "100px",
-      }}
-      data-ad-client="ca-pub-8855354849568036"
-      data-ad-slot={adSlot}
-      data-ad-format="auto"
-      data-full-width-responsive="true"
-    /> */}
-
 
       <p className="text-xs text-gray-600 absolute bg-white px-2">
         {layout.toUpperCase()} Ad 
