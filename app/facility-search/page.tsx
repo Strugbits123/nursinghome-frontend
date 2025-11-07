@@ -171,7 +171,7 @@ const displayTotal = useMemo(() => {
   }
 }, [usingFilters, filterApplied, totalFacilities, totalCountFromProvider, allFacilities.length]);
 
-// ✅ FIXED: Load page function with proper total handling
+// ✅ FIXED: Load page function WITHOUT authentication token
 const loadPage = useCallback(async (page: number) => {
   // For filtered results, use existing facilities
   if (usingFilters && filterApplied) {
@@ -184,8 +184,7 @@ const loadPage = useCallback(async (page: number) => {
   // For cached pages beyond page 1, fetch from API
   setIsPageLoading(true);
   try {
-    const token = localStorage.getItem("token");
-    if (!token || !locationName?.trim()) return;
+    if (!locationName?.trim()) return;
 
     const params = new URLSearchParams();
     const normalizedQuery = locationName.trim().replace(/\s+/g, "_");
@@ -199,11 +198,10 @@ const loadPage = useCallback(async (page: number) => {
     }
 
     const url = `${API_URL}/?${params.toString()}`;
-    console.log("🌐 Loading cached page:", page, "from API");
+    console.log("🌐 Loading cached page:", page, "from API WITHOUT auth");
 
     const res = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
@@ -375,9 +373,7 @@ useEffect(() => {
   }, [initialFacilities, totalCountFromProvider, usingFilters, filterApplied, currentPage]);
 
 
-  // ✅ FIXED: Filter functions - properly track filtered count
-
-// ✅ FIXED: Filter functions with proper total count handling
+  // ✅ FIXED: Filter functions WITHOUT authentication token
 const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   const appliedFilters = newFilters || filters;
   setIsFiltering(true);
@@ -436,7 +432,7 @@ const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
   }
 };
 
-// ✅ FIXED: Filtered pagination with proper total count handling
+// ✅ FIXED: Filtered pagination WITHOUT authentication token
 const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
   setIsPageLoading(true);
 
@@ -468,13 +464,18 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
     }
 
     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
-    console.log("🌐 Fetching filtered facilities:", {
+    console.log("🌐 Fetching filtered facilities WITHOUT auth:", {
       page,
       locationName: params.get('locationName'),
       params: params.toString()
     });
 
-    const res = await fetch(apiUrl);
+    const res = await fetch(apiUrl, {
+      // ✅ REMOVED: No authentication headers
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!res.ok) {
       const text = await res.text();
@@ -519,7 +520,6 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
     setIsPageLoading(false);
   }
 };
-
 
   // Modal effects
   useEffect(() => {
@@ -568,13 +568,15 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
     return () => clearTimeout(timer);
   }, []);
 
+  // ✅ FIXED: Remove authentication check for routing
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      if (initialFacilities.length === 0 && !isLoading) router.push("/");
+    if (initialFacilities.length === 0 && !isLoading) {
+      router.push("/");
     }
   }, [router, initialFacilities.length, isLoading]);
 
   useEffect(() => {
+    // Check authentication status but don't block API calls
     setIsAuthenticated(!!localStorage.getItem("token"));
     setCurrentPage(1);
   }, [filteredFacilities]);
