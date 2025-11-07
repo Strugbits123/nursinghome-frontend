@@ -1029,311 +1029,330 @@ const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filt
             </motion.div>
           </motion.section>
 
-          {/* Facilities and Map Section */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className={`flex flex-col md:mx-66 lg:flex-row gap-6 mx-4 sm:mx-8 mx-[1026px]:mx-29 lg:mx-12 xl:mx-16 mt-10 px-4 sm:px-8 lg:px-12 xl:px-28 min-h-screen" ${
-              viewMode === "mapOnly" ? "lg:h-[677px]" : "min-h-[2368px]"
-            }`}
-          >
-            {/* <div className="hidden md:flex justify-center items-start w-[120px] my-18 lg:w-[120px]">
+          {/* <div className="hidden md:flex justify-center items-start w-[120px] my-18 lg:w-[120px]">
               <AdUnit adSlot="right-skyscraper" layout="skyscraper" />
             </div> */}
 
-            {isFiltering || showSkeletonTimer ? (
-              <FacilityReviewSkeleton />
-            ) : filteredFacilities.length === 0 && usingFilters ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col justify-center items-center w-full h-[300px] text-gray-500 text-lg font-medium"
-              >
-                <p>No facilities match your filters</p>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <button
-                    onClick={clearFilters}
-                    className="mt-4 px-4 py-2 bg-[#D02B38] text-white rounded-lg hover:bg-[#af404a] transition-colors"
-                  >
-                    Clear Filters
-                  </button>
-                </motion.div>
-              </motion.div>
-            ) : (
-              <>
-                {viewMode === "both" && (
+          <motion.section
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ delay: 0.5 }}
+  className={`flex flex-col lg:flex-row gap-6 mx-4 sm:mx-8 md:mx-34 lg:mx-12 xl:mx-16 mt-10 px-4 sm:px-8 lg:px-12 xl:px-28 min-h-screen ${
+    viewMode === "mapOnly" ? "lg:h-[677px]" : "min-h-[2368px]"
+  }`}
+>
+  {isFiltering || showSkeletonTimer ? (
+    <FacilityReviewSkeleton />
+  ) : filteredFacilities.length === 0 && usingFilters ? (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col justify-center items-center w-full h-[300px] text-gray-500 text-lg font-medium"
+    >
+      <p>No facilities match your filters</p>
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <button
+          onClick={clearFilters}
+          className="mt-4 px-4 py-2 bg-[#D02B38] text-white rounded-lg hover:bg-[#af404a] transition-colors"
+        >
+          Clear Filters
+        </button>
+      </motion.div>
+    </motion.div>
+  ) : (
+    <>
+      {viewMode === "both" && (
+        <>
+          {isLoading || isPageLoading ? (
+            <FacilityReviewSkeleton />
+          ) : (
+            <>
+              {/* Left Column - Facilities List */}
+              <div className="w-full lg:w-[720px] min-h-[400px] overflow-hidden space-y-4">
+                {paginatedFacilities.map((facility: Facility, index: number) => (
                   <>
-                    {isLoading || isPageLoading ? (
-                      <FacilityReviewSkeleton />
-                    ) : (
-                      <>
-                        {/* Left Column - Facilities List */}
-                        <div className="w-full lg:w-[720px] min-h-[400px] overflow-hidden space-y-4">
-                          {paginatedFacilities.map((facility: Facility, index: number) => (
-                           <motion.div
-                                key={facility.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                onClick={() => handleCardClick(facility)}
-                                className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 cursor-pointer ${
-                                  selectedFacilityId?.toString() === facility.id
-                                    ? "border-l-[4.78px] border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
-                                    : ""
-                                }`}
-                              >
-                              {/* ... your existing facility card content ... */}
-                              <div className="flex flex-col sm:flex-row">
-                                {/* Image */}
-                                <div className="w-full sm:w-1/4 flex justify-center sm:justify-start mb-4 sm:mb-0">
-                                  <img
-                                    src={facility.imageUrl || "/Default_image.png"}
-                                    alt={facility.name}
-                                    className="w-[114px] h-[114px] object-cover rounded-[9.56px]"
-                                  />
-                                </div>
-
-                                {/* Details */}
-                                <div className="flex-1 sm:ml-5">
-                                  <h3 className="text-[#111827] font-bold text-[20px] sm:text-[23.89px] leading-[28px] sm:leading-[33.45px]">
-                                    {facility.name}
-                                  </h3>
-
-                                  <div className="flex items-center gap-2 mt-2">
-                                    <img
-                                      src="/icons/location_icon_new.png"
-                                      alt="Location Icon"
-                                      className="w-[12px] h-[16px]"
-                                    />
-                                    <span className="text-[#4B5563] text-sm sm:text-base">
-                                      {facility.distance != null
-                                        ? `${facility.distance.toFixed(1)} miles`
-                                        : ""}
-                                      {facility.address ? ` • ${facility.address}` : ""}
-                                    </span>
-                                  </div>
-
-                                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3">
-                                    <div className="flex items-center gap-2">
-                                      <img
-                                        src="/icons/Bed_icon.png"
-                                        alt="Beds Icon"
-                                        className="w-[18px] h-[12px]"
-                                      />
-                                      <span className="text-[#4B5563] text-sm sm:text-base">
-                                        {facility.beds} beds
-                                      </span>
-                                    </div>
-
-                                    <div className="flex flex-row items-center gap-2 sm:gap-3">
-                                      <span className="text-[#4B5563] text-sm sm:text-base">
-                                        {facility.isNonProfit ? "Non-Profit" : "For-Profit"}
-                                      </span>
-                                      <span
-                                        className={`text-sm sm:text-base font-medium ${getStatusColor(facility.status)}`}
-                                      >
-                                        {facility.status}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  {/* Pros & Cons */}
-                                  <div className="bg-[#F5F5F5] rounded-md p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                                    <div className="flex items-start gap-2">
-                                      <span className="text-green-600 font-medium">✓</span>
-                                      <p className="text-green-600 text-sm leading-5">
-                                        Pros:{" "}
-                                        {facility.pros
-                                          ? facility.pros.split(" ").length > 10
-                                            ? facility.pros.split(" ").slice(0, 10).join(" ") + "..."
-                                            : facility.pros
-                                          : "No pros available"}
-                                      </p>
-                                    </div>
-
-                                    <div className="flex items-start gap-2">
-                                      <span className="text-red-600 font-medium">✗</span>
-                                      <p className="text-red-600 text-sm leading-5">
-                                        Cons:{" "}
-                                        {facility.cons
-                                          ? facility.cons.split(" ").length > 10
-                                            ? facility.cons.split(" ").slice(0, 10).join(" ") + "..."
-                                            : facility.cons
-                                          : "No cons available"}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  {/* Contact + Button */}
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                                      <div className="flex items-center gap-2">
-                                        <img
-                                          src="/icons/phone_icon.png"
-                                          alt="Phone"
-                                          className="w-[12px] h-[12px]"
-                                        />
-                                        <span className="text-[#4B5563] text-sm sm:text-base">
-                                          {facility.phone}
-                                        </span>
-                                      </div>
-
-                                      <div className="flex items-center gap-2">
-                                        <img
-                                          src="/icons/clock_icon.png"
-                                          alt="Clock"
-                                          className="w-[12px] h-[12px]"
-                                        />
-                                        <span className="text-[#4B5563] text-sm sm:text-base">
-                                          {facility.hours}
-                                        </span>
-                                      </div>
-                                    </div>
-
-                                    <motion.div
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                    >
-                                      <button
-                                        className="w-full sm:w-[136.76px] h-[43px] bg-[#D02B38] rounded-[4.78px] text-white font-inter font-medium text-[16.72px] leading-[23.89px] flex items-center justify-center text-center disabled:opacity-70"
-                                        onClick={() => handleViewDetails(facility)}
-                                        disabled={loadingFacilityId === facility.id}
-                                      >
-                                        {loadingFacilityId === facility.id ? (
-                                          <div className="loader border-t-2 border-white border-solid rounded-full w-[18px] h-[18px] animate-spin"></div>
-                                        ) : (
-                                          "View Details"
-                                        )}
-                                      </button>
-                                    </motion.div>
-                                  </div>
-                                </div>
-                              </div>
-                            </motion.div>
-                          ))}
-
-                          {/* Pagination */}
-                          {displayTotal > ITEMS_PER_PAGE && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full"
-                            >
-                              <div className="text-sm text-gray-600 mb-3 sm:mb-0">
-                                {usingFilters && filterApplied ? (
-                                  <span>
-                                    Showing <strong>{startFacility}-{endFacility}</strong> of{" "}
-                                    <strong>{displayTotal} filtered</strong> facilities
-                                    {totalCountFromProvider > displayTotal && (
-                                      <span> (from {totalCountFromProvider} total)</span>
-                                    )}
-                                  </span>
-                                ) : (
-                                  <span>
-                                    Showing <strong>{startFacility}-{endFacility}</strong> of{" "}
-                                    <strong>{displayTotal} total</strong> facilities
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
-                                {/* Previous Button */}
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  disabled={currentPage === 1}
-                                  onClick={goToPrevPage}
-                                  className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
-                                >
-                                  Prev
-                                </motion.button>
-
-                                {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
-                                  <motion.button
-                                    key={idx}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => typeof page === "number" && goToPage(page)}
-                                    className={`px-3 py-2 rounded-md text-sm sm:text-base ${
-                                      currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
-                                    }`}
-                                    disabled={page === "..."}
-                                  >
-                                    {page}
-                                  </motion.button>
-                                ))}
-
-                                {/* Next Button */}
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  disabled={currentPage === totalFacilityPages}
-                                  onClick={goToNextPage}
-                                  className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
-                                >
-                                  Next
-                                </motion.button>
-                              </div>
-                            </motion.div>
-                          )}
+                    {/* Google Ad - Show randomly in middle when more than 3 facilities */}
+                    {filteredFacilities.length > 3 && 
+                     index === Math.floor(filteredFacilities.length / 2) && 
+                     Math.random() > 0.5 && (
+                      <motion.div
+                        key="google-ad-middle"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200"
+                      >
+                        <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
+                          <div className="text-center text-gray-500 mb-4">
+                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">Advertisement</span>
+                          </div>
+                          {/* Google Ads Unit */}
+                          <AdUnit 
+                            adSlot="middle-rectangle" 
+                            layout="rectangle" 
+                            className="w-full h-[200px]"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                    
+                    <motion.div
+                      key={facility.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      onClick={() => handleCardClick(facility)}
+                      className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 cursor-pointer ${
+                        selectedFacilityId?.toString() === facility.id
+                          ? "border-l-[4.78px] border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
+                          : ""
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row">
+                        {/* Image */}
+                        <div className="w-full sm:w-1/4 flex justify-center sm:justify-start mb-4 sm:mb-0">
+                          <img
+                            src={facility.imageUrl || "/Default_image.png"}
+                            alt={facility.name}
+                            className="w-[114px] h-[114px] object-cover rounded-[9.56px]"
+                          />
                         </div>
 
-                        {/* Right Column - Map */}
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3 }}
-                          className="w-full lg:w-[780px] h-[400px] lg:h-[677px] bg-white rounded-[9.56px] shadow flex items-center justify-center sticky top-6 overflow-hidden"
-                        >
-                          {GOOGLE_MAPS_API_KEY ? (
-                            <MapView
-                              facilities={facilityCoords}
-                              centerCoords={mapCenter}
-                              googleMapsApiKey={GOOGLE_MAPS_API_KEY}
-                              locationName={locationName}
-                              markerIconUrl="/icons/red_hospital_pin.png"
-                            />
-                          ) : (
-                            <img
-                              src="/map_placeholder.png"
-                              alt="Map"
-                              className="w-full h-full object-cover rounded-[9.56px]"
-                            />
-                          )}
-                        </motion.div>
-                      </>
-                    )}
-                  </>
-                )}
+                        {/* Details */}
+                        <div className="flex-1 sm:ml-5">
+                          <h3 className="text-[#111827] font-bold text-[20px] sm:text-[23.89px] leading-[28px] sm:leading-[33.45px]">
+                            {facility.name}
+                          </h3>
 
-                {/* Map Only Mode */}
-                {viewMode === "mapOnly" && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <img
+                              src="/icons/location_icon_new.png"
+                              alt="Location Icon"
+                              className="w-[12px] h-[16px]"
+                            />
+                            <span className="text-[#4B5563] text-sm sm:text-base">
+                              {facility.distance != null
+                                ? `${facility.distance.toFixed(1)} miles`
+                                : ""}
+                              {facility.address ? ` • ${facility.address}` : ""}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-3">
+                            <div className="flex items-center gap-2">
+                              <img
+                                src="/icons/Bed_icon.png"
+                                alt="Beds Icon"
+                                className="w-[18px] h-[12px]"
+                              />
+                              <span className="text-[#4B5563] text-sm sm:text-base">
+                                {facility.beds} beds
+                              </span>
+                            </div>
+
+                            <div className="flex flex-row items-center gap-2 sm:gap-3">
+                              <span className="text-[#4B5563] text-sm sm:text-base">
+                                {facility.isNonProfit ? "Non-Profit" : "For-Profit"}
+                              </span>
+                              <span
+                                className={`text-sm sm:text-base font-medium ${getStatusColor(facility.status)}`}
+                              >
+                                {facility.status}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Pros & Cons */}
+                          <div className="bg-[#F5F5F5] rounded-md p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                            <div className="flex items-start gap-2">
+                              <span className="text-green-600 font-medium">✓</span>
+                              <p className="text-green-600 text-sm leading-5">
+                                Pros:{" "}
+                                {facility.pros
+                                  ? facility.pros.split(" ").length > 10
+                                    ? facility.pros.split(" ").slice(0, 10).join(" ") + "..."
+                                    : facility.pros
+                                  : "No pros available"}
+                              </p>
+                            </div>
+
+                            <div className="flex items-start gap-2">
+                              <span className="text-red-600 font-medium">✗</span>
+                              <p className="text-red-600 text-sm leading-5">
+                                Cons:{" "}
+                                {facility.cons
+                                  ? facility.cons.split(" ").length > 10
+                                    ? facility.cons.split(" ").slice(0, 10).join(" ") + "..."
+                                    : facility.cons
+                                  : "No cons available"}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Contact + Button */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src="/icons/phone_icon.png"
+                                  alt="Phone"
+                                  className="w-[12px] h-[12px]"
+                                />
+                                <span className="text-[#4B5563] text-sm sm:text-base">
+                                  {facility.phone}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src="/icons/clock_icon.png"
+                                  alt="Clock"
+                                  className="w-[12px] h-[12px]"
+                                />
+                                <span className="text-[#4B5563] text-sm sm:text-base">
+                                  {facility.hours}
+                                </span>
+                              </div>
+                            </div>
+
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <button
+                                className="w-full sm:w-[136.76px] h-[43px] bg-[#D02B38] rounded-[4.78px] text-white font-inter font-medium text-[16.72px] leading-[23.89px] flex items-center justify-center text-center disabled:opacity-70"
+                                onClick={() => handleViewDetails(facility)}
+                                disabled={loadingFacilityId === facility.id}
+                              >
+                                {loadingFacilityId === facility.id ? (
+                                  <div className="loader border-t-2 border-white border-solid rounded-full w-[18px] h-[18px] animate-spin"></div>
+                                ) : (
+                                  "View Details"
+                                )}
+                              </button>
+                            </motion.div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </>
+                ))}
+
+                {/* Pagination */}
+                {displayTotal > ITEMS_PER_PAGE && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="w-full h-[677px] bg-white rounded-[12.56px] shadow flex items-center justify-center overflow-hidden"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-md shadow-sm p-4 mt-4 w-full"
                   >
-                    <MapView
-                      facilities={facilityCoords}
-                      centerCoords={mapCenter}
-                      googleMapsApiKey={GOOGLE_MAPS_API_KEY!}
-                      locationName={locationName}
-                      markerIconUrl="/icons/red_hospital_pin.png"
-                    />
+                    <div className="text-sm text-gray-600 mb-3 sm:mb-0">
+                      {usingFilters && filterApplied ? (
+                        <span>
+                          Showing <strong>{startFacility}-{endFacility}</strong> of{" "}
+                          <strong>{displayTotal} filtered</strong> facilities
+                          {totalCountFromProvider > displayTotal && (
+                            <span> (from {totalCountFromProvider} total)</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span>
+                          Showing <strong>{startFacility}-{endFacility}</strong> of{" "}
+                          <strong>{displayTotal} total</strong> facilities
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
+                      {/* Previous Button */}
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={currentPage === 1}
+                        onClick={goToPrevPage}
+                        className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        Prev
+                      </motion.button>
+
+                      {getPageNumbers(currentPage, totalFacilityPages).map((page, idx) => (
+                        <motion.button
+                          key={idx}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => typeof page === "number" && goToPage(page)}
+                          className={`px-3 py-2 rounded-md text-sm sm:text-base ${
+                            currentPage === page ? "bg-[#D02B38] text-white" : "border hover:bg-gray-100"
+                          }`}
+                          disabled={page === "..."}
+                        >
+                          {page}
+                        </motion.button>
+                      ))}
+
+                      {/* Next Button */}
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={currentPage === totalFacilityPages}
+                        onClick={goToNextPage}
+                        className="px-3 py-2 border rounded-md text-sm sm:text-base hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        Next
+                      </motion.button>
+                    </div>
                   </motion.div>
                 )}
-              </>
-            )}
+              </div>
 
-            {/* Right Skyscraper Ad */}
-            {/* <div className="hidden md:flex justify-center items-start w-[120px] my-18 lg:w-[120px]">
-              <AdUnit adSlot="right-skyscraper" layout="skyscraper" />
-            </div> */}
-          </motion.section>
+              {/* Right Column - Map */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="w-full lg:w-[780px] h-[400px] lg:h-[677px] bg-white rounded-[9.56px] shadow flex items-center justify-center sticky top-6 overflow-hidden"
+              >
+                {GOOGLE_MAPS_API_KEY ? (
+                  <MapView
+                    facilities={facilityCoords}
+                    centerCoords={mapCenter}
+                    googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                    locationName={locationName}
+                    markerIconUrl="/icons/red_hospital_pin.png"
+                  />
+                ) : (
+                  <img
+                    src="/map_placeholder.png"
+                    alt="Map"
+                    className="w-full h-full object-cover rounded-[9.56px]"
+                  />
+                )}
+              </motion.div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* Map Only Mode */}
+      {viewMode === "mapOnly" && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full h-[677px] bg-white rounded-[12.56px] shadow flex items-center justify-center overflow-hidden"
+        >
+          <MapView
+            facilities={facilityCoords}
+            centerCoords={mapCenter}
+            googleMapsApiKey={GOOGLE_MAPS_API_KEY!}
+            locationName={locationName}
+            markerIconUrl="/icons/red_hospital_pin.png"
+          />
+        </motion.div>
+      )}
+    </>
+  )}
+</motion.section>
 
           {/* Search Tips & Resources Section */}
           <motion.section
