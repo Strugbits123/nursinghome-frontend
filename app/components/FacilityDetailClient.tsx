@@ -1321,9 +1321,125 @@ const hasSocialMentions = (facility: FacilityData | null): boolean => {
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 px-4 sm:px-6 md:px-10">
-      {/* Cards remain the same as before */}
-      {/* ... your existing 3 cards code ... */}
-    </div>
+
+                {/* Capacity & Rooms Card */}
+                <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
+                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
+                    Capacity & Rooms
+                  </h3>
+                  <div className="space-y-3 sm:space-y-4">
+                    {[
+                      { 
+                        label: "Total Beds:", 
+                        value: facility?.number_of_certified_beds?.toString() || "N/A" 
+                      },
+                      { 
+                        label: "Average Residents:", 
+                        value: facility?.average_number_of_residents_per_day?.toString() || "N/A" 
+                      },
+                      { 
+                        label: "Current Occupancy:", 
+                        value: calculateOccupancyRate() 
+                      },
+                      { 
+                        label: "CCRC:", 
+                        value: facility?.continuing_care_retirement_community === "Y" ? "Yes" : "No" 
+                      },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center">
+                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-[#4B5563]">
+                          {item.label}
+                        </span>
+                        <span className="font-inter font-medium text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black text-right">
+                          {item.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Contact Information Card */}
+                <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
+                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
+                    Contact Information
+                  </h3>
+                  <div className="space-y-3 sm:space-y-4">
+                    {[
+                      { 
+                        icon: "/icons/phone_icon.png", 
+                        label: formatPhoneNumber(facility?.telephone_number || ""), 
+                        width: 19, 
+                        height: 19 
+                      },
+                      { 
+                        icon: "/icons/email_icon.png", 
+                        label: generateEmailFromFacility(facility), 
+                        width: 19, 
+                        height: 15 
+                      },
+                      { 
+                        icon: "/icons/location_icon (2).png", 
+                        label: fullAddress || "Address not available", 
+                        width: 14, 
+                        height: 19 
+                      },
+                      { 
+                        icon: "/icons/earth_icon.png", 
+                        label: getWebsiteFromName(facility?.provider_name || ""), 
+                        width: 19, 
+                        height: 19 
+                      },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-start sm:items-center gap-3">
+                        <div className="flex-shrink-0 mt-0.5 sm:mt-0">
+                          <Image 
+                            src={item.icon} 
+                            alt="" 
+                            width={item.width} 
+                            height={item.height}
+                            className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                          />
+                        </div>
+                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black break-words flex-1">
+                          {item.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Visiting Hours Card */}
+                <div className="w-full h-auto bg-white rounded-[9.55px] shadow-sm p-4 sm:p-6">
+                  <h3 className="font-inter font-bold text-[18px] sm:text-[20px] lg:text-[23.87px] leading-[24px] sm:leading-[26px] lg:leading-[33.42px] text-black mb-4 sm:mb-5">
+                    Visiting Hours
+                  </h3>
+                  <div className="space-y-3 sm:space-y-4">
+                    {generateVisitingHours(facility).map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center">
+                        <span className="font-inter font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-[#4B5563]">
+                          {item.label}
+                        </span>
+                        <span className="font-inter font-medium text-[14px] sm:text-[15px] lg:text-[16px] leading-[20px] sm:leading-[22px] lg:leading-[24px] text-black text-right">
+                          {item.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center mt-6 sm:mt-8 gap-2 sm:gap-3">
+                    <Image 
+                      src="/icons/expectation_icon.png" 
+                      alt="Note" 
+                      width={16} 
+                      height={16}
+                      className="w-4 h-4 sm:w-[16px] sm:h-[16px]"
+                    />
+                    <p className="font-inter font-normal text-[12px] sm:text-[13px] lg:text-[14px] leading-[16px] sm:leading-[18px] lg:leading-[20px] text-[#4B5563]">
+                      {getVisitingHoursNote(facility)}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
   </div>
 </div>
 
