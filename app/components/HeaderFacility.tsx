@@ -1,14 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
-import AuthModal from "./AuthModal"; // ✅ adjust the import if your modal path differs
+import AuthModal from "./AuthModal";
+import SponsoredModal from "./SponsoredModal"; 
 import Image from "next/image";
 import Link from "next/link";
 
 export default function HeaderFacility() {
   const [openAuth, setOpenAuth] = useState(false);
+  const [openSponsored, setOpenSponsored] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // 🔒 check login state once on mount
+  // check login state once on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
@@ -17,6 +19,15 @@ export default function HeaderFacility() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsAuthenticated(false);
+  };
+
+  const handleSponsoredClick = () => {
+    // If user is not authenticated, open auth modal first
+    // if (!isAuthenticated) {
+      // setOpenAuth(true);
+    // } else {
+      setOpenSponsored(true);
+    // }
   };
 
   return (
@@ -36,6 +47,16 @@ export default function HeaderFacility() {
 
         {/* ✅ Right Side Buttons */}
         <div className="flex items-center justify-end space-x-2 sm:space-x-6">
+          {/* ✅ Sponsored Facility Button */}
+          <button
+            onClick={handleSponsoredClick}
+            className="flex items-center w-auto h-[45.2px] rounded-md bg-white hover:bg-gray-100 px-3 sm:px-4 transition-colors duration-200"
+          >
+            <span className="font-jost font-semibold text-[12px] sm:text-[14px] leading-[15.26px] tracking-[0.23px] capitalize text-[#C71F37]">
+             Sponsored Facility
+            </span>
+          </button>
+
           {isAuthenticated ? (
             <div
               onClick={handleLogout}
@@ -81,6 +102,12 @@ export default function HeaderFacility() {
             setIsAuthenticated(!!localStorage.getItem("token"));
           }
         }}
+      />
+
+      {/* ✅ Sponsored Facility Modal */}
+      <SponsoredModal
+        open={openSponsored}
+        onOpenChange={setOpenSponsored}
       />
     </header>
   );

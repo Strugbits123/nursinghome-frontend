@@ -32,7 +32,7 @@ export default function FacilitiesList() {
 
   useEffect(() => {
     async function loadFacilities() {
-      const res = await fetch("/api/facilities?zip=90001");
+      const res = await fetch("/facilities?zip=90001");
       const data = await res.json();
       setFacilities(data.items || []);
     }

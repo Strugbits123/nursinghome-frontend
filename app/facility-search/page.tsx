@@ -18,7 +18,7 @@ import HeaderFacility from '../components/HeaderFacility';
 import { motion, AnimatePresence } from "framer-motion";
 import RecommendationModal from '../components/RecommendationModal';
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews`;
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/facilities/with-reviews`;
 const ITEMS_PER_PAGE = 8;
 
 function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
@@ -156,6 +156,20 @@ export default function FacilitySearchPage() {
       }
     }
   }, [initialFacilities, totalCountFromProvider, locationName, usingFilters, filterApplied, currentPage]);
+
+  // ✅ FIXED: Get display total - use API total when available
+  // const displayTotal = useMemo(() => {
+  //   if (usingFilters && filterApplied) {
+  //     // When filters are active, show the total from API response
+  //     console.log("📊 Using filtered total:", totalFacilities);
+  //     return totalFacilities;
+  //   } else {
+  //     // When no filters, show the total from provider or all facilities count
+  //     const total = totalCountFromProvider > 0 ? totalCountFromProvider : allFacilities.length;
+  //     console.log("📊 Using original total:", total);
+  //     return total;
+  //   }
+  // }, [usingFilters, filterApplied, totalFacilities, totalCountFromProvider, allFacilities.length]);
 
   // ✅ FIXED: Get display total - use API total when available
   const displayTotal = useMemo(() => {
@@ -324,6 +338,38 @@ export default function FacilitySearchPage() {
     }
   };
 
+  // const clearFilters = useCallback(() => {
+  //   console.log("🔄 Clearing filters, resetting to cached data");
+
+  //   setFilters({
+  //     city: "",
+  //     state: "",
+  //     ratingMin: "",
+  //     ownership: "",
+  //     locationName: "",
+  //     distance: "",
+  //     beds: "",
+  //   });
+
+  //   // ✅ Reset all filter states
+  //   setUsingFilters(false);
+  //   setFilterApplied(false);
+  //   setCurrentPage(1);
+
+  //   // ✅ Reset to original context data immediately
+  //   setFilteredFacilities(initialFacilities);
+  //   setPaginatedFacilities(initialFacilities.slice(0, ITEMS_PER_PAGE));
+  //   setTotalFacilities(totalCountFromProvider || initialFacilities.length);
+
+  //   console.log("✅ Filters cleared, showing cached data:", {
+  //     originalCount: initialFacilities.length,
+  //     totalCountFromProvider,
+  //     paginatedCount: initialFacilities.slice(0, ITEMS_PER_PAGE).length
+  //   });
+
+  //   toast.success("Filters cleared!");
+  // }, [initialFacilities, totalCountFromProvider]);
+
   const clearFilters = useCallback(() => {
     console.log("🔄 Clearing filters, resetting to cached data");
 
@@ -337,7 +383,7 @@ export default function FacilitySearchPage() {
       beds: "",
     });
 
-    // ✅ Reset all filter states
+    // ✅ Reset all filter states TOGETHER
     setUsingFilters(false);
     setFilterApplied(false);
     setCurrentPage(1);
@@ -350,11 +396,13 @@ export default function FacilitySearchPage() {
     console.log("✅ Filters cleared, showing cached data:", {
       originalCount: initialFacilities.length,
       totalCountFromProvider,
-      paginatedCount: initialFacilities.slice(0, ITEMS_PER_PAGE).length
+      paginatedCount: initialFacilities.slice(0, ITEMS_PER_PAGE).length,
+      displayTotal: totalCountFromProvider || initialFacilities.length
     });
 
     toast.success("Filters cleared!");
   }, [initialFacilities, totalCountFromProvider]);
+
 
   // ✅ FIXED: Handle context updates after clearing filters
   useEffect(() => {
@@ -373,153 +421,527 @@ export default function FacilitySearchPage() {
   }, [initialFacilities, totalCountFromProvider, usingFilters, filterApplied, currentPage]);
 
 
+  // // ✅ FIXED: Filter functions WITHOUT authentication token
+  // const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
+  //   const appliedFilters = newFilters || filters;
+  //   setIsFiltering(true);
+
+  //   try {
+  //     const hasActiveFilters = Object.values(appliedFilters).some(value =>
+  //       value && value.toString().trim() !== '' && !['locationName', 'city', 'state'].includes(value.toString())
+  //     );
+
+  //     // 🔄 Reset filters - use clearFilters for consistency
+  //     if (!hasActiveFilters) {
+  //       clearFilters();
+  //       setIsFiltering(false);
+  //       return;
+  //     }
+
+  //     // ✅ FIXED: Build filter params without duplication
+  //     const filterParams: any = {
+  //       // Always use context locationName as primary
+  //       locationName: locationName || appliedFilters.locationName || '',
+  //     };
+
+  //     // Add other filters from appliedFilters, excluding locationName to avoid duplication
+  //     Object.entries(appliedFilters).forEach(([key, value]) => {
+  //       if (key !== 'locationName' && value && value.toString().trim() !== '') {
+  //         filterParams[key] = value;
+  //       }
+  //     });
+
+  //     // Remove empty locationName if no location is available
+  //     if (!filterParams.locationName) {
+  //       delete filterParams.locationName;
+  //     }
+
+  //     console.log("🔍 Filtering with params:", filterParams);
+
+  //     // Call the filtered pagination function to get proper total count
+  //     await fetchFilteredFacilitiesWithPagination(filterParams, 1);
+
+  //     setUsingFilters(true);
+  //     setFilterApplied(true);
+  //     setCurrentPage(1);
+
+  //     console.log("✅ Filters applied:", {
+  //       locationName: filterParams.locationName,
+  //       activeFilters: filterParams
+  //     });
+
+  //     toast.success(`Found ${totalFacilities} facilities`);
+
+  //   } catch (err: any) {
+  //     console.error("❌ Filter fetch failed:", err);
+  //     toast.error(err.message || "Error applying filters");
+  //   } finally {
+  //     setIsFiltering(false);
+  //   }
+  // };
+
   // ✅ FIXED: Filter functions WITHOUT authentication token
-  const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
-    const appliedFilters = newFilters || filters;
-    setIsFiltering(true);
+const fetchFilteredFacilities = async (newFilters?: typeof filters) => {
+  const appliedFilters = newFilters || filters;
+  setIsFiltering(true);
 
-    try {
-      const hasActiveFilters = Object.values(appliedFilters).some(value =>
-        value && value.toString().trim() !== '' && !['locationName', 'city', 'state'].includes(value.toString())
-      );
+  try {
+    const hasActiveFilters = Object.values(appliedFilters).some(value =>
+      value && value.toString().trim() !== '' && !['locationName', 'city', 'state'].includes(value.toString())
+    );
 
-      // 🔄 Reset filters - use clearFilters for consistency
-      if (!hasActiveFilters) {
-        clearFilters();
-        setIsFiltering(false);
-        return;
-      }
-
-      // ✅ FIXED: Build filter params without duplication
-      const filterParams: any = {
-        // Always use context locationName as primary
-        locationName: locationName || appliedFilters.locationName || '',
-      };
-
-      // Add other filters from appliedFilters, excluding locationName to avoid duplication
-      Object.entries(appliedFilters).forEach(([key, value]) => {
-        if (key !== 'locationName' && value && value.toString().trim() !== '') {
-          filterParams[key] = value;
-        }
-      });
-
-      // Remove empty locationName if no location is available
-      if (!filterParams.locationName) {
-        delete filterParams.locationName;
-      }
-
-      console.log("🔍 Filtering with params:", filterParams);
-
-      // Call the filtered pagination function to get proper total count
-      await fetchFilteredFacilitiesWithPagination(filterParams, 1);
-
-      setUsingFilters(true);
-      setFilterApplied(true);
-      setCurrentPage(1);
-
-      console.log("✅ Filters applied:", {
-        locationName: filterParams.locationName,
-        activeFilters: filterParams
-      });
-
-      toast.success(`Found ${totalFacilities} facilities`);
-
-    } catch (err: any) {
-      console.error("❌ Filter fetch failed:", err);
-      toast.error(err.message || "Error applying filters");
-    } finally {
+    // 🔄 Reset filters - use clearFilters for consistency
+    if (!hasActiveFilters) {
+      clearFilters();
       setIsFiltering(false);
+      return;
     }
-  };
 
-  // ✅ FIXED: Filtered pagination WITHOUT authentication token
-  const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
-    setIsPageLoading(true);
+    // ✅ FIXED: Build filter params without duplication
+    const filterParams: any = {
+      // Always use context locationName as primary
+      locationName: locationName || appliedFilters.locationName || '',
+    };
 
-    try {
-      const params = new URLSearchParams();
-      params.append("page", page.toString());
-      params.append("limit", ITEMS_PER_PAGE.toString());
-
-      // ✅ FIXED: Use context locationName first, then fallback
-      let location = locationName?.trim() || appliedFilters.locationName?.trim() || "";
-      if (location) {
-        const cleanLocation = location.replace(/^\+/, "").replace(/\s+/g, "_");
-        params.append("locationName", cleanLocation);
-        console.log("📍 Using locationName:", cleanLocation);
+    // Add other filters from appliedFilters, excluding locationName to avoid duplication
+    Object.entries(appliedFilters).forEach(([key, value]) => {
+      if (key !== 'locationName' && value && value.toString().trim() !== '') {
+        filterParams[key] = value;
       }
+    });
 
-      // Add other filters, excluding locationName to avoid duplication
-      Object.entries(appliedFilters).forEach(([key, value]) => {
-        if (key !== 'locationName' && typeof value === "string" && value.trim()) {
-          const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
-          params.append(key, cleanValue);
-        }
-      });
+    // Remove empty locationName if no location is available
+    if (!filterParams.locationName) {
+      delete filterParams.locationName;
+    }
 
-      // Add coordinates if available
-      if (coords?.lat && coords?.lng) {
-        params.append("userLat", coords.lat.toString());
-        params.append("userLng", coords.lng.toString());
+    console.log("🔍 Filtering with params:", filterParams);
+
+    // ✅ FIXED: Set filter states BEFORE making the API call
+    setUsingFilters(true);
+    setFilterApplied(true);
+    setCurrentPage(1);
+
+    // Call the filtered pagination function to get proper total count
+    await fetchFilteredFacilitiesWithPagination(filterParams, 1);
+
+    console.log("✅ Filters applied:", {
+      locationName: filterParams.locationName,
+      activeFilters: filterParams
+    });
+
+    toast.success(`Found ${totalFacilities} facilities`);
+
+  } catch (err: any) {
+    console.error("❌ Filter fetch failed:", err);
+    toast.error(err.message || "Error applying filters");
+  } finally {
+    setIsFiltering(false);
+  }
+};
+  // // ✅ FIXED: Filtered pagination WITHOUT authentication token
+  // const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
+  //   setIsPageLoading(true);
+
+  //   try {
+  //     const params = new URLSearchParams();
+  //     params.append("page", page.toString());
+  //     params.append("limit", ITEMS_PER_PAGE.toString());
+
+  //     // ✅ FIXED: Use context locationName first, then fallback
+  //     let location = locationName?.trim() || appliedFilters.locationName?.trim() || "";
+  //     if (location) {
+  //       const cleanLocation = location.replace(/^\+/, "").replace(/\s+/g, "_");
+  //       params.append("locationName", cleanLocation);
+  //       console.log("📍 Using locationName:", cleanLocation);
+  //     }
+
+  //     // Add other filters, excluding locationName to avoid duplication
+  //     Object.entries(appliedFilters).forEach(([key, value]) => {
+  //       if (key !== 'locationName' && typeof value === "string" && value.trim()) {
+  //         const cleanValue = value.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+  //         params.append(key, cleanValue);
+  //       }
+  //     });
+
+  //     // Add coordinates if available
+  //     if (coords?.lat && coords?.lng) {
+  //       params.append("userLat", coords.lat.toString());
+  //       params.append("userLng", coords.lng.toString());
+  //     }
+
+  //     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/facilities/filter-with-reviews?${params.toString()}`;
+  //     console.log("🌐 Fetching filtered facilities WITHOUT auth:", {
+  //       page,
+  //       locationName: params.get('locationName'),
+  //       params: params.toString()
+  //     });
+
+  //     const res = await fetch(apiUrl, {
+  //       // ✅ REMOVED: No authentication headers
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+
+  //     if (!res.ok) {
+  //       const text = await res.text();
+  //       throw new Error(`HTTP ${res.status}: ${text}`);
+  //     }
+
+  //     const data = await res.json();
+  //     const facilitiesData = data.data?.facilities || data.facilities || [];
+
+  //     // ✅ FIXED: Use the totalCount from pagination, not the facilitiesData length
+  //     const totalFromAPI = data.data?.pagination?.totalCount || data.total || data.totalCount || 0;
+
+  //     if (!facilitiesData || facilitiesData.length === 0) {
+  //       setPaginatedFacilities([]);
+  //       setTotalFacilities(0);
+  //       setIsPageLoading(false);
+  //       return;
+  //     }
+
+  //     const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
+  //       mapRawFacilityToCard(f, coords)
+  //     );
+
+  //     setPaginatedFacilities(mappedFacilities);
+
+  //     // ✅ FIXED: Use the totalCount from API response pagination
+  //     setTotalFacilities(totalFromAPI);
+
+  //     console.log("✅ Filtered pagination response:", {
+  //       page,
+  //       totalFromAPI,
+  //       paginatedCount: mappedFacilities.length,
+  //       facilitiesDataCount: facilitiesData.length,
+  //       pagination: data.data?.pagination
+  //     });
+
+  //   } catch (err: any) {
+  //     console.error("❌ Filter pagination failed:", err);
+  //     setPaginatedFacilities([]);
+  //     setTotalFacilities(0);
+  //   } finally {
+  //     setIsPageLoading(false);
+  //   }
+  // };
+
+
+  // ✅ FIXED: Filtered pagination WITH immediate state updates
+const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
+  setIsPageLoading(true);
+
+  try {
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("limit", ITEMS_PER_PAGE.toString());
+
+    // ✅ LOCATION: Use context locationName first, then fallback
+    let location = locationName?.trim() || appliedFilters.locationName?.trim() || "";
+    if (location) {
+      const cleanLocation = location.replace(/^\+/, "").replace(/\s+/g, "_");
+      params.append("locationName", cleanLocation);
+      console.log("📍 Using locationName:", cleanLocation);
+    }
+
+    // ✅ DISTANCE: Add distanceKm parameter
+    if (appliedFilters.distance && appliedFilters.distance.trim()) {
+      params.append("distanceKm", appliedFilters.distance.trim());
+      console.log("📏 Using distance:", appliedFilters.distance, "km");
+    }
+
+    // ✅ RATING: Add ratingMin parameter
+    if (appliedFilters.ratingMin && appliedFilters.ratingMin.trim()) {
+      params.append("ratingMin", appliedFilters.ratingMin.trim());
+      console.log("⭐ Using rating min:", appliedFilters.ratingMin);
+    }
+
+    // ✅ BEDS: Add bedsMin and bedsMax based on bed capacity selection
+    if (appliedFilters.beds && appliedFilters.beds.trim()) {
+      const bedsValue = appliedFilters.beds.trim();
+      console.log("🛏️ Using bed capacity:", bedsValue);
+      
+      switch (bedsValue) {
+        case "<20":
+          params.append("bedsMin", "1");
+          params.append("bedsMax", "19");
+          break;
+        case "20-50":
+          params.append("bedsMin", "20");
+          params.append("bedsMax", "50");
+          break;
+        case "50-100":
+          params.append("bedsMin", "50");
+          params.append("bedsMax", "100");
+          break;
+        case "100+":
+          params.append("bedsMin", "100");
+          // No max for 100+
+          break;
+        default:
+          // For custom values or other formats
+          params.append("beds", bedsValue);
       }
+    }
 
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/filter-with-reviews?${params.toString()}`;
-      console.log("🌐 Fetching filtered facilities WITHOUT auth:", {
-        page,
-        locationName: params.get('locationName'),
-        params: params.toString()
-      });
+    // ✅ OWNERSHIP: Add ownership parameter
+    if (appliedFilters.ownership && appliedFilters.ownership.trim()) {
+      // Convert to API format (comma-separated if multiple)
+      const ownershipValue = appliedFilters.ownership.trim();
+      params.append("ownership", ownershipValue);
+      console.log("🏢 Using ownership:", ownershipValue);
+    }
 
-      const res = await fetch(apiUrl, {
-        // ✅ REMOVED: No authentication headers
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // ✅ CITY: Add city parameter
+    if (appliedFilters.city && appliedFilters.city.trim()) {
+      const cleanCity = appliedFilters.city.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+      params.append("city", cleanCity);
+      console.log("🏙️ Using city:", cleanCity);
+    }
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
+    // ✅ STATE: Add state parameter
+    if (appliedFilters.state && appliedFilters.state.trim()) {
+      const cleanState = appliedFilters.state.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+      params.append("state", cleanState.toUpperCase()); // Convert to uppercase for consistency
+      console.log("🗽 Using state:", cleanState);
+    }
 
-      const data = await res.json();
-      const facilitiesData = data.data?.facilities || data.facilities || [];
+    // ✅ COORDINATES: Add coordinates if available (alternative to locationName)
+    if (coords?.lat && coords?.lng) {
+      params.append("userLat", coords.lat.toString());
+      params.append("userLng", coords.lng.toString());
+      console.log("🎯 Using coordinates:", coords.lat, coords.lng);
+    }
 
-      // ✅ FIXED: Use the totalCount from pagination, not the facilitiesData length
-      const totalFromAPI = data.data?.pagination?.totalCount || data.total || data.totalCount || 0;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/facilities/filter-with-reviews?${params.toString()}`;
+    
+    console.log("🌐 Fetching filtered facilities with ALL filters:", {
+      page,
+      locationName: params.get('locationName'),
+      distanceKm: params.get('distanceKm'),
+      ratingMin: params.get('ratingMin'),
+      bedsMin: params.get('bedsMin'),
+      bedsMax: params.get('bedsMax'),
+      ownership: params.get('ownership'),
+      city: params.get('city'),
+      state: params.get('state'),
+      userLat: params.get('userLat'),
+      userLng: params.get('userLng'),
+      fullUrl: apiUrl
+    });
 
-      if (!facilitiesData || facilitiesData.length === 0) {
-        setPaginatedFacilities([]);
-        setTotalFacilities(0);
-        setIsPageLoading(false);
-        return;
-      }
+    const res = await fetch(apiUrl, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
-        mapRawFacilityToCard(f, coords)
-      );
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
 
-      setPaginatedFacilities(mappedFacilities);
+    const data = await res.json();
+    const facilitiesData = data.data?.facilities || data.facilities || [];
 
-      // ✅ FIXED: Use the totalCount from API response pagination
-      setTotalFacilities(totalFromAPI);
+    // ✅ FIXED: Use the totalCount from pagination, not the facilitiesData length
+    const totalFromAPI = data.data?.pagination?.totalCount || data.total || data.totalCount || 0;
 
-      console.log("✅ Filtered pagination response:", {
-        page,
-        totalFromAPI,
-        paginatedCount: mappedFacilities.length,
-        facilitiesDataCount: facilitiesData.length,
-        pagination: data.data?.pagination
-      });
-
-    } catch (err: any) {
-      console.error("❌ Filter pagination failed:", err);
+    if (!facilitiesData || facilitiesData.length === 0) {
       setPaginatedFacilities([]);
       setTotalFacilities(0);
-    } finally {
+      // ✅ FIXED: Update filter states even for empty results
+      setUsingFilters(true);
+      setFilterApplied(true);
       setIsPageLoading(false);
+      return;
     }
-  };
+
+    const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
+      mapRawFacilityToCard(f, coords)
+    );
+
+    // ✅ FIXED: Update ALL states together to ensure consistency
+    setPaginatedFacilities(mappedFacilities);
+    setTotalFacilities(totalFromAPI);
+    setUsingFilters(true);
+    setFilterApplied(true);
+
+    console.log("✅ Filtered pagination response:", {
+      page,
+      totalFromAPI,
+      paginatedCount: mappedFacilities.length,
+      facilitiesDataCount: facilitiesData.length,
+      pagination: data.data?.pagination,
+      appliedFilters: appliedFilters
+    });
+
+  } catch (err: any) {
+    console.error("❌ Filter pagination failed:", err);
+    setPaginatedFacilities([]);
+    setTotalFacilities(0);
+    // Even on error, mark that we tried to apply filters
+    setUsingFilters(true);
+    setFilterApplied(true);
+  } finally {
+    setIsPageLoading(false);
+  }
+};
+
+
+//   // ✅ FIXED: Filtered pagination WITH all filters applied
+// const fetchFilteredFacilitiesWithPagination = async (appliedFilters: typeof filters, page: number = 1) => {
+//   setIsPageLoading(true);
+
+//   try {
+//     const params = new URLSearchParams();
+//     params.append("page", page.toString());
+//     params.append("limit", ITEMS_PER_PAGE.toString());
+
+//     // ✅ LOCATION: Use context locationName first, then fallback
+//     let location = locationName?.trim() || appliedFilters.locationName?.trim() || "";
+//     if (location) {
+//       const cleanLocation = location.replace(/^\+/, "").replace(/\s+/g, "_");
+//       params.append("locationName", cleanLocation);
+//       console.log("📍 Using locationName:", cleanLocation);
+//     }
+
+//     // ✅ DISTANCE: Add distanceKm parameter
+//     if (appliedFilters.distance && appliedFilters.distance.trim()) {
+//       params.append("distanceKm", appliedFilters.distance.trim());
+//       console.log("📏 Using distance:", appliedFilters.distance, "km");
+//     }
+
+//     // ✅ RATING: Add ratingMin parameter
+//     if (appliedFilters.ratingMin && appliedFilters.ratingMin.trim()) {
+//       params.append("ratingMin", appliedFilters.ratingMin.trim());
+//       console.log("⭐ Using rating min:", appliedFilters.ratingMin);
+//     }
+
+//     // ✅ BEDS: Add bedsMin and bedsMax based on bed capacity selection
+//     if (appliedFilters.beds && appliedFilters.beds.trim()) {
+//       const bedsValue = appliedFilters.beds.trim();
+//       console.log("🛏️ Using bed capacity:", bedsValue);
+      
+//       switch (bedsValue) {
+//         case "<20":
+//           params.append("bedsMin", "1");
+//           params.append("bedsMax", "19");
+//           break;
+//         case "20-50":
+//           params.append("bedsMin", "20");
+//           params.append("bedsMax", "50");
+//           break;
+//         case "50-100":
+//           params.append("bedsMin", "50");
+//           params.append("bedsMax", "100");
+//           break;
+//         case "100+":
+//           params.append("bedsMin", "100");
+//           // No max for 100+
+//           break;
+//         default:
+//           // For custom values or other formats
+//           params.append("beds", bedsValue);
+//       }
+//     }
+
+//     // ✅ OWNERSHIP: Add ownership parameter
+//     if (appliedFilters.ownership && appliedFilters.ownership.trim()) {
+//       // Convert to API format (comma-separated if multiple)
+//       const ownershipValue = appliedFilters.ownership.trim();
+//       params.append("ownership", ownershipValue);
+//       console.log("🏢 Using ownership:", ownershipValue);
+//     }
+
+//     // ✅ CITY: Add city parameter
+//     if (appliedFilters.city && appliedFilters.city.trim()) {
+//       const cleanCity = appliedFilters.city.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+//       params.append("city", cleanCity);
+//       console.log("🏙️ Using city:", cleanCity);
+//     }
+
+//     // ✅ STATE: Add state parameter
+//     if (appliedFilters.state && appliedFilters.state.trim()) {
+//       const cleanState = appliedFilters.state.trim().replace(/^\+/, "").replace(/\s+/g, "_");
+//       params.append("state", cleanState.toUpperCase()); // Convert to uppercase for consistency
+//       console.log("🗽 Using state:", cleanState);
+//     }
+
+//     // ✅ COORDINATES: Add coordinates if available (alternative to locationName)
+//     if (coords?.lat && coords?.lng) {
+//       params.append("userLat", coords.lat.toString());
+//       params.append("userLng", coords.lng.toString());
+//       console.log("🎯 Using coordinates:", coords.lat, coords.lng);
+//     }
+
+//     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/facilities/filter-with-reviews?${params.toString()}`;
+    
+//     console.log("🌐 Fetching filtered facilities with ALL filters:", {
+//       page,
+//       locationName: params.get('locationName'),
+//       distanceKm: params.get('distanceKm'),
+//       ratingMin: params.get('ratingMin'),
+//       bedsMin: params.get('bedsMin'),
+//       bedsMax: params.get('bedsMax'),
+//       ownership: params.get('ownership'),
+//       city: params.get('city'),
+//       state: params.get('state'),
+//       userLat: params.get('userLat'),
+//       userLng: params.get('userLng'),
+//       fullUrl: apiUrl
+//     });
+
+//     const res = await fetch(apiUrl, {
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//     });
+
+//     if (!res.ok) {
+//       const text = await res.text();
+//       throw new Error(`HTTP ${res.status}: ${text}`);
+//     }
+
+//     const data = await res.json();
+//     const facilitiesData = data.data?.facilities || data.facilities || [];
+
+//     // ✅ FIXED: Use the totalCount from pagination, not the facilitiesData length
+//     const totalFromAPI = data.data?.pagination?.totalCount || data.total || data.totalCount || 0;
+
+//     if (!facilitiesData || facilitiesData.length === 0) {
+//       setPaginatedFacilities([]);
+//       setTotalFacilities(0);
+//       setIsPageLoading(false);
+//       return;
+//     }
+
+//     const mappedFacilities: Facility[] = facilitiesData.map((f: RawFacility) =>
+//       mapRawFacilityToCard(f, coords)
+//     );
+
+//     setPaginatedFacilities(mappedFacilities);
+//     setTotalFacilities(totalFromAPI);
+
+//     console.log("✅ Filtered pagination response:", {
+//       page,
+//       totalFromAPI,
+//       paginatedCount: mappedFacilities.length,
+//       facilitiesDataCount: facilitiesData.length,
+//       pagination: data.data?.pagination,
+//       appliedFilters: appliedFilters
+//     });
+
+//   } catch (err: any) {
+//     console.error("❌ Filter pagination failed:", err);
+//     setPaginatedFacilities([]);
+//     setTotalFacilities(0);
+//   } finally {
+//     setIsPageLoading(false);
+//   }
+// };
 
   // Modal effects
   useEffect(() => {
@@ -694,7 +1116,7 @@ export default function FacilitySearchPage() {
               >
                 {/* Info Section */}
                 <div className="flex flex-col items-start flex-wrap gap-x-0 sm:gap-x-4 ml-0 md:ml-[90px] md:flex-1 md:min-w-[150px] lg:min-w-[250px]">
-                  <span className="font-inter font-medium text-[15px] sm:text-[17px] leading-[22px] sm:leading-[26px] text-[#111827] ml-2 sm:ml-[55px]">
+                  {/* <span className="font-inter font-medium text-[15px] sm:text-[17px] leading-[22px] sm:leading-[26px] text-[#111827] ml-2 sm:ml-[55px]">
                     {usingFilters && filterApplied ? (
                       <>
                         {displayTotal} Filtered Facilities Found
@@ -715,8 +1137,34 @@ export default function FacilitySearchPage() {
                             .replace(/\b\w/g, (char) => char.toUpperCase())}
                       </>
                     )}
-                  </span>
+                  </span> */}
 
+                    <span className="font-inter font-medium text-[15px] sm:text-[17px] leading-[22px] sm:leading-[26px] text-[#111827] ml-2 sm:ml-[55px]">
+                      {usingFilters && filterApplied ? (
+                        <>
+                          {displayTotal} Filtered Facilities Found
+                          {locationName && (
+                            <> in{" "}
+                              <span className="font-semibold">
+                                {locationName
+                                  .replace(/_/g, " ")
+                                  .replace(/\b\w/g, (char) => char.toUpperCase())}
+                              </span>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {displayTotal} Facilities Found in{" "}
+                          <span className="font-semibold">
+                            {locationName &&
+                              locationName
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (char) => char.toUpperCase())}
+                          </span>
+                        </>
+                      )}
+                    </span>
                   <div className="flex items-center gap-2 ml-2 sm:ml-13 mt-[2px] flex-shrink-0 md:ml-14">
                     <img
                       src="/icons/location_icon_new.png"
@@ -811,8 +1259,7 @@ export default function FacilitySearchPage() {
               ">
                 {/* Star Filter */}
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  
                 >
                   <FilterButton
                     iconLeft="/icons/stars_icon.png"
@@ -842,17 +1289,37 @@ export default function FacilitySearchPage() {
                     iconLeftHeight="16px"
                     redButton={true}
                   />
+                  {/* <FilterButton
+                    iconLeft="/icons/stars_icon.png"
+                    label={filters.ratingMin ? `${filters.ratingMin}+ Stars` : "Stars"}
+                    options={[5, 4, 3, 2, 1]}
+                    value={filters.ratingMin}
+                    onSelect={(val) => {
+                      const newFilters = { ...filters, ratingMin: val.toString() };
+                      setFilters(newFilters);
+                      fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                    }}
+                    onClear={() => {
+                      const newFilters = { ...filters, ratingMin: "" };
+                      setFilters(newFilters);
+                      fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                    }}
+                    className="flex items-center justify-center gap-2 w-[130px] h-[43px] rounded-[9.56px] bg-[#D02B38] px-3 font-inter font-medium text-[16.72px] leading-[23.89px] text-white"
+                    textWhite
+                    iconLeftWidth="18px"
+                    iconLeftHeight="16px"
+                    redButton={true}
+                  /> */}
                 </motion.div>
 
                 {/* Distance Filter */}
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+              
                 >
                   <FilterButton
                     iconLeft="/icons/location_icon_new.png"
                     iconRight="/icons/down_icon.png"
-                    label="Distance Km"
+                    label={filters.distance ? `${filters.distance} km` : "Distance Km"}
                     options={["1", "5", "10", "20", "50"]}
                     value={filters.distance}
                     onSelect={(val) => {
@@ -875,16 +1342,36 @@ export default function FacilitySearchPage() {
                     iconLeftWidth="14px"
                     iconLeftHeight="18px"
                     iconRightWidth="10px"
-                    iconRightHeight="10px"
+                    iconRightHeight="8px"
                   />
+                   {/* <FilterButton
+                      iconLeft="/icons/location_icon_new.png"
+                      iconRight="/icons/down_icon.png"
+                      label={filters.distance ? `${filters.distance} km` : "Distance Km"}
+                      options={["1", "5", "10", "20", "50"]}
+                      value={filters.distance}
+                      onSelect={(val) => {
+                        const newFilters = { ...filters, distance: val.toString() };
+                        setFilters(newFilters);
+                        fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                      }}
+                      onClear={() => {
+                        const newFilters = { ...filters, distance: "" };
+                        setFilters(newFilters);
+                        fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                      }}
+                      iconLeftWidth="14px"
+                      iconLeftHeight="18px"
+                      iconRightWidth="10px"
+                      iconRightHeight="8px"
+                    /> */}
                 </motion.div>
 
                 {/* Bed Capacity Filter */}
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+              
                 >
-                  <FilterButton
+                  {/* <FilterButton
                     iconLeft="/icons/Bed_icon.png"
                     iconRight="/icons/down_icon.png"
                     label="Bed Capacity"
@@ -909,70 +1396,127 @@ export default function FacilitySearchPage() {
                     }}
                     iconLeftWidth="23px"
                     iconLeftHeight="18px"
-                    iconRightWidth="12px"
-                    iconRightHeight="10px"
-                  />
+                    iconRightWidth="10px"
+                    iconRightHeight="8px"
+                  /> */}
+
+                  {/* <FilterButton
+                      iconLeft="/icons/Bed_icon.png"
+                      iconRight="/icons/down_icon.png"
+                      label="Bed Capacity"
+                      options={["<20", "20-50", "50-100", "100+"]}
+                      value={filters.beds}
+                      onSelect={(val) => {
+                        const newFilters = { ...filters, beds: val.toString() };
+                        setFilters(newFilters);
+                        fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                      }}
+                      onClear={() => {
+                        const newFilters = { ...filters, beds: "" };
+                        setFilters(newFilters);
+                        fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                      }}
+                      iconLeftWidth="23px"
+                      iconLeftHeight="18px"
+                      iconRightWidth="10px"
+                      iconRightHeight="8px"
+                    /> */}
+
+                    <FilterButton
+                      iconLeft="/icons/Bed_icon.png"
+                      iconRight="/icons/down_icon.png"
+                      label="Bed Capacity"
+                      options={["<20", "20-50", "50-100", "100+"]}
+                      value={filters.beds}
+                      onSelect={(val) => {
+                        const newFilters = { ...filters, beds: val.toString() };
+                        setFilters(newFilters);
+                        fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                      }}
+                      onClear={() => {
+                        const newFilters = { ...filters, beds: "" };
+                        setFilters(newFilters);
+                        
+                        const hasOtherFilters = Object.entries(newFilters).some(
+                          ([key, value]) => key !== 'beds' && value && value.toString().trim() !== ''
+                        );
+                        
+                        if (!hasOtherFilters) {
+                          clearFilters();
+                        } else {
+                          fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                        }
+                      }}
+                      iconLeftWidth="23px"
+                      iconLeftHeight="18px"
+                      iconRightWidth="10px"
+                      iconRightHeight="8px"
+                    />
                 </motion.div>
 
                 {/* Ownership Filter */}
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                 
                 >
                   <FilterButton
-                    iconLeft="/icons/building_icon.png"
-                    iconRight="/icons/down_icon.png"
-                    label="Ownership"
-                    options={["Non-Profit", "Private", "Government"]}
-                    value={filters.ownership}
-                    onSelect={(val) => {
-                      const newFilters = { ...filters, ownership: val.toString() };
-                      setFilters(newFilters);
-                      fetchFilteredFacilitiesWithPagination(newFilters, 1);
-                    }}
-                    onClear={() => {
-                      const newFilters = { ...filters, ownership: "" };
-                      setFilters(newFilters);
-                      const hasOtherFilters = Object.entries(newFilters).some(
-                        ([key, value]) => key !== 'ownership' && value && value.toString().trim() !== ''
-                      );
-                      if (!hasOtherFilters) {
-                        clearFilters();
-                      } else {
+                      iconLeft="/icons/building_icon.png"
+                      iconRight="/icons/down_icon.png"
+                      label="Ownership"
+                      options={["Non-Profit", "Private", "Government"]}
+                      value={filters.ownership}
+                      onSelect={(val) => {
+                        const newFilters = { ...filters, ownership: val.toString() };
+                        setFilters(newFilters);
                         fetchFilteredFacilitiesWithPagination(newFilters, 1);
-                      }
-                    }}
-                    iconLeftWidth="14px"
-                    iconLeftHeight="18px"
-                    iconRightWidth="10px"
-                    iconRightHeight="10px"
-                  />
+                      }}
+                      onClear={() => {
+                        const newFilters = { ...filters, ownership: "" };
+                        setFilters(newFilters);
+                        
+                        const hasOtherFilters = Object.entries(newFilters).some(
+                          ([key, value]) => key !== 'ownership' && value && value.toString().trim() !== ''
+                        );
+                        
+                        if (!hasOtherFilters) {
+                          clearFilters();
+                        } else {
+                          fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                        }
+                      }}
+                      iconLeftWidth="14px"
+                      iconLeftHeight="18px"
+                      iconRightWidth="10px"
+                      iconRightHeight="8px"
+                    />
+                  
                 </motion.div>
 
                 {/* More Filters */}
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  // whileHover={{ scale: 1.05 }}
+                  // whileTap={{ scale: 0.95 }}
                 >
                   <FilterButton
                     label="More Filters"
                     iconLeft="/icons/filter_icon.png"
                     iconRight="/icons/down_icon.png"
-                    iconRightWidth="12px"
-                    iconRightHeight="10px"
+                    iconRightWidth="10px"
+                    iconRightHeight="8px"
                     onClear={() => {
                       const newFilters = { ...filters, city: "", state: "" };
                       setFilters(newFilters);
+                      
                       const hasOtherFilters = Object.entries(newFilters).some(
                         ([key, value]) => !['city', 'state'].includes(key) && value && value.toString().trim() !== ''
                       );
+                      
                       if (!hasOtherFilters) {
                         clearFilters();
                       } else {
                         fetchFilteredFacilitiesWithPagination(newFilters, 1);
                       }
                     }}
-                    value={filters.city || filters.state}
+                    value={filters.city || filters.state ? "Applied" : ""}
                   >
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
@@ -985,7 +1529,7 @@ export default function FacilitySearchPage() {
                         className="border p-2 rounded-lg"
                         value={filters.city}
                         onChange={(e) => setFilters(f => ({ ...f, city: e.target.value }))}
-                        onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilities()}
+                        onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilitiesWithPagination(filters, 1)}
                       />
                       <input
                         type="text"
@@ -993,15 +1537,12 @@ export default function FacilitySearchPage() {
                         className="border p-2 rounded-lg"
                         value={filters.state}
                         onChange={(e) => setFilters(f => ({ ...f, state: e.target.value }))}
-                        onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilities()}
+                        onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilitiesWithPagination(filters, 1)}
                       />
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Button
                           onClick={() => {
-                            fetchFilteredFacilities();
+                            fetchFilteredFacilitiesWithPagination(filters, 1);
                             toast.success("Filters applied!");
                           }}
                           className="bg-[#D02B38] text-white mt-2 p-2 rounded-lg hover:bg-[#af404a] transition w-full"
@@ -1011,6 +1552,54 @@ export default function FacilitySearchPage() {
                       </motion.div>
                     </motion.div>
                   </FilterButton>
+                  
+                  {/* <FilterButton
+                      label="More Filters"
+                      iconLeft="/icons/filter_icon.png"
+                      iconRight="/icons/down_icon.png"
+                      iconRightWidth="10px"
+                      iconRightHeight="8px"
+                      onClear={() => {
+                        const newFilters = { ...filters, city: "", state: "" };
+                        setFilters(newFilters);
+                        fetchFilteredFacilitiesWithPagination(newFilters, 1);
+                      }}
+                      value={filters.city || filters.state ? "Applied" : ""}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex flex-col gap-2 p-4 bg-white border border-gray-300 shadow-lg rounded-lg min-w-[200px]"
+                      >
+                        <input
+                          type="text"
+                          placeholder="City"
+                          className="border p-2 rounded-lg"
+                          value={filters.city}
+                          onChange={(e) => setFilters(f => ({ ...f, city: e.target.value }))}
+                          onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilitiesWithPagination(filters, 1)}
+                        />
+                        <input
+                          type="text"
+                          placeholder="State"
+                          className="border p-2 rounded-lg"
+                          value={filters.state}
+                          onChange={(e) => setFilters(f => ({ ...f, state: e.target.value }))}
+                          onKeyDown={(e) => e.key === "Enter" && fetchFilteredFacilitiesWithPagination(filters, 1)}
+                        />
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button
+                            onClick={() => {
+                              fetchFilteredFacilitiesWithPagination(filters, 1);
+                              toast.success("Filters applied!");
+                            }}
+                            className="bg-[#D02B38] text-white mt-2 p-2 rounded-lg hover:bg-[#af404a] transition w-full"
+                          >
+                            Apply
+                          </Button>
+                        </motion.div>
+                      </motion.div>
+                    </FilterButton> */}
                 </motion.div>
 
                 {/* Clear All Filters Button */}
@@ -1128,21 +1717,63 @@ export default function FacilitySearchPage() {
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ delay: index * 0.1 }}
                                   onClick={() => handleCardClick(facility)}
-                                  className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 cursor-pointer ${
+                                  className={`w-full bg-[#F9F9F9] rounded-[9.56px] shadow p-4 sm:p-6 border border-gray-200 cursor-pointer min-h-[350px] ${
                                     selectedFacilityId?.toString() === facility.id
                                       ? "border-l-[4.78px]  border-t border-r border-b border-[#FACC15] border-l-[#FACC15]"
                                       : ""
                                   }`}
                                 >
-                                  <div className="flex flex-col sm:flex-row">
-                                    {/* Image */}
-                                    <div className="w-full sm:w-1/4 flex justify-center sm:justify-start mb-4 sm:mb-0">
+                                    <div className="flex justify-between items-center mb-2">
+                                      {facility.isSponsored ? (
+                                        <>
+                                          {/* Sponsored Badge */}
+                                          <div 
+                                            className="w-[107.93px] h-[34.67px] rounded-[4.78px] flex items-center justify-center"
+                                            style={{
+                                              background: 'linear-gradient(75.13deg, #D02B38 0%, #E63946 100%)'
+                                            }}
+                                          >
+                                            <span className="text-white font-inter font-medium text-[14.33px] leading-[19.11px]">
+                                              SPONSORED
+                                            </span>
+                                          </div>
+
+                                          <div className="w-[66.76px] h-[33.45px] bg-[#D02B38] rounded-[4.78px] flex items-center justify-center">
+                                            <img
+                                              src="/list_star.png"
+                                              alt="Star Rating"
+                                              className="w-[14.13px] h-[14.33px] mr-2"
+                                            />
+                                            <span className="text-white font-inter font-bold text-[16.72px] leading-[23.89px]">
+                                              {facility.rating || "4.2"}
+                                            </span>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div className="w-[66.76px] h-[33.45px] bg-[#D02B38] rounded-[4.78px] flex items-center justify-center">
+                                          <img
+                                            src="/list_star.png"
+                                            alt="Star Rating"
+                                            className="w-[14.13px] h-[14.33px] mr-2"
+                                          />
+                                          <span className="text-white font-inter font-bold text-[16.72px] leading-[23.89px]">
+                                            {facility.rating || "4.2"}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  <div className="flex flex-col mt-6 sm:flex-row">
+                                   
+                                  {/* Image */}
+                                  <div className="w-full sm:w-1/5 flex justify-center sm:justify-start mb-4 sm:mb-0 relative">
+                                      
+                                      
                                       <img
                                         src={facility.imageUrl || "/Default_image.png"}
                                         alt={facility.name}
                                         className="w-[114px] h-[114px] object-cover rounded-[9.56px]"
                                       />
-                                    </div>
+                                  </div>
 
                                     {/* Details */}
                                     <div className="flex-1 sm:ml-5">

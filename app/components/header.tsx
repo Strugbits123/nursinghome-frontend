@@ -60,9 +60,20 @@ export function Header() {
           </a>
         </nav> */}
 
-        <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
-          <div className="hidden md:flex items-center space-x-2 lg:space-x-6 md:mt-8 lg:mt-8">
+       <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
+        <div className="hidden md:flex items-center space-x-2 lg:space-x-6 md:mt-8 lg:mt-8">
+          {/* ✅ Sponsored Facility Button */}
+          {/* <button
+            onClick={handleSponsoredClick}
+            className="flex items-center w-auto h-[45.2px] rounded-md bg-white hover:bg-gray-100 px-3 sm:px-4 transition-colors duration-200"
+          >
+            <span className="font-jost font-semibold text-[12px] sm:text-[14px] leading-[15.26px] tracking-[0.23px] capitalize text-[#C71F37]">
+              Sponsored Facility
+            </span>
+          </button> */}
+
             {isAuthenticated ? (
+              // LOGOUT BUTTON
               <div
                 onClick={handleLogout}
                 className="flex cursor-pointer items-center w-[100px] lg:w-[130px] h-[35.2px] rounded-md hover:bg-[#FFFFFF]/20 px-2 lg:px-4 py-6"

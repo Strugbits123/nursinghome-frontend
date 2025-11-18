@@ -360,7 +360,7 @@ const TopRatedFeatured = memo(function TopRatedFeatured() {
   useEffect(() => {
     const fetchTopRated = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/facilities/top-10`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/facilities/top-10`);
         const json = await res.json();
 
         if (json?.data && Array.isArray(json.data)) {

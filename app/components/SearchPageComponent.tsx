@@ -17,7 +17,7 @@ export default function SearchPage() {
   useEffect(() => {
     async function fetchFacilities() {
       const query = params.toString();
-      const res = await fetch(`/api/facilities?${query}`);
+      const res = await fetch(`/facilities?${query}`);
       const data = await res.json();
       setFacilities(data.items || []);
     }

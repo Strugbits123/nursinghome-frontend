@@ -28,8 +28,8 @@ const getTotalCacheKey = (locationName: string) => `facilities_total_${normalize
 const getRecommendationsCacheKey = (locationName: string) => `recommendations_${normalizeLocationName(locationName)}`;
 
 // API Base URLs
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities`;
-const FACILITIES_WITH_REVIEWS_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/facilities/with-reviews`;
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/facilities`;
+const FACILITIES_WITH_REVIEWS_URL = `${process.env.NEXT_PUBLIC_API_URL}/facilities/with-reviews`;
 
 // 🎯 FIXED: Safe Local Storage Helpers with SSR support
 function isClient() {

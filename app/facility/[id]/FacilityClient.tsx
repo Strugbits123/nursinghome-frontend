@@ -12,12 +12,12 @@ export default function FacilityClient({
 
   useEffect(() => {
     async function fetchFacility() {
-      const res = await fetch(`/api/facility?id=${id}`);
+      const res = await fetch(`/facility?id=${id}`);
       const data = await res.json();
 
       // If no AI summary → call /api/ai-summary
       if (!data.ai_summary && data.reviews?.length > 0) {
-        const aiRes = await fetch("/api/ai-summary", {
+        const aiRes = await fetch("/ai-summary", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
