@@ -66,6 +66,20 @@ function getFromStorage<T>(key: string, defaultValue: T): T {
   return defaultValue;
 }
 
+export interface SponsoredBy {
+  name: string;
+  email: string;
+  phone: string;
+  submittedAt: string;
+}
+
+export interface SponsoredData {
+  priority: number;
+  startDate: string | Date;
+  endDate: string | Date;
+  sponsoredBy?: SponsoredBy;
+}
+
 // --- Interfaces ---
 export interface Coords {
   lat: number;
@@ -122,6 +136,9 @@ export interface Facility {
   status?: "Accepting" | "Waitlist" | "Full" | "";
   telephone_number?: string;
   operating_hours?: string;
+   // Sponsored facility properties
+  isSponsored?: boolean;
+  sponsoredData?: SponsoredData;
   [key: string]: any;
 }
 
