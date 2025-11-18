@@ -4,6 +4,19 @@ interface Coords {
   lat: number;
   lng: number;
 }
+export interface SponsoredBy {
+  name: string;
+  email: string;
+  phone: string;
+  submittedAt: string;
+}
+
+export interface SponsoredData {
+  priority: number;
+  startDate: string | Date;
+  endDate: string | Date;
+  sponsoredBy?: SponsoredBy;
+}
 
 export interface RawFacility {
   _id: string;
@@ -25,6 +38,9 @@ export interface RawFacility {
   number_of_certified_beds?: number;
   overall_rating?: number;
   telephone_number?: number | string;
+   // Sponsored facility properties
+  isSponsored?: boolean;
+  sponsoredData?: SponsoredData;
 }
 
 // Example Haversine distance function
